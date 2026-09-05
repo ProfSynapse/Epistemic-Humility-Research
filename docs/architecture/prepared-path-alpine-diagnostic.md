@@ -6904,3 +6904,272 @@ closure, which is engine closure debt beside #153. #326, 27.5's `ROOT_CHANGED`
 overload, unaffected — the code never fired on this run. Separately, B-10 closes
 on this run's evidence once its row is read at the right cut; see the correction
 in 19.14.
+
+## 28. Amendment 2026-09-05 — ruling on SEC-M1 (destination configuration is a reference channel, and the one subtree the Host parser does not own)
+
+Peer review #357 filed SEC-M1 (security-review, #365) as Minor, "invariant
+unenforced, pre-existing": the rule that forbids secrets in destination
+configuration is a key-NAME test that never inspects a value, so a
+credential-shaped name outside its lists is canonicalized into
+`configuration_bytes`, digested, and carried into the publication record. The
+synthesis row says decide before any cloud lane reuses this path. This section
+is that decision. No code changes with it; a coder implements afterwards.
+
+### 28.1 What the check actually is, measured
+
+`synaptic_host/artifact_destinations.py:32-41` declares FOUR predicates, not one
+list: an exact-name set `_BANNED_KEYS` (nine members, `:32-35`), a suffix tuple
+`_BANNED_SUFFIXES` (six, `:36`), a compact set `_BANNED_COMPACT` (nine,
+`:37-40`), and a compact suffix tuple `_BANNED_COMPACT_SUFFIXES` (seven, `:41`).
+They are applied at `:87-92` to a key normalized by `casefold()` and
+hyphen-to-underscore at `:85`, and to a compact form at `:86` that additionally
+strips underscores. The compact pair is what catches case and separator variants,
+so the rule is stronger than a flat list of nine names — and it is still a
+denylist, which is the finding.
+
+Two facts about its position decide this ruling, and neither was in the finding.
+
+**It runs inside a recursive normalizer.** `_configuration` (`:72-96`) recurses
+through `dict` and `list` to `_MAX_DEPTH = 16` (`:31`, checked at `:73-74`), and
+the key test at `:87-92` fires at every level. The denylist's domain is therefore
+the whole configuration TREE.
+
+**The configuration carries its own schema version, and it is bound.**
+`parse_artifact_destination_config_v1` reads it out of the configuration at
+`:433`, and `ArtifactDestinationDeclarationV1.__post_init__` refuses at
+`:171-172` unless it equals the declaration's `configuration_schema_version`.
+The binding an allowlist would need already exists and is already enforced.
+
+### 28.2 The house style is already an allowlist — at every level except one
+
+This is the measurement that reframes SEC-M1. `parse_artifact_destination_config_v1`
+(`:407-448`) validates four levels, and THREE of them are exact key sets enforced
+by `_fields` (`:54-60`, which raises unless `frozenset(keys) == expected`):
+
+| Level | Where | How it is governed |
+|---|---|---|
+| registry envelope | `:418` | exact set `{schema_version, destinations}` |
+| destination declaration | `:423-427` | exact set `{schema_version, destination_ref, display_name, adapter_ref, configuration, policy}` |
+| destination policy | `:434-438` | exact set `{maximum_artifact_bytes, maximum_total_bytes}` |
+| **adapter configuration** | `:430` | **denylist only** (`_configuration`) |
+
+So the Host parser is not missing the allowlist discipline. It applies that
+discipline everywhere it knows the schema, and falls back to a denylist for the
+single subtree whose schema belongs to an adapter it has not yet met. SEC-M1 is
+that fallback, and the fix is to close the one gap in an existing pattern rather
+than to introduce a new one.
+
+The gap is real and it is an ordering gap as much as a coverage gap. The adapter
+that owns the only configuration schema version in the tree ALREADY enforces an
+exact key set: `synaptic_host/local_artifact_destination.py:133` refuses unless
+`set(value) == {"schema_version", "data_root_ref", "control_root_ref"}`, and
+`:134` refuses unless the schema version equals `_CONFIG_SCHEMA` (`:51`). But
+that check lives in `factory(configuration)` (`:597-603`), which runs at
+resolution. By then `__post_init__` has canonicalized the bytes (`:164-170`),
+`configuration_digest` is computable (`:174-177`), and `_snapshot_declaration`
+(`:261-273`) has copied `configuration_bytes` verbatim. And the factory runs only
+for a destination that is actually resolved, while every DECLARED destination is
+parsed, digested and snapshotted. An unknown key on a declared-but-unused
+destination is therefore never adapter-checked at all.
+
+### 28.3 Ruling (1) — the shape
+
+**Destination configuration is a REFERENCE channel and MUST NOT be a credential
+channel. That invariant is ruled first and the key set enforces it.** The
+allowlist is the mechanism; the invariant is the reason.
+
+This is ruled from the shipped design rather than proposed for it. The only two
+non-schema keys in the only configuration schema version that exists on
+2026-09-05 are `data_root_ref` and `control_root_ref`, and
+`local_artifact_destination.py:604-613` resolves them by calling
+`storage.issue_root_permit(ref, authority_ref=..., key_ref=..., proof_digest=...)`
+and then `storage.resolve(ref)`. The authority material in that call —
+the authority reference, the key reference and the proof digest — is held by the
+factory closure and supplied at installation. **None of it comes from the
+configuration.** The configuration names a root; the permit confers the authority.
+Any project using local or cloud compute gets its credential separation from that
+split, not from a key set.
+
+The consequence for a future cloud destination is a design rule, not a wish: a
+cloud destination schema version names a credential the same way it names a root,
+by REFERENCE, and the material is resolved at use from a source the Host already
+protects. A schema version that would need to carry authentication material
+inline is refused as a schema version, not repaired with a longer allowlist.
+
+**Both mechanisms are kept, and neither alone is sufficient.**
+
+*The allowlist alone is insufficient* because its domain is one level. A schema
+version declares the keys at the level it owns; the values below that level are
+arbitrary JSON to a depth of 16. Replacing the depth-wide name check with a
+top-level key set would REMOVE coverage from every nested level, which is a net
+loss of exactly the property SEC-M1 is about.
+
+*A value-shape check alone is insufficient* because a credential and a root
+reference have the same shape. Both are bounded opaque text; `_text` at `:78`
+already bounds configuration text to 4096 bytes and rejects control characters.
+Distinguishing them by shape means guessing at entropy or at provider-specific
+token grammars, which is a rule about strings nobody in this repository wrote —
+the same argument section 20.11 used to exclude exception text from the cause
+line. It would also fail open on the case that matters: a credential pasted into
+a field whose name the allowlist permits.
+
+So: **an exact key set per `configuration_schema_version`, applied at parse time,
+PLUS the existing depth-wide name check retained unchanged as defence in depth.**
+
+### 28.4 Ruling (2) — the key sets that exist on 2026-09-05, and where a future one comes from
+
+Enumerated from code, the checked-in configuration and the tests. Exactly ONE
+adapter configuration schema version exists in the tree on this date:
+
+| `configuration_schema_version` | Allowed keys | Declared at | Enforced today at |
+|---|---|---|---|
+| `synaptic-local-artifact-destination/v1` | `schema_version`, `control_root_ref`, `data_root_ref` | `local_artifact_destination.py:51` | `local_artifact_destination.py:133` (resolution time) |
+
+The checked-in destinations document `training/artifacts.json:9-13` declares
+exactly those three keys for the single destination `local-default`
+(`adapter_ref` `host.local/v1`, `:8`). The three sibling schema strings in the
+same family are NOT adapter configuration schemas and take no allowlist here:
+`synaptic-host-artifact-destinations/v1` is the file envelope
+(`artifact_destinations.py:23`), `synaptic-host-artifact-destination/v1` is the
+declaration (`:24`), and `synaptic-publication-destination/v1` is the engine seam
+(`:25`). All three are already exact sets per the table in 28.2.
+
+**How a future schema version declares its keys, with no registry, downloader,
+cache framework or compatibility layer.** The key set is a module-level
+`frozenset` constant declared in `artifact_destinations.py` beside the existing
+banned-key constants, and the Host parser consults a literal mapping from
+`configuration_schema_version` to that constant. The adapter module imports the
+constant and keeps its own equality check against it, so the two can never drift.
+
+The direction of that dependency is forced and must not be inverted:
+`local_artifact_destination.py:29-33` already imports from
+`.artifact_destinations`, so `artifact_destinations.py` cannot import the adapter
+module without creating a cycle. The constant therefore lives in
+`artifact_destinations.py` and is consumed by the adapter, never the reverse.
+
+The parse-time position is likewise forced. `publication_composition.py:538`
+calls the parser, and the registration builders run later at `:560`, so the
+parser cannot consult `DestinationAdapterRegistrationV1` — the registrations do
+not exist yet. A literal mapping in the parser's own module is not a registry; it
+is the same shape as the three `_fields` call sites, and adding a schema version
+is a one-line edit next to the constant that defines it.
+
+Adding a cloud destination is therefore: declare the constant, add the mapping
+entry, and have the adapter assert equality against the same constant. Nothing
+is downloaded, cached, versioned or made backward compatible.
+
+### 28.5 Ruling (3) — values are not inspected, and that is deliberate
+
+**No new value predicate.** Values keep exactly the inspection they have:
+`_configuration` admits only `None`, `bool`, `int`, `str`, `list` and `dict`
+(`:75-96`), and `_text` bounds configuration text to 4096 bytes and rejects
+Unicode control characters (`:44-51`, called at `:78`). Nothing reads a value's
+content, and nothing should. The reason is the one 28.3 gives: shape cannot
+separate a credential from a reference, and a content rule would be a rule about
+strings this repository did not author. The key set is what carries the
+invariant; the value rules stay a size and type bound.
+
+### 28.6 Ruling (4) — the failure mode, and a correction to the dispatch's phrasing
+
+**Fail closed at parse time.** The refusal belongs in
+`parse_artifact_destination_config_v1` at the point where the schema version is
+already in hand — `:430-433`, where `_configuration` has just normalized the
+subtree and `:433` has read the schema version out of it — and BEFORE
+`ArtifactDestinationDeclarationV1` is constructed at `:439`. Nothing then reaches
+`configuration_bytes`, `configuration_digest` or `_snapshot_declaration`, because
+none of them has run.
+
+**The offending KEY is named in the exception message; the VALUE never is.** The
+message names the key and the schema version that rejected it, in the shape the
+existing refusals use, and it must not interpolate the value.
+
+**Correction to the dispatch's phrasing.** The dispatch asks that "the 22.14
+cause line names the offending KEY". It cannot, and it should not be changed so
+that it can. Section 20.11 and the renderer's own contract exclude the
+exception's text ENTIRELY: the line carries the exception CLASS and the deepest
+two in-package frames, and excludes the text precisely so that no string this
+repository did not author is rendered. The key reaches the operator through the
+exception message on the normal refusal path, and the 22.14 line reports the
+class and frame as it always does. These are two channels, and the dispatch's
+wording conflates them. Read the requirement as: the key is recoverable by the
+operator, the value is recoverable by nobody, and 22.14 is unchanged.
+
+### 28.7 Ruling (5) — the test shape, red-first
+
+1. **Positive control, per schema version.** For each schema version in the
+   mapping, a configuration carrying one key from the #365 control list is
+   refused. The list to pin is `authorization`, `bearer`, `passphrase`, `pat`,
+   `signature`, `session_key`, `key`, `auth`, `sas`, `connection_string`,
+   `private_pem`, `hmac`, `salt`, `cookie` — every one of which passes the
+   denylist on 2026-09-05 and every one of which is outside the allowed set.
+   Use placeholder values only; no example in this repository may carry a
+   realistic-looking secret.
+2. **Red-first is available and must be used.** Each of those names parses
+   successfully before the change and is refused after it, so the test is red
+   first against the current tree without any mutation.
+3. **The existing destination still parses.** `training/artifacts.json` parses
+   unchanged and yields the same `configuration_digest`. A digest change would
+   mean the canonical bytes moved, which this ruling forbids.
+4. **The refusal precedes the bytes.** Pin that no declaration object is
+   constructed for a refused configuration — the point of moving the check
+   earlier is worthless if a later assertion is all that proves it.
+5. **The nested level stays covered.** One test puts a banned name INSIDE a
+   nested object under an allowed key and asserts the depth-wide check still
+   refuses it. This is what proves the name check was retained rather than
+   replaced, and it is the test most likely to be dropped by an implementer who
+   reads "allowlist" as "instead of".
+
+### 28.8 Ruling (6) — migration
+
+**Fail closed, naming the key. I agree with the dispatch's default, and the
+measurement makes it nearly free.**
+
+A configuration on disk that passes the denylist and fails the allowlist is
+refused at parse, and the operator is told which key. It is not silently dropped,
+because dropping a key changes the canonical bytes and therefore the digest,
+which would break the very binding the record depends on; and it is not
+grandfathered, because a grandfather clause is a second code path that exists
+only to carry the defect forward.
+
+The measured cost on 2026-09-05 is zero. The single checked-in destination
+declares exactly the three allowed keys, and the only adapter already refuses
+anything else at resolution — so no configuration that reaches a working
+publication today can fail the new check. The change converts a late, partial
+refusal into an early, total one; it does not newly reject anything that
+currently works.
+
+### 28.9 What was measured and what was inferred
+
+**Measured, by reading the tree at `25edd3c4`:** the four predicates and their
+recursion (`artifact_destinations.py:32-41`, `:72-96`); the three exact-set levels
+(`:418`, `:423-427`, `:434-438`); the schema binding (`:171-172`, `:433`); the
+adapter's existing exact key set and its resolution-time position
+(`local_artifact_destination.py:133-134`, `:597-603`); the permit call that
+carries authority outside the configuration (`:604-613`); the import direction
+that forces where the constant lives (`:29-33`); the parse-before-registration
+ordering (`publication_composition.py:538` vs `:560`); the sole checked-in
+destination and its three keys (`training/artifacts.json:9-13`); and the census
+of destination schema strings across code, tests and the checked-in document.
+
+**Inferred, and flagged as such:** that a future cloud destination CAN name its
+credential by reference. Nothing in the tree on 2026-09-05 demonstrates it,
+because no cloud destination exists. The inference rests on the local adapter
+having done exactly that for its roots, which is a precedent and not a proof. If
+the first cloud lane finds a service whose client cannot accept a reference
+resolved at use, this section's central invariant is the thing to re-open, and
+the allowlist is what holds the line until it is re-ruled.
+
+**Not measured:** whether any adapter factory places a configuration VALUE into
+an exception message. Security-review recorded the same gap as its one unmeasured
+input, and this ruling does not close it. It is bounded by 28.5 keeping values
+uninspected and by 22.14 excluding exception text from the cause line, but a
+factory that interpolates a value into its own message would still be a leak on a
+different channel, and it deserves its own pass when a second adapter exists.
+
+### 28.10 Out of scope
+
+SEC-F1 (lexical containment against reparse points) and SEC-F2 (check-to-create
+ACL adoption) are filed with #170 and are untouched here. The engine seam
+`synaptic-publication-destination/v1` is not a Host adapter configuration schema
+and takes no allowlist. Nothing in this section changes the canonical bytes, the
+digest, the record shape or the 22.14 renderer.
