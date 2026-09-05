@@ -6925,6 +6925,34 @@ correction above used for `5d816658`. Until then this table records what is
 owed and not what exists — the same tense the original table carried before its
 own correction, and the same trap. Read it as the dispatch, not as the tree.
 
+**Amendment 2026-09-05 — the section 28 coder commit landed as `e3d4391b`, and
+this table is now a record rather than a dispatch (#397, coder-review).** The
+paragraph above says the table records what is owed and not what exists. That
+tense is spent: the commit is in, and the sentence is superseded here rather
+than rewritten above, in the shape 27.12's own correction used for `5d816658`.
+Measured by `git show --numstat` at `e3d4391b`: `artifact_destinations.py` 53/0,
+`local_artifact_destination.py` 2/1,
+`tests/synaptic_host/test_artifact_destinations.py` 436/45.
+
+All four rows landed. Two of them carry line citations that were written before
+the code existed and have moved: row 2's parse site is `:454-486` at
+`e3d4391b`, not `:430-439`, and row 3's adapter equality is `:134`, not `:133`.
+Row 4's characterisation is wrong on its own terms and is corrected in 28.7
+below, not here. Three items shipped that the table never listed, derived from
+the diff:
+
+| # | Item | Where | Ruled in |
+|---|---|---|---|
+| 5 | `S7`, the proper-subset test, in two parametrizations: a coverage arm that reaches the missing-key branch and a control arm refused earlier at the version read | `test_artifact_destinations.py`, `test_s7_proper_subset_of_the_allowed_keys_is_refused_at_parse` | 28.3's exact-set clause, via audit #400 |
+| 6 | `S8`, pinning that a configuration wrong in BOTH directions is refused as an extra-key violation | `test_artifact_destinations.py`, `test_s8_configuration_wrong_in_both_directions_is_refused_as_an_extra_key` | 28.6 amendment below |
+| 7 | Fixture migration forced by the exact-set gate, and a default-filling helper so a fixture is not refused for a reason unrelated to what it pins | `test_artifact_destinations.py:167-179` and 38 fixture lines | 28.8 correction below |
+
+Rows 5 and 6 exist because the ruling as first written did not distinguish the
+two directions of a key-set difference; the first audit found the exact-set gap
+and the second found the ordering clause unpinned. That sequence is the
+substance of what this commit added
+beyond the original four rows, and it is why the table needed three more.
+
 ## 28. Amendment 2026-09-05 — ruling on SEC-M1 (destination configuration is a reference channel, and the one subtree the Host parser does not own)
 
 Peer review #357 filed SEC-M1 (security-review, #365) as Minor, "invariant
@@ -7231,6 +7259,41 @@ the withholding argument needs is that no PARSED VALUE is interpolated, and
 of a destination document. Both tokens interpolated at `:48` are supplied by the
 caller, which is the same property under a more accurate name.
 
+**Amendment 2026-09-05 — the shipped refusal ordering, and the boundary of what
+pins it (`e3d4391b`, audits #402 and #404).** 28.6 rules that a refusal names
+the offending key. A configuration can be wrong in two directions at once, which
+that ruling did not separate, so the implementation had to choose an order and
+the choice is now recorded here.
+
+*What shipped, READ at `e3d4391b`.* Three checks run in sequence inside
+`parse_artifact_destination_config_v1`. The version gate is first at `:466-467`,
+and its message interpolates nothing. Unexpected names are next at `:476-481`:
+the difference is sorted at `:477` and the message names `unexpected[0]` at
+`:480`. Missing names are last at `:482-486`, joined from a sorted list at
+`:485`. The declaration is constructed at `:492`, after all three, so every
+refusal still precedes canonicalization and the digest.
+
+*Why unexpected before missing.* An extra key is the reference-channel offender
+SEC-M1 exists for; a missing key is a completeness defect. Ordering the offender
+first means an operator who wrote a key sees the key they wrote, and it leaves
+every assertion that predates this ordering pinning the property it already
+pinned.
+
+*The pin, and it is a real one.* `test_s8_configuration_wrong_in_both_directions_is_refused_as_an_extra_key`
+builds a configuration carrying a benign extra key (`authorization`, outside all
+four banned containers at `:32-41`, so the depth-wide scan does not claim it
+first) with one allowed key removed, and asserts the extra key is named and the
+missing one is not. Audit #404 moved the two blocks past each other in a scratch
+copy and that mutation reddened exactly one node across the directory, `S8`. A
+test that merely passes proves nothing about an ordering; the mutation is what
+makes this clause pinned rather than true by accident.
+
+*The boundary, stated so a later reader does not over-read the pin.* The message
+names `unexpected[0]`, the sorted-first extra key only. A configuration carrying
+TWO unexpected keys is therefore unpinned as to which one the message names.
+That is not a gap in the pin, it is the extent of what 28.6 rules: the ruling
+asks for the offending key, not for an enumeration of offenders.
+
 ### 28.7 Ruling (5) — the test shape, red-first
 
 1. **Positive control, per schema version.** For each schema version in the
@@ -7307,6 +7370,60 @@ mapping keyed by a configuration schema version exists anywhere in the module.
 So an unmapped version parses successfully today, and test 6 is red before the
 change as measured rather than as inferred.
 
+**Correction and Amendment 2026-09-05 — the list above has six items but five
+tests, three of them red-first, and two more tests shipped beyond it
+(`e3d4391b`, audits #400, #402, #404).** The 27.12 ledger row 4 calls these "the
+six red-first tests of 28.7". Both halves of that phrase are wrong, and the
+error is one this section invited by numbering a property alongside tests.
+
+*The mapping, built from the committed file rather than from the ordinals.* Item
+2 above ("red-first is available and must be used") is a PROPERTY of the other
+items, not a test, so six list items yield five tests. READ at `e3d4391b`:
+
+| List item | Test node | Red before the change? |
+|---|---|---|
+| 1, the 14-name control list | `test_s1_...key_outside_the_allowed_set_is_refused` (14 parametrizations) | RED, measured |
+| 2, red-first available | no test; a property of the others | not applicable |
+| 3, the existing destination still parses | `test_s3_checked_in_destination_still_parses_with_an_unchanged_digest` | GREEN by construction, a control |
+| 4, the refusal precedes the bytes | `test_s4_refused_configuration_constructs_no_declaration` | RED, measured |
+| 5, the nested level stays covered | `test_s5_banned_name_nested_under_an_allowed_key_is_still_refused` | GREEN by construction, a control |
+| 6, an unmapped schema version | `test_s6_unmapped_configuration_schema_version_is_refused_at_parse` | RED, measured |
+
+So three of the five are red-first and two are controls. "All six red-first" is
+false twice over, and 27.12's row 4 is corrected by this paragraph.
+
+*How the red column was measured.* Not by re-running the pre-change tree. Audit
+#402 deleted the whole gate in a scratch copy and recorded which nodes reddened:
+19 of them, being `S1` times 14, the inverted test times 2, `S4`, `S6` and the
+`S7` coverage arm, and explicitly NOT `S2`, `S3`, `S5` or the `S7` control arm.
+A node that a gate-deletion mutation does not redden cannot have been red before
+that gate existed, which is what makes the two controls controls.
+
+*Two tests shipped beyond the list.* `S7` pins the exact-set clause that the
+first audit found unenforced, in two parametrizations: the coverage arm reaches
+the missing-key branch, and the control arm carries only `data_root_ref` and is
+refused earlier at the version read, which is the declared control. `S8` pins the
+ordering ruled in 28.6's amendment above. There is also `S2`, which asserts the
+allowed key set is one object shared with the adapter; it answers no list item
+and is green by construction.
+
+*`S8`'s own red-first status is INFERRED, not READ.* The gate-deletion mutation
+ran at the revision before `S8` existed, so no audit measured it. Reasoning from
+the code, a doubly-wrong configuration whose extra key is outside all four banned
+containers has nothing to refuse it before this gate, so `S8` would have been red;
+that is an inference from the parser's shape, not a measurement, and it is marked
+as such here rather than folded into the three above.
+
+*The lane results at `e3d4391b`.* Both lanes gained 23 passing nodes with empty
+new-failing and empty disappeared node-id sets. Audit #404's independent WSL
+same-code control reports a failing-set symmetric difference of 0 in both
+directions and an identical error-id set. One figure is unreconciled and is
+recorded rather than resolved: the Windows pre-existing failing count read 103
+today against 102 at the previous revision, with identical sets across today's
+pair, so the delta is unaffected; the revision's own Windows set was not
+retained, so the differing node cannot be named. The WSL node-id sets were
+retained by the auditor for that reconciliation.
+
 ### 28.8 Ruling (6) — migration
 
 **Fail closed, naming the key. I agree with the dispatch's default, and the
@@ -7325,6 +7442,37 @@ anything else at resolution — so no configuration that reaches a working
 publication today can fail the new check. The change converts a late, partial
 refusal into an early, total one; it does not newly reject anything that
 currently works.
+
+**Correction 2026-09-05 — "the measured cost is zero" is true of production
+configuration and false as an unqualified sentence (`e3d4391b`).** The topic
+sentence above says the measured cost on 2026-09-05 is zero, without qualifying
+what it is the cost OF. The two sentences after it are narrower and both stay
+true: the single checked-in destination declares exactly the three allowed keys,
+`training/artifacts.json` parses under the new gate to the same
+`configuration_digest` it had before, and nothing that reaches a working
+publication today is newly rejected. Only the unqualified topic sentence is
+corrected here.
+
+*What it cost, counted by instrument over `git show e3d4391b -- tests/synaptic_host/test_artifact_destinations.py`.*
+The test file changed 436/45 by `--numstat`. Thirty-eight removed lines carry a
+placeholder schema version and thirty-eight added lines carry the mapped one, a
+symmetric count because every fixture that named a version had to name a version
+the table maps. Nineteen of those are `_destination(...)` call sites; the rest
+are registry-construction tuples. Two fixtures additionally rename their
+configuration key from `root` to `control_root_ref`. One test was inverted rather
+than migrated: `test_config_allows_benign_key_references` asserted that a benign
+extra key is ADMITTED, which is exactly what this ruling reverses, so it is now
+`test_benign_key_reference_outside_the_allowed_set_is_refused` in two
+parametrizations, and the one assertion deleted in the whole file belongs to it.
+
+*The structural cost, which is the part worth carrying forward.* An exact-key-set
+gate makes every fixture's configuration a complete object, so a fixture that
+names only the keys its own assertion cares about would be refused for a reason
+unrelated to the property it pins. The helper at `:167-179` absorbs that: it
+fills the rest of the mapped set, an explicit keyword still wins, and a schema
+version the table does not map is left exactly as written so the unmapped-version
+tests still see what they built. That is the honest migration cost of moving from
+a denylist to a key set, and it falls on fixtures rather than on operators.
 
 ### 28.9 What was measured and what was inferred
 
@@ -7400,6 +7548,44 @@ durable record through the two registry-free consumers
 (`docker_publication.py:364-368`, `docker_training.py:686-695`). Neither
 reviewer measured it. It is moot once 28.4's amendment is implemented, and it is
 not moot before then.
+
+**Amendment 2026-09-05 — the last open item is closed, and two properties of
+the shipped gate are recorded (`e3d4391b`, #391).** Three things, the first
+closing this subsection's own open question.
+
+*The registry-free consumers question is now MOOT, as predicted.* The paragraph
+above holds open whether an unmapped configuration schema version could reach a
+durable record through `docker_publication.py:364-368` or
+`docker_training.py:686-695`, neither of which builds a registry. It cannot. Both
+consumers reach their destinations by calling the parser, and the refusal now
+runs inside `parse_artifact_destination_config_v1` at `:466-467`, before the
+declaration is constructed at `:492`. There is no path to a durable record that
+does not pass the gate first, so the question closes without either reviewer
+needing to measure the consumers individually.
+
+*The table is a PARSE-TIME gate, not a data-model invariant.* READ by AST at
+`e3d4391b`: `_ALLOWED_CONFIGURATION_KEYS` is referenced exactly three times in
+the module, at `:62` where it is defined, `:466` where membership is tested and
+`:468` where it is subscripted, all three inside or above the parse function.
+`ArtifactDestinationDeclarationV1.__post_init__` (`:178-195`) never consults it,
+and neither does `configuration_digest` (`:198-200`). This is deliberate and it
+is load-bearing in both directions: it is what lets a test construct a
+declaration directly to pin registry behaviour without going through the gate,
+and it is also the reason the gate cannot be the only defence if a future caller
+ever builds declarations from an untrusted source without parsing. Today no such
+caller exists.
+
+*One duplication is knowingly left in place.* The version string
+`synaptic-local-artifact-destination/v1` appears 42 times across the three files
+this commit touched, counted by `grep -c` per file: once as the table's key in
+the parser, once as `_CONFIG_SCHEMA` in the adapter at `:52`, and 40 times in the
+tests. The parser and the adapter are the two that matter, and they are NOT
+bound to each other by that literal — they are bound by the shared frozenset
+constant the adapter imports and compares against at `:134`, which is what 28.4
+rules and what stops the two from drifting on the KEY SET. The version literal
+itself stays duplicated because the ruling governs keys, not versions, and
+collapsing it would mean the adapter importing a name whose only purpose is to
+say what it already says. Recorded as known duplication, not as debt to repay.
 
 ### 28.10 Out of scope
 
