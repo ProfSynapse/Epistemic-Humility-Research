@@ -29,6 +29,7 @@ from synaptic_tuner.api.v1.publication import (
 from .artifact_destinations import (
     DestinationAdapterInstallationV1,
     DestinationAdapterRegistrationV1,
+    LOCAL_DESTINATION_CONFIGURATION_KEYS,
     ResolvedDestinationAdapterV1,
 )
 from .artifact_spool import LocalArtifactSpoolV1
@@ -130,7 +131,7 @@ def _parse_config(raw: bytes) -> tuple[str, str]:
         raise _closed(LocalArtifactDestinationCodeV1.INVALID) from None
     if (
         type(value) is not dict
-        or set(value) != {"schema_version", "data_root_ref", "control_root_ref"}
+        or set(value) != LOCAL_DESTINATION_CONFIGURATION_KEYS
         or value.get("schema_version") != _CONFIG_SCHEMA
         or _canonical(value) != raw
     ):

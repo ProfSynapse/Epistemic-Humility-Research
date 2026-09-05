@@ -40,6 +40,29 @@ _BANNED_COMPACT = frozenset({
 })
 _BANNED_COMPACT_SUFFIXES = ("accesskey", "accesstoken", "apikey", "password", "privatekey", "secret", "token")
 
+# Section 28 (SEC-M1).  Destination configuration is a REFERENCE channel and
+# must not be a credential channel; the allowed key set per configuration
+# schema version is what carries that invariant.  The banned-name scan above
+# is RETAINED beside it rather than replaced: a key set governs one level,
+# while that scan governs the whole tree to _MAX_DEPTH, so replacing it would
+# remove coverage from every nested level (28.3).
+#
+# The constant lives here and not in the adapter because
+# local_artifact_destination imports from this module, so the reverse would
+# cycle (28.4).  The adapter imports it and keeps its own equality check
+# against it, which is what stops the two from drifting.
+LOCAL_DESTINATION_CONFIGURATION_KEYS = frozenset({
+    "schema_version", "control_root_ref", "data_root_ref",
+})
+
+# A literal table, not a registry.  The parser cannot consult
+# DestinationAdapterRegistrationV1: publication_composition parses the document
+# before the registration builders run, so the registrations do not exist yet.
+# Adding a schema version is a one-line edit beside the constant defining it.
+_ALLOWED_CONFIGURATION_KEYS: dict[str, frozenset[str]] = {
+    "synaptic-local-artifact-destination/v1": LOCAL_DESTINATION_CONFIGURATION_KEYS,
+}
+
 
 def _text(value: object, name: str, maximum: int = 256) -> str:
     if type(value) is not str or not value or value.strip() != value:
@@ -431,6 +454,36 @@ def parse_artifact_destination_config_v1(raw: bytes) -> ArtifactDestinationConfi
         if type(config) is not dict:
             raise TypeError("destination configuration must be an exact object")
         schema = _text(config.get("schema_version"), "configuration schema version")
+        # 28.4 and 28.6: refuse HERE, before the declaration is constructed
+        # below.  `_canonical(config)` is an argument inside that constructor
+        # call, so refusing now is also refusing before canonicalization, the
+        # configuration digest and the declaration snapshot -- one requirement,
+        # not two.  Membership first and subscript second: a permissive lookup
+        # that only checks when the version happens to be mapped leaves an
+        # unmapped version unconstrained, which 28.4 rules non-conforming.
+        # The unknown-version message interpolates nothing, because a
+        # configuration_schema_version is itself a configuration value.
+        if schema not in _ALLOWED_CONFIGURATION_KEYS:
+            raise ValueError("destination configuration schema version is unknown")
+        allowed = _ALLOWED_CONFIGURATION_KEYS[schema]
+        # 28.3 rules the EXACT key set for the version, not containment.  A
+        # containment test accepts every proper subset, so a configuration that
+        # simply omits a required reference is admitted and reaches the adapter
+        # as a differently-shaped object instead of as a refusal here.  Both
+        # directions of the difference are named by KEY, never by value.
+        # Unexpected names are reported before missing ones so that an operator
+        # who wrote a key sees the key they wrote.
+        present = frozenset(config)
+        unexpected = sorted(present - allowed)
+        if unexpected:
+            raise ValueError(
+                f"destination configuration field is not permitted: {unexpected[0]}"
+            )
+        missing = sorted(allowed - present)
+        if missing:
+            raise ValueError(
+                "destination configuration fields are missing: " + ", ".join(missing)
+            )
         policy_fields = _fields(
             value["policy"],
             frozenset({"maximum_artifact_bytes", "maximum_total_bytes"}),
