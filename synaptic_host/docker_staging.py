@@ -1378,11 +1378,14 @@ def _stage_locked_project_inputs(
 
     B-12 (architecture section 21.12 items 1-4).  The prepared path used to
     archive the whole superproject at the locked commit, so a project large
-    enough to hold research data could not be staged at all even though the
-    container reads exactly one file from `/source/project` (section 21.3).
-    The scope is now the lock's own `inputs` descriptors, which admission
-    already wrote and already digested (section 21.10), so nothing new is
-    trusted and no schema moves.
+    enough to hold research data could not be staged at all.  The staged scope
+    is now the lock's `inputs` descriptors plus the destination registry the
+    lock records at `outputs.destination_registry`: the container reads one of
+    those files and the Host's own publication phase reads another (section
+    26.2 carries the consumer census; section 21.3 was scoped to the container
+    alone and is the frame error 26.1 diagnosed).  Every descriptor was written
+    and digested by admission (section 21.10), so nothing new is trusted and no
+    schema moves.
 
     Each member is read from the commit with `_git_selected_blobs`, never from
     the checkout, and its length and digest are compared to the recorded

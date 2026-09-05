@@ -765,12 +765,14 @@ def test_staged_project_tree_is_exactly_the_three_recorded_paths(
 ) -> None:
     """P8 (section 26.4).  The B-12 set equality still holds at the new scope.
 
-    This is the other half of the P2 pair.  A direct write of the registry
-    file would leave the staged tree with a member the descriptors passed to
-    `_verify_staged_project_inputs` do not name, and the set equality at
-    `:1392` would refuse it.  Asserting the re-verification passes over the
-    union is therefore an assertion about the union, not a restatement of the
-    walk above it.
+    This is the other half of the P2 pair.  Counter-test #314 finding 2
+    measured what actually reddens it: under the shortcut this test takes, a
+    direct write of the registry file lands after the staging call has already
+    re-verified, so P8 reddens on the union's cardinality (`len(union) == 3`
+    below) rather than on the set equality.  The set-equality re-verify refuses
+    a member written *during* staging, not one written after it.  Asserting the
+    re-verification passes over the union is still an assertion about the
+    union, not a restatement of the walk above it.
     """
 
     destination = tmp_path / "project"
