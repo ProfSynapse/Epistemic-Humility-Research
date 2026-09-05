@@ -122,7 +122,13 @@ def test_corrupt_persisted_record_is_closed_for_reads_and_mutations(
             RuntimeError, match="^host publication persistence failed$",
         ) as captured:
             operation()
-        assert captured.value.__cause__ is None
+        # Y3 (27.12 item 2).  Both operations reach `publication_store.py:228`
+        # through the decode handler, which called the helper bare and destroyed
+        # the decode failure.  The chain now survives.  What this test has always
+        # guaranteed is unchanged and still asserted: the message is exactly the
+        # closed one, and no exception is in flight at the raise, so
+        # `__context__` stays `None`.
+        assert isinstance(captured.value.__cause__, Exception)
         assert captured.value.__context__ is None
 
 
@@ -181,6 +187,37 @@ def test_c5_sqlite_error_is_closed_in_its_message_but_carries_its_cause(
         store.get("1" * 64)
     assert captured.value.__cause__ is failure
     assert "private database detail" not in str(captured.value)
+
+
+def test_c6_forced_decode_failure_carries_the_original_as_its_cause(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """C6 of section 27.12, the seventh Class B site (`publication_store.py:228`).
+
+    The 27.2 correction found the site the lexical `from None` census could not
+    see, because the destruction is keyed on an argument rather than on a
+    `raise`: `_load_in` catches the decode failure into a flag and then calls
+    `_closed_persistence_failure()` bare, so the helper's raise runs with no
+    exception in flight and the original is lost.  Before the Y3 change
+    `__cause__` here is `None`.  The closed message is unchanged -- the decode
+    detail never reaches the operator's error text.
+    """
+    database = (tmp_path / "training.sqlite3").resolve()
+    store = SqlitePublicationStoreV1(database, session_ref="a" * 64)
+    claim = PublicationRecordV1.claim(_command(), "2026-08-30T12:00:00Z")
+    store.claim(claim)
+    failure = ValueError("private decode detail")
+
+    def fail(raw: bytes) -> PublicationRecordV1:
+        raise failure
+
+    monkeypatch.setattr(SqlitePublicationStoreV1, "_decode", staticmethod(fail))
+    with pytest.raises(
+        RuntimeError, match="^host publication persistence failed$",
+    ) as captured:
+        store.get(claim.command.publication_id)
+    assert captured.value.__cause__ is failure
+    assert "private decode detail" not in str(captured.value)
 
 
 def test_expired_lease_cannot_be_resurrected_by_delayed_heartbeat(

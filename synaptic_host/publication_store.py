@@ -34,20 +34,25 @@ _LEASE_SECONDS = 30.0
 def _closed_persistence_failure(cause: BaseException | None = None) -> None:
     """Raise the persistence failure, chaining `cause` when the caller has one.
 
-    B-18 (section 27.4, site 6).  The parameter defaults to `None` so the four
-    call sites that genuinely have no originating exception to name are
-    unchanged; only the decorator below, which does have one, passes it.
+    B-18 (section 27.4, site 6).  The parameter defaults to `None` for the
+    three call sites that genuinely have no originating exception to name --
+    after the metadata predicate, after a row count and after a missing row, all
+    ordinary control flow.  Every caller that does have one passes it: the
+    decorator below, and the decode handler in `_load_in`, whose bare call the
+    27.2 correction found and 27.12 item 2 chained.
     """
     raise RuntimeError("host publication persistence failed") from cause
 
 
 def _close_sqlite_errors(function):
-    """Translate SQLite failures after leaving the active exception context.
+    """Translate SQLite failures into the closed persistence failure.
 
-    The translation is deliberately deferred until after the `except` block so
-    the raise does not run inside the SQLite handler.  That places it beyond the
-    handler's `as` binding, so the handler copies the original into `cause` and
-    the translated error chains from it rather than from nothing.
+    The raise falls outside the `except` block rather than inside it.  That is
+    inherited structure and not a design choice -- it destroyed the cause until
+    the B-18 fix -- and it puts the raise beyond the handler's `as` binding,
+    which Python clears on handler exit.  So the handler copies the original
+    into `cause`, and that bound copy is what carries the chain across the
+    boundary rather than the translated error chaining from nothing.
     """
     @wraps(function)
     def closed(*args, **kwargs):
@@ -219,13 +224,16 @@ class SqlitePublicationStoreV1:
         ).fetchone()
         if row is None:
             return None
-        decode_failed = False
+        decode_cause: BaseException | None = None
         try:
             record = cls._decode(row["record_json"])
-        except Exception:
-            decode_failed = True
-        if decode_failed:
-            _closed_persistence_failure()
+        except Exception as error:
+            # 27.12 item 2.  The raise below runs outside this handler, where
+            # the `as` binding is already gone, so bind a copy here: it is what
+            # carries the decode failure into `__cause__`.
+            decode_cause = error
+        if decode_cause is not None:
+            _closed_persistence_failure(decode_cause)
         metadata_matches = (
             record.command.publication_id == publication_id
             and row["command_digest"] == record.command.command_digest

@@ -908,7 +908,10 @@ def test_c2_composition_failure_carries_the_original_as_its_cause(
     handler at the end of `compose_host_publication_v1` raised `from None`.  The
     forced failure here stands in for whatever fails inside the try block: what
     is pinned is that the original reaches the caller as `__cause__`, so the
-    22.14 renderer has a deepest in-package frame to name.
+    failure stays recoverable to a debugger, to a `traceback` printer and to any
+    future chain-walking reader.  The 22.14 renderer is not one of them: it
+    walks `__traceback__` alone, so restoring the chain changes nothing it
+    prints (the 27.4 Correction).
     """
     failure = RuntimeError("forced inner failure")
 

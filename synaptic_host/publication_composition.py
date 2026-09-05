@@ -250,22 +250,28 @@ def _within(path: Path, ancestor: Path) -> bool:
 
 
 def _create_private_chain(root: Path, private_root: Path) -> None:
-    """Create `root` and any absent ancestor strictly below `private_root`.
+    """Create `root` itself, and only `root`.
 
-    Parents first, so a declared root nested two levels below `.synaptic` does
-    not fail on a missing intermediate.  Creation goes through the same
-    primitive the private storage chain uses, so a root created here carries the
-    private mode (POSIX `0o700`) or the protected DACL (Windows) from birth.
+    Y1 (section 27.12).  The `19c11400` amendment withdrew step 3's "parents
+    first", leaving step 3 requiring only the root, so the ancestor walk is
+    gone.  The one future it could have fired in is a future 27.3 already
+    refused: it would create an intermediate directory no declaration names,
+    carrying a private DACL, that nothing retains and nothing validates.  A
+    declared root nested below `.synaptic` whose parent is absent is a gap in
+    the declaring document, so it is reported here by a named error -- the shape
+    the caller uses for an absent `.synaptic` -- and never silently completed.
+
+    Creation goes through the same primitive the private storage chain uses, so
+    a root created here carries the private mode (POSIX `0o700`) or the
+    protected DACL (Windows) from birth.
     """
-    chain: list[Path] = []
-    for ancestor in (root, *root.parents):
-        if ancestor == private_root:
-            break
-        chain.append(ancestor)
-    for ancestor in reversed(chain):
-        if ancestor.exists():
-            continue
-        FileHmacAuthenticator._create_private_directory(ancestor)
+    parent = root.parent
+    if parent != private_root and not parent.is_dir():
+        raise _failed(
+            "host publication private storage root parent is missing: "
+            + str(parent)
+        )
+    FileHmacAuthenticator._create_private_directory(root)
 
 
 def _installation_type():
