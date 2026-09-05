@@ -2264,6 +2264,31 @@ The third row is the honest one and I expect it is possible: if the trainer
 buffers and writes late, `state` may still be empty at cut 2. That is not a pass,
 it is a deferral, and it must be reported as one.
 
+**Correction 2026-09-05 — the watched cut is re-pointed, and B-10 closes.** The
+third row is the one that happened, three runs running. Runs 12, 13 and 14 each
+recorded `state` EMPTY at cut 2 and so each returned a DEFERRAL rather than a
+reading. Three consecutive deferrals are not bad luck; they say the row watches
+the wrong cut. "The first observe cut after submit — cut 2" was a prediction
+about when the trainer writes under `/artifacts`, and the runs have refuted it.
+It was never a property of the fix.
+
+**Re-pointed by observation, not by paraphrase.** The predicate and the
+three-row table above are unchanged, and the readings they license are unchanged.
+Only the identification of the cut changes: the cut to watch is **the first cut
+at which `state` is non-empty before the cut is issued**, which the driver
+already records at every cut (#150), and which each run therefore names
+empirically instead of by construction. On run 14 that cut is 4. Cuts 4, 5 and 6
+each show `state` non-empty and each returned `SUBMITTED`, not
+`START_UNAVAILABLE`.
+
+That is row 1 of the table above — non-empty, not `START_UNAVAILABLE` — so
+**B-10 is confirmed and fixed, and it closes on run 14** (#137). This correction
+governs 19.15's closing sentence as well: read "Closes on run 5 cut 2 per 19.14"
+as "closed on run 14, at the first cut with a non-empty `state`". No code
+changes. The `expect_unused_artifacts` guard shipped in section 19 is what lets
+cuts 4-6 pass, and nothing in the fix ever depended on which cut first exercised
+it.
+
 ### 19.15 Ledger row
 
 - **B-10 (Blocker, ruled).** Staging re-verifies on every cut
@@ -6075,6 +6100,64 @@ of these executes inside `compose_host_publication_v1`. `sqlite_repository.py`
 `publication_store.py` and are the first candidates if the idiom is ever ruled
 as a family; that is recorded as a follow-up in 27.9, not done here.
 
+**Correction 2026-09-05 — the census is baseline-relative, and it undercounted by
+one caller.** Two items, both measured after run 14.
+
+*The counts are pinned to `dcdf8571`, and this ruling's own fix moved them.* Run
+14 (#338) measured 342 `raise ... from None` sites in `synaptic_host` at
+`19c11400`, by substring and by an independent AST pass that agreed with it,
+against the 348 recorded above, and reported the pair without adjudicating it.
+The two figures are the same census over the same root at different commits. The
+lexical pass above, re-run at three commits:
+
+| Commit | Total | `in_handler` | `outside` | `in_finally` |
+|---|---|---|---|---|
+| `dcdf8571` (the citation baseline, pre-fix) | 348 | 306 | 41 | 1 |
+| `4b39e61f` (this section, docs only) | 348 | 306 | 41 | 1 |
+| `19c11400` (post-fix, run 14's release) | 342 | 305 | 36 | 1 |
+
+The delta is exactly six and it falls on exactly the four files of 27.4's
+six-site table: `artifact_destinations.py` −3 (sites 3, 4 and 5),
+`artifact_spool.py` −1 (site 2), `publication_composition.py` −1 (site 1) and
+`publication_store.py` −1 (site 6). The split matches the classification too:
+`in_handler` falls by one, which is site 1, the only Class A member of the six,
+and `outside` falls by five, which is sites 2 to 6. So 348 is the pre-fix figure
+this section was written against and 342 is the post-fix figure; neither is a
+narrower scope than the other, and there is no contradiction to resolve. **Read
+every count in 27.2 as pinned to `dcdf8571`.** The comparison that produced the
+apparent discrepancy set the post-fix total beside the pre-fix outside-handler
+subset, which are different quantities: the publish-path in-scope set was never
+41, it is six.
+
+*One caller was missed, and the helper's docstring asserts the opposite.* Audit
+#332 found a seventh Class B site on the publish path. It is a **caller** rather
+than a `raise`, which is why the lexical pass could not see it and why reading
+the 41 raises did not surface it either. Worse, **the fix widened that blind
+spot**: `publication_store.py` now holds zero lexical `from None` sites, because
+the helper raises `from cause`, so a re-run of the census above reports the file
+clean while `:228` still passes `None` by default and still destroys its cause.
+A census keyed on the `raise` cannot see a destruction keyed on an argument, and
+that is a limit of the instrument, not of this reading.
+`_closed_persistence_failure()` is
+called bare at `publication_store.py:228`, reached after
+`except Exception: decode_failed = True` (`:225-226`) sets a flag and falls out,
+so the raise inside the helper executes with no exception in flight and the
+decode failure is **destroyed** — the same shape as sites 2 and 6. All four bare
+callers were read: `:239` (after the `metadata_matches` predicate), `:286`
+(after `cursor.rowcount != 1`) and `:605` (after `loaded is None`) are Class C on
+ordinary control flow with nothing to preserve, and only `:228` follows a
+handler. The helper's docstring at `:37-39` says the parameter defaults to `None`
+"so the four call sites that genuinely have no originating exception to name are
+unchanged", which is true of three of them and false of `:228`.
+
+**Disposition: chain it.** 27.4's rule applies unchanged — `from None` is kept
+only where there is genuinely no cause, and here there is one. The cost is a
+handler binding and one argument, because `_closed_persistence_failure` already
+takes `cause`, so no surface is added and nothing else moves. Leaving it would
+oblige the docstring to document a known blindness inside the file this ruling
+just repaired, which is the same edit as removing the blindness. Coder item,
+carried in 27.12 with test `C6`. The publish-path count becomes **seven** sites.
+
 ### 27.3 Ruling — the composition ensures the declared roots it is about to retain
 
 **The storage layer does not create roots, and `read_create` does not say it
@@ -6247,8 +6330,62 @@ so run 14's log should carry no cause line at cut 6 at all. The chain is
 insurance against the *next* B-18, which Learning II on this domain says to
 expect one layer deeper.
 
+**Correction 2026-09-05 — the paragraph above is false for the shipped renderer
+(audit #332, YELLOW-4).** `_innermost_package_frame` walks
+`error.__traceback__` and only that: it starts at
+`getattr(error, "__traceback__", None)` and advances through `tb_next`
+(`cause_line.py:83-96`). It reads neither `__cause__` nor `__context__`. So the
+frames it renders belong to the exception it is handed, which at cut 6 is the
+composition's own `RuntimeError`, not the `LocalIOErrorV1` beneath it. And
+`report_cause_line_v1` prints `type(error).__name__` with the admission command
+code (`:132-134`). The line therefore names `RuntimeError` and that code — never
+`_root_component`, never `retain_directory`, never `LOCAL_IO_ROOT_CHANGED`.
+Restoring the chain does not change one character of it. 27.5's operator-facing
+half is moot for the same reason.
+
+**What the chain actually buys, stated correctly.** Recoverability, not
+rendering. `__cause__` makes the original reachable to a debugger, to a
+`traceback` printer and to any future consumer that walks the chain; nothing in
+`synaptic_host` walks it today. This is also why restoring the chain exposes no
+exception text: the renderer authors the class name and the frame identities and
+never calls `str()` or `repr()` on the error, `cli.py`'s `BaseException`
+enclosure stops Python's own printer, and the driver's `_report_admission_cause`
+excludes exception text by design (audit #332, question A — no exposure, so 27.4
+raises no message-discipline question after all). The consequence for run 14 is
+unchanged and was already right for the wrong reason: no cause line at cut 6,
+because 27.3 makes the failure unreachable. **Row 0's pass rests on the ensure,
+not on the chain.**
+
+The same false claim is repeated in the `C2` docstring at
+`tests/synaptic_host/test_publication_composition.py:910-911` ("so the 22.14
+renderer has a deepest in-package frame to name"). `C2`'s assertion is correct
+and unaffected, because it pins `__cause__`; only the prose reason is wrong,
+which is the worse of the two failures for exactly the reason D4 gives. **Ruled
+wording**, for coder-user: say that the original reaches the caller as
+`__cause__` so the failure stays recoverable to a chain-walking reader, and that
+the 22.14 renderer does not walk the chain. Coder item, carried in 27.12.
+
 **Message discipline is unchanged.** No message gains a path or a value. The
 21.8 shape holds; only the `from` target changes.
+
+**Correction 2026-09-05 — row 6's owed docstring correction, as it shipped
+(audit #332, YELLOW-2).** Row 6 required the `_close_sqlite_errors` docstring to
+be corrected in the same commit, because "leaving the context is the defect, not
+the design". What shipped is better than row 6 imagined on the half that
+matters, and still wrong on the half row 6 named. At `19c11400` the docstring
+(`publication_store.py:45-51`; cited as `:39` above, pre-fix) explains the
+mechanism accurately: the handler copies the original into `cause` and the
+translated error chains from it. That is the substance, and it is right. What
+remains false is the framing. The summary line still reads "Translate SQLite
+failures after leaving the active exception context", and `:47-50` calls the
+deferral "deliberately deferred". The deferral is a true description of the code
+— the raise really does run outside the handler — but it was never deliberate.
+It is inherited structure that destroyed the cause until this fix, and the bound
+copy is what now carries the chain across that boundary. **Ruled wording**, for
+coder-user: keep the mechanism sentences, drop the claim that the deferral is a
+design choice, and say instead that the raise falls outside the handler and the
+`as`-bound copy is what preserves the chain across it. Coder item, carried in
+27.12. Row 6 stands as ruled; this records what it actually cost.
 
 ### 27.5 The overloaded `LOCAL_IO_ROOT_CHANGED` code — bounded follow-up, not ruled now
 
@@ -6338,31 +6475,86 @@ of four and passed the moment the three directories existed.
 do not invent a new marker. **Leave untouched** the S-series and P-series union
 tests from sections 21 and 26 — nothing in this change touches staging.
 
-**Amendment 2026-09-05 — how `R1` and `C1` are gated.** Gate them on the
-measured POSIX answer, never on an assumption. Measure
-`acquire_local_artifact_spool_v1` against an absent root on
-`PosixFilesystemPortV1` first. If POSIX refuses an absent root as Windows does,
-`R1` and `C1` stay **ungated** and are red on both lanes before the fix, which is
-the stronger outcome because it makes the reproduction platform-independent. If
-the refusal proves Windows-only, gate `R1` to `nt`, capture its red-first output
-on the Windows lane and record it verbatim, and have test-engineer re-verify on
-both lanes. A test is never gated to make a lane look green: the gate follows the
-measurement, and the measurement is reported either way.
+**Amendment 2026-09-05, as measured — how `R1` and `C1` are gated.** The rule
+was to gate them on the measured POSIX answer and never on an assumption, and
+the measurement has been taken (#328, re-verified on both lanes by #334): the
+real `PosixFilesystemPortV1` refuses an absent root exactly as Windows does. So
+`R1` and `C1` are **ungated**, and both were red on both lanes before the fix.
+That is the stronger of the two outcomes the rule allowed, because it makes the
+reproduction platform-independent. The conditional `nt`-gating branch is spent
+and is not restated here; what is worth keeping is only that the gate followed a
+measurement rather than a guess.
+
+*One correction to how the pair is described (#334, correction E).* There is one
+gate across the `C1` pair, not two: `C1a` is ungated and asserts the cause, and
+`C1b` is POSIX-only because it drives the real port. The conclusion that the
+reproduction is not platform-bound stands, with that as its corrected reason.
 
 `R1` and `C1` are the two that must be red first. `R1` is red for the arm and
 `C1` is red for the blindness, and between them they are the whole of B-18.
+
+**`R1` is the designated red-first member, and `R2`-`R4` are protective rather
+than dead weight (#334, finding 1).** Mutation A — removing the ensure call — is
+diagnostic for `R1` alone. `R2`, `R3` and `R4` die earlier, at the
+`_compose_declared` call they share
+(`tests/synaptic_host/test_publication_composition.py:806`), before their own
+assertions run, so none of them can be read as an independent detector of that
+mutation. Under the source-only revert they **do** fail on their own assertions
+(verdict 6), which is what shows they earn their place: each still pins its own
+clause of 27.3's arm — `R2` the creation primitive and its mode, `R3` "do not
+repair", `R4` the `.synaptic` predicate. The ruling therefore stands as written,
+with one designation added: `R1` is the member any future ablation of the ensure
+must be read against.
 
 ### 27.8 Run 14 acceptance rows
 
 | Row | Content | Reading |
 |---|---|---|
-| **0** | Cut 6 returns neither the B-18 composition failure nor `ROOT_CHANGED`, and the publication completes: status `published`, `ARTIFACTS_VERIFIED` left behind | The blocker gate. Anything else and B-18 is not cleared |
+| **0** | Cut 6 returns neither the B-18 composition failure nor `ROOT_CHANGED`, and the publication completes: the publication record's phase is `verified`, `ARTIFACTS_VERIFIED` left behind | The blocker gate. Anything else and B-18 is not cleared. This row first read "status `published`"; see the correction below — `published` is not a member of the phase vocabulary |
 | **1** | The first publication trace exists and contains **no path under `cache/`** | Review 3.5 row 4's second half, owed since run 12 to the first successful publication and still owed |
 | **2** | `.synaptic/publication-spool`, `.synaptic/publication-control` and `.synaptic/artifacts` all exist under the clone after the run, and their ACLs are recorded | 27.3's arm, observed rather than assumed |
 | **3** | If any cut fails, its cause line names two in-package frames per 22.14 and the chain is printed | 27.4. A pass here is also readable on a green run: no cause line at all |
 | **4** | Container census is **eight** | Seven before run 13's six plus run 14; preserve all of them |
 | **5** | Submodule pin is `ce539b70` at both ends | No engine change and no pin move in this release |
 | **6** | The rows that carry over from 26.5: B-17 staging still green, the staged project tree holds three files, training still reaches one step | Regression cover for the previous two releases |
+
+**Correction 2026-09-05 — row 0 asked for `published`, and no run could ever
+produce it (run 14, #338; lead ruling).** Row 0 as first written asked for
+"status `published`". `PublicationPhaseV1`
+(`synaptic-tuner/tuner/execution/coordinator_v1/publication.py:829`) has eight
+members — `claimed`, `transferring`, `committed`, `verified`, `ambiguous`,
+`absent`, `conflict`, `failed_before_effect` — and **none of them is
+`published`**. The only `published` literal in `synaptic_host` is
+`JournalPublishStatusV1.PUBLISHED` (`local_io_v1/model.py:873`), a journal
+**write** status on a different object, which this row was never watching. The
+conjunct was therefore unsatisfiable by construction rather than by any run's
+behaviour, and no re-run could have changed the answer. `verified` is the
+terminal happy phase, reached along `claimed → transfer_admitted → committed →
+verified`, and "status `published`" was architect shorthand for "the publication
+completed". The row above now names the phase.
+
+**The correction is pinned to the vocabulary, not to the word.** If a future
+engine ever adds a `published` member to `PublicationPhaseV1`, this row has to be
+re-read rather than inherited, because the reason `verified` is right today is
+that the column cannot hold anything else at the end of a successful
+publication. Run 14 did not rest on the word in any case: it read the publication
+history (`claimed → transfer_admitted → committed → verified`, revision 3) and
+the five content-addressed artifact blobs, which are durable side effects that
+only a completed transfer produces.
+
+**Row 3 was a PASS BY ABSENCE, and its limb is untested by run 14.** The run was
+green, so no cut failed and no cause line was emitted. That is consistent both
+with a correct renderer and with a renderer that never fires, and the row cannot
+separate them. The two-in-package-frames limb of 22.14 is carried by the #334
+counter-test, not by this run. Recorded as an acceptance limit rather than
+smoothed into a clean pass.
+
+**Row 2's ACL reading is `F:`-only.** The three roots were read with `icacls` on
+the volume the run used, and each showed exactly two entries — SYSTEM and the
+operator account, both full control — non-inherited and non-propagating, which is
+what 27.3 specifies the ensure leaves behind. It does not generalise to another
+volume: the B-11-R1 arc is the standing proof that ACL behaviour differs by
+volume, and the temp volume is precisely where root-first repair wedged.
 
 ### 27.9 Out of scope, and why
 
@@ -6373,8 +6565,12 @@ measurement, and the measurement is reported either way.
   untouched. This is worth stating because the alternative — declaring the roots
   differently, or adding a "create me" flag — was available and was not taken:
   it would put a Host implementation detail into an operator-facing document.
-- **The 41 minus 6 destroyed-cause sites off the publish path stay as they are**,
-  per 27.2. Follow-up recorded: the flag-then-raise idiom is a family
+- **The destroyed-cause sites off the publish path stay as they are**, per 27.2.
+  *(Corrected 2026-09-05: this bullet read "the 41 minus 6". Only five of the six
+  in-scope sites are among the 41 outside-handler raises — site 1 is Class A and
+  was never one of them — so the residue is 41 − 5 = **36**, which is exactly
+  what the post-fix census measures at `19c11400`.)* Follow-up recorded: the
+  flag-then-raise idiom is a family
   (`publication_store.py`, `sqlite_repository.py:610`/`:648`, and the
   `docker_v1/control_private.py` group), and if it is ever ruled as a family that
   is its own change with its own release, not a rider on this one.
@@ -6470,3 +6666,96 @@ staging, not one written after it. This is code and is not landed here.
 | Row | Content |
 |---|---|
 | 27.1 | B-18. `compose_host_publication_v1` (`publication_composition.py:416`) re-raises `from None` at `:517`; the real exception is `LocalIOErrorV1 LOCAL_IO_ROOT_CHANGED` at `local_io_v1/windows.py:925` `_root_component`, via `:464` → `artifact_spool.py:633` → `filesystem.py:709` → `windows.py:973`. Arm: the three `read_create` roots declared in `control/storage.json` are created by nothing — verified by three writer searches over `synaptic_host`, the driver and the operator recipe — and `_root_component` reports a missing leaf with the same code as a rebind. Census (27.2): 348 `from None` sites, 306 keep the cause, 41 outside a handler, 1 in a `finally`; six in scope on the publish path, and `verified_artifact_source.py:178` excluded because no cause exists there. Fix: `_ensure_declared_private_roots` creates the declared creatable roots under `.synaptic` before any permit is issued, with no repair and no validation; and the six sites bind the original and raise from it. No engine change, no closure regeneration, no pin move, no `storage.json` change. `ROOT_CHANGED` overload and the dead `opaque-local-io-control` declaration are bounded follow-ups |
+
+### 27.12 Closure — run 14, the Y1 ruling, and what is owed to a coder
+
+**Run 14 closes B-18.** Released from `ehr-release-19c11400` (HEAD
+`19c114006593c743c5f096a4a3ad6501033072d2` = fix `5e7b6a76` plus D3/D4
+`a18c24de` plus this section at `4b39e61f` as amended by `19c11400`), engine pin
+`ce539b70` unmoved at both ends. Driver exit 0. One container, `13587f81c986`,
+Exited (0), lifetime 52.6 s. Cut sequence: cut 1 `RECONCILE_REQUIRED` exit 8 at
+phase `CREATED`, then cuts 2 to 6 all `SUBMITTED` exit 0, with the durable phase
+advancing `CREATED → SUBMITTED → PROCESS_SUCCEEDED → ARTIFACTS_VERIFIED`.
+
+**The seven acceptance rows of 27.8: seven for seven.** Rows 1 to 6 passed as
+measured. Row 0 was reported SPLIT by test-host, which measured the phase
+vocabulary rather than adjudicating it, and was ruled PASS by the lead on the
+reading recorded in the 27.8 correction above. No cut failed, so no B-19 was
+filed.
+
+| Row | Verdict | Evidence |
+|---|---|---|
+| **0** | PASS (ruled) | Cut 6 `SUBMITTED` exit 0; neither the composition failure nor `LOCAL_IO_ROOT_CHANGED` appears anywhere in the driver log; `publication_records_v1` holds one row for `local-default`, phase `verified`, revision 3, sequence 1; terminal durable phase `ARTIFACTS_VERIFIED` |
+| **1** | PASS | The first publication trace exists; every table listed and every cell regex-scanned for a path under `cache/`; zero matches |
+| **2** | PASS | All three declared `read_create` roots exist under `.synaptic`, each carrying exactly two non-inherited, non-propagating full-control entries — the shape 27.3 specifies. `F:`-only, per the 27.8 correction |
+| **3** | PASS BY ABSENCE | Green run, no cause line emitted; the two-frame limb is carried by #334, not by this run |
+| **4** | PASS | Container census **eight**, all preserved, nothing deleted |
+| **5** | PASS | Gitlink `160000 ce539b705a9d6f82ce74f2a4c1ebd424348d6e9f`; submodule HEAD identical |
+| **6** | PASS | B-17 staging green; the staged project tree holds exactly three files; `training_metrics` byte-identical in stage and published blob, `final_step` 1 |
+
+**The first publication on this path ever to complete.** Publication
+`10615f16…` to `local-default`, history `claimed → transfer_admitted → committed
+→ verified` at revision 3, five artifacts published as content-addressed blobs.
+The `training_metrics` blob was proved to be this run's own output by sha256
+equality across the stage copy, the published blob and the descriptor the record
+carries for that role — which is what separates it from the upstream repository
+files that live under the read-through model cache and that a looser instrument
+matched first.
+
+**Y1 ruled — the ancestor walk in `_create_private_chain` is deleted.** Audit
+#332 found the walk (`publication_composition.py:252-268`) inert: every declared
+root the ensure selects is a direct child of `.synaptic`, so `chain` is always
+`[root]` and the loop creates the root and nothing else. Two readings of the
+`19c11400` amendment were open — that it forbids parent creation altogether, or
+only the creation of `.synaptic`. **Ruled: the first.** Three reasons, in
+descending weight.
+
+1. *The amendment says so.* "Step 3's 'parents first' is withdrawn" is its own
+   sentence, and step 3 as it stands requires creating "**only the root
+   itself**". The shipped code reinstates parents-first behind a floor. That
+   floor honours the amendment's stated *reason* — it never creates `.synaptic`,
+   and it raises a named error when the parent is absent — but not its ruling.
+2. *The only future in which the walk fires is one 27.3 already refused.* A
+   declaration nested two levels under `.synaptic` would have the walk create an
+   intermediate directory **no declaration names**, carrying a private DACL, that
+   nothing retains and nothing validates. That is the same side effect 27.3 used
+   to refuse creating `training/.local-io-control`: "Creating directories in a
+   tree the Host does not own, for a root nothing retains, is a side effect
+   nobody asked for." Here the tree *is* one the Host owns, and the objection
+   still survives the move: an undeclared intermediate is a directory nobody
+   asked for wherever it sits.
+3. *Inert generality is untested generality*, and 27.9 committed this ruling to
+   adding exactly one primitive. Nothing exercises the two-level case, so the
+   branch would ship unproven in a section whose whole subject is unproven code
+   failing silently.
+
+**What replaces it.** `_create_private_chain` collapses to creating `root`
+itself. If a future declaration is nested and its intermediate is absent, the
+helper reports it the way an absent `.synaptic` is already reported at
+`:232-235` — a clear error naming the directory, never `from None` — because an
+intermediate no document declares is a gap in the document, not something the
+Host should silently complete. **The deletion is behaviour-preserving today**:
+`chain` is `[root]` on every path this code takes, so `R1`-`R4` must stay green
+unchanged, and a red among them means the deletion went wider than ruled.
+
+**Owed to one coder commit, separate from this docs commit.** Every item is
+ruled above and none is landed here; the auditor re-audits the delta.
+
+| # | Item | Where | Ruled in |
+|---|---|---|---|
+| 1 | Delete the ancestor walk; `_create_private_chain` creates `root` only; an absent intermediate is reported, never `from None` | `publication_composition.py:252-268` | Y1, above |
+| 2 | Chain the seventh Class B site: bind the decode error in the handler and pass it to `_closed_persistence_failure` | `publication_store.py:225-228` | Y3, 27.2 correction |
+| 3 | Correct the helper docstring: three of the four bare callers genuinely have no cause, `:228` has one | `publication_store.py:37-39` | Y3, 27.2 correction |
+| 4 | Correct the `_close_sqlite_errors` docstring: drop "deliberately", say the raise falls outside the handler and the bound copy carries the chain across it | `publication_store.py:45-51` | Y2, 27.4 correction |
+| 5 | Correct the `C2` docstring: the chain buys recoverability, and the 22.14 renderer does not walk it | `test_publication_composition.py:910-911` | Y4, 27.4 correction |
+| 6 | New test `C6`: a forced decode failure carries the original as `__cause__` | beside `C5` | Y3 disposition |
+
+**Follow-ups this closure hands on.** #339, the publication receipt's
+`recorded_at` of `2013-11-22T15:29:11Z` against history events timestamped
+2026-09-05 for the same publication; it affected no acceptance row and is not
+explicable as a timezone or formatting artifact. #340, the non-fatal trainer
+warning that `shared.experiment_tracking.adapters` sits outside the offline SFT
+closure, which is engine closure debt beside #153. #326, 27.5's `ROOT_CHANGED`
+overload, unaffected — the code never fired on this run. Separately, B-10 closes
+on this run's evidence once its row is read at the right cut; see the correction
+in 19.14.

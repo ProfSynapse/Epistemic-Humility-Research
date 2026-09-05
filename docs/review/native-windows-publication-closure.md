@@ -202,3 +202,54 @@ section 19. Host citations at `32b9e93b` plus `82e6fbd0`/`a498e401`; engine at
 | B-10-R1 | **Superseded 2026-09-02 by B-10-R1 (engine) below** — was Blocker, coder-user lane | `HF_HOME=/artifacts/cache/huggingface` and `TRANSFORMERS_CACHE=/artifacts/cache/transformers` (`docker_training.py:461-462`) write into a READ root: the engine resolves the locked model snapshot at `cache_root/model/<repo>/snapshots/<rev>` (`tuner/runtime/dispatch.py:189-211`, `Trainers/sft/runtime_v1.py:634-660`), and `_verify_inventory_at` demands exact equality there on every cut — a check section 19 rules must never be relaxed. | Both move to `/tmp/hf` and `/tmp/transformers`, in the same single env-dict edit that carries the four B-9-R1 keys. SCOPE NOTE for coder-engine-r1: these two keys are ALREADY in `allowed_environment` (both copies, Python list and schema enum, verified by architect-run 2026-09-02), so changing their values needs no allowlist edit and no closure regeneration. Only the four new keys do. |
 | B-10-R1 (engine) | Future (engine), user-deferred | `HF_HOME` and `TRANSFORMERS_CACHE` cannot move off `/artifacts/cache` from the Host: `SourceLockV1.__post_init__` (`tuner/project/execution_source.py:489-502`) pins both to the cache root in `required_environment` and refuses any other value at admission (`RESOLUTION_UNAVAILABLE`); measured 3 regressions with the move, 0 without (coder-user #149). Same pair at `tuner/runtime/verification.py:635-636` and `Trainers/sft/runtime_v1.py:1207-1208`; `execution_source.py` is a closure member, so the fix is the B-5 shape (engine edit, closure regeneration, pin move). The 19.10 collision therefore stays open on the shipped path: a HuggingFace write under `cache` fails `_verify_inventory_at` with `"extra directories"` at the next cut. | Deferred by user ruling (META-BLOCK #154, option A): release engine `ba844137` + Host `ab929102` and let run 5 measure it. The engine runs offline (`HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`) from the local snapshot, so whether anything writes there in a `max_steps=1` run is a measurement. Cut-2 reading: cache inventory-exact means unproven-as-active; `"extra directories"` means active and an engine rePACT with evidence. Task #153. |
 | B-10-N1 | Note | The author's intent is pinned by the tests: `test_docker_training.py:691-692` and `:703-704` assert `_verify_artifact_topology` fires on BOTH the fresh and the replay path. Re-verification on reuse was deliberate, not an oversight. | Preserved. Under this ruling the verifier is still called on every cut and both assertions pass unchanged. If either has to change, the implementation has drifted from the ruling. |
+
+## B-18 closed by run 14 (architect-run, #343, 2026-09-05)
+
+Ruling of record: `docs/architecture/prepared-path-alpine-diagnostic.md` section
+27, closed at 27.12. Host citations read at `19c11400`; engine pin `ce539b70`,
+unmoved by this release.
+
+| Id | Severity | Finding | Disposition |
+|---|---|---|---|
+| B-18 | Blocker — **CLOSED by run 14** | `compose_host_publication_v1` caught `BaseException` over `publication_composition.py:446-511` and re-raised `_failed(...) from None` at `:517`, so run 13's cut 6 reported `START_UNAVAILABLE` at the swallowing site and the real defect went unnamed. Measurement #320 recovered it by walking `__context__`: `LocalIOErrorV1 LOCAL_IO_ROOT_CHANGED` at `local_io_v1/windows.py:925` `_root_component`, because the three `read_create` roots declared in `control/storage.json` are created by nothing. Two defects in one — a missing creator, and a chain that destroyed the evidence of it. | Fixed at `5e7b6a76` (with D3/D4 at `a18c24de`): `_ensure_declared_private_roots` creates the declared creatable roots under `.synaptic` before any permit is issued, with no repair and no validation, and the six in-scope sites bind the original and raise from it. Audit #332 GREEN with four YELLOWs, all four dispositioned in section 27 post-run-14. Counter-test #334 GREEN on both lanes. Run 14 seven rows for seven. No engine change, no closure regeneration, no pin move, no `storage.json` change. |
+| B-10 | Blocker — **CLOSED by run 14** | The 19.14 acceptance row watched cut 2, and `state` was empty there on runs 12, 13 and 14 — three consecutive DEFERRALs, which the row correctly refused to read as passes. Cuts 4, 5 and 6 of run 14 each show `state` non-empty and each returned `SUBMITTED`, which is row 1 of the 19.14 table. | The row is re-pointed to the first cut with a non-empty `state` (19.14 correction, 2026-09-05). The section 19 `expect_unused_artifacts` guard is unchanged and is what lets those cuts pass; the row was reading the wrong cut, not the wrong predicate. No code change. Task #137. |
+
+**Run 14 acceptance rows** (section 27.8, as corrected).
+
+| Row | Verdict |
+|---|---|
+| 0 — cut 6 completes, publication phase `verified` | PASS (ruled; `published` is not a member of `PublicationPhaseV1`) |
+| 1 — first publication trace carries no path under `cache/` | PASS |
+| 2 — three declared roots exist with the 27.3 ACL shape | PASS (`F:`-only reading) |
+| 3 — cause line on a failing cut | PASS BY ABSENCE (green run; the two-frame limb is carried by #334) |
+| 4 — container census eight, all preserved | PASS |
+| 5 — submodule pin `ce539b70` at both ends | PASS |
+| 6 — B-17 staging, three staged files, training reaches one step | PASS |
+
+**Follow-ups opened by this closure.**
+
+- **#339** — the publication receipt records `recorded_at =
+  '2013-11-22T15:29:11Z'` while the history events for the same publication are
+  timestamped 2026-09-05. It affected no acceptance row and is not explicable as
+  a timezone or formatting artifact. Read-only investigation, before Modal.
+- **#340** — the trainer emits "Unified tracking registration failed
+  (non-fatal): owned module `shared.experiment_tracking.adapters` is outside the
+  offline SFT closure". Training completed regardless. Engine closure debt,
+  parked beside #153.
+
+**Standing convention — Windows counter-test basetemp** (ruled on #334, open
+question 2). A Windows counter-test uses a **sparse basetemp outside every git
+tree**. The rule exists because #334's unmutated Windows reds turned out to be
+host state rather than code: `%TEMP%` held 4430 entries against
+`MAX_DIRECTORY_ENTRIES` 4096 (`filesystem.py:70`), so `windows.py:694` raised
+`LOCAL_IO_LIMIT_EXCEEDED` on ancestors that had nothing to do with the change
+under test. It was legible at all only because the B-18 fix had restored the
+cause chain, which is the clearest evidence yet of what that chain is worth.
+Pruning `%TEMP%` is a user housekeeping item and is never done by an agent.
+
+**Also recorded.** The thirteen symmetric `docker_training` ERROR nodes stay
+parked as a pre-existing residual on #77; they are not part of this change set.
+The code items section 27.12 hands to a coder (the `_create_private_chain`
+ancestor-walk deletion, the `publication_store.py:228` chain and its `C6` test,
+and three docstring corrections) are ruled but unlanded, and are re-audited as
+their own delta.
