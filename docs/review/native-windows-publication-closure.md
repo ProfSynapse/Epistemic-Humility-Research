@@ -249,7 +249,14 @@ Pruning `%TEMP%` is a user housekeeping item and is never done by an agent.
 
 **Also recorded.** The thirteen symmetric `docker_training` ERROR nodes stay
 parked as a pre-existing residual on #77; they are not part of this change set.
-The code items section 27.12 hands to a coder (the `_create_private_chain`
-ancestor-walk deletion, the `publication_store.py:228` chain and its `C6` test,
-and three docstring corrections) are ruled but unlanded, and are re-audited as
-their own delta.
+The code items section 27.12 handed to a coder **landed at `5d816658`**: the
+`_create_private_chain` ancestor-walk deletion with its named absent-parent
+report, the `publication_store.py:228` chain and its `C6` test, three docstring
+corrections, and a seventh item this sentence originally omitted — the
+corrupt-record test's cause arm, ruled in scope at the #344 teachback because
+that test pinned the very cause destruction the chaining removes. Audit #347
+returned GREEN on the delta with one docs YELLOW: section 27.12's owed-items
+table enumerated six items against the seven that landed, corrected there by a
+seventh row and a dated Correction at `6f1dd832`. As of 2026-09-05 the gates
+remaining before the push are counter-test #349 on both lanes and the auditor's
+narrow re-check of the two docs commits.
