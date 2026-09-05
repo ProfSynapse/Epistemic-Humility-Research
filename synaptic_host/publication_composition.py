@@ -260,6 +260,11 @@ def _create_private_chain(root: Path, private_root: Path) -> None:
     declared root nested below `.synaptic` whose parent is absent is a gap in
     the declaring document, so it is reported here by a named error -- the shape
     the caller uses for an absent `.synaptic` -- and never silently completed.
+    That message and the absent-`.synaptic` one carry their path for
+    recoverability alone: `compose_host_publication_v1` closes over both and
+    re-raises `host publication composition failed`, so the path survives as
+    `__cause__` for a debugger and never reaches the operator's error text
+    (Y1, section 27.12).
 
     Creation goes through the same primitive the private storage chain uses, so
     a root created here carries the private mode (POSIX `0o700`) or the

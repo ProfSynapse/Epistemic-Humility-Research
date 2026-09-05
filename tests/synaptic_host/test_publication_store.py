@@ -122,9 +122,10 @@ def test_corrupt_persisted_record_is_closed_for_reads_and_mutations(
             RuntimeError, match="^host publication persistence failed$",
         ) as captured:
             operation()
-        # Y3 (27.12 item 2).  Both operations reach `publication_store.py:228`
-        # through the decode handler, which called the helper bare and destroyed
-        # the decode failure.  The chain now survives.  What this test has always
+        # Y3 (27.12 item 2).  Both operations reach the
+        # `_closed_persistence_failure` call in `_load_in` through the decode
+        # handler, which called the helper bare and destroyed the decode
+        # failure.  The chain now survives.  What this test has always
         # guaranteed is unchanged and still asserted: the message is exactly the
         # closed one, and no exception is in flight at the raise, so
         # `__context__` stays `None`.
@@ -192,7 +193,11 @@ def test_c5_sqlite_error_is_closed_in_its_message_but_carries_its_cause(
 def test_c6_forced_decode_failure_carries_the_original_as_its_cause(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """C6 of section 27.12, the seventh Class B site (`publication_store.py:228`).
+    """C6 of section 27.12, the seventh Class B site.
+
+    The site is the `_closed_persistence_failure` call in `_load_in`
+    (`publication_store.py`), cited by symbol because the line moves whenever
+    the docstrings above it grow.
 
     The 27.2 correction found the site the lexical `from None` census could not
     see, because the destruction is keyed on an argument rather than on a

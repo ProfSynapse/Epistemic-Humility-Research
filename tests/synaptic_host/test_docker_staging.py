@@ -1418,3 +1418,68 @@ def test_worker_binding_rejects_argv_drift_and_runtime_escape() -> None:
             bundle(runtime_path=PurePosixPath("/artifacts/manifest.json")),
             closure,
         )
+
+
+def test_c7_worker_binding_failure_carries_the_original_as_its_cause() -> None:
+    """The boolean-flag handler must not destroy the rejection's cause.
+
+    `_verify_worker_closure_binding` reaches `valid = False` by two routes: an
+    ordinary attribute mismatch, which has no originating exception, and the
+    handler, which does.  Only the second route names a cause, so both arms are
+    asserted here.
+    """
+    original = AttributeError("worker transport is unavailable")
+
+    class _HostileWorker:
+        @property
+        def transport(self) -> object:
+            raise original
+
+    with pytest.raises(
+        ValueError, match="differs from the locked source closure"
+    ) as caught:
+        _verify_worker_closure_binding(_HostileWorker(), object(), object())
+    assert caught.value.__cause__ is original
+
+    closure = _load_locked_closure(ENGINE, ENGINE_COMMIT)
+    transport = SimpleNamespace(
+        path=PurePosixPath("/source/control/workload.json"),
+        control_root=PurePosixPath("/source/control"),
+        byte_count=17,
+        sha256="1" * 64,
+        workload_fingerprint="2" * 64,
+    )
+    worker = SimpleNamespace(
+        roots_map={"engine": PurePosixPath("/source/engine")},
+        entrypoint=PurePosixPath(closure.entrypoint),
+        interpreter="python",
+        transport=transport,
+    )
+    mismatched = SimpleNamespace(
+        closure_manifest_bytes=b"not the locked manifest",
+        closure_manifest_byte_count=len(closure.manifest_bytes),
+        closure_manifest_sha256=closure.manifest_sha256,
+        closure_digest=closure.closure_digest,
+        closure_manifest_runtime_path=PurePosixPath(
+            "/source/control/manifest.json"
+        ),
+        workload_byte_count=17,
+        workload_sha256="1" * 64,
+        workload_fingerprint="2" * 64,
+        dispatch=SimpleNamespace(
+            argv=(
+                "python", "/source/engine/" + closure.entrypoint,
+                "--canonical-workload-file", "/source/control/workload.json",
+                "--canonical-workload-control-root", "/source/control",
+                "--canonical-workload-byte-count", "17",
+                "--canonical-workload-sha256", "1" * 64,
+                "--canonical-workload-fingerprint", "2" * 64,
+            ),
+            environment_map={},
+        ),
+    )
+    with pytest.raises(
+        ValueError, match="differs from the locked source closure"
+    ) as plain:
+        _verify_worker_closure_binding(worker, mismatched, closure)
+    assert plain.value.__cause__ is None

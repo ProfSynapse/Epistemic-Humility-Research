@@ -21,7 +21,6 @@ from synaptic_host.artifact_spool import (
     acquire_local_artifact_spool_v1,
 )
 from synaptic_host.local_io_v1.model import (
-    BorrowPurposeV1,
     LocalFileIdentityV1,
     LocalIOCodeV1,
     LocalIOErrorV1,

@@ -222,6 +222,30 @@ def _request(tmp_path: Path):
     return request, endpoint, policy
 
 
+# LANE.  Every test below that reaches the prepared Windows composition is
+# WINDOWS-ONLY by construction: the composition validates its executable
+# candidate with `pathlib.Path`, whose flavour follows the RUNNING interpreter
+# rather than the `os_name` argument, and `DockerCLIPolicyV1` then requires an
+# uppercase-drive Windows path for the same string (`_windows_drive_path_v1`);
+# the staging half refuses a source that is not a Windows drive path at
+# `docker_v1/prepared.py:53`.  No single literal is both absolute under POSIX
+# `Path` and a Windows drive path, so there is no lane-portable fixture short
+# of changing production validation, which 22.9 forbids.
+#
+# TEST-M4 (peer review of the feature #73 closeout).  The gate used to sit
+# below, decorating E1-E3 only, and the reaching tests above it were simply
+# RED in the WSL lane -- pre-existing, and left alone at the time.  The
+# definition now precedes every test it gates, so a WSL run reports them as
+# skipped rather than as failures a reader would have to sort from real ones.
+# This is a PLATFORM gate, not the daemon gate 22.10 forbids: E4 still refuses
+# to skip when the daemon is down.
+_WINDOWS_LANE = pytest.mark.skipif(
+    os.name != "nt",
+    reason="the prepared Windows composition validates Windows-drive paths",
+)
+
+
+@_WINDOWS_LANE
 def test_composition_prepares_exact_initial_admission_without_effects(tmp_path: Path):
     request, endpoint, policy = _request(tmp_path)
     project = tmp_path / "project"
@@ -312,6 +336,7 @@ def test_builder_live_rejects_lost_private_key_before_effects(tmp_path: Path):
         builder.prepare_admission(request)
 
 
+@_WINDOWS_LANE
 def test_windows_factory_uses_absolute_cli_exact_endpoint_and_four_key_env():
     platform, factory = _windows_platform()
     assert platform.policy.executable == "C:\\Docker\\docker.exe"
@@ -348,6 +373,7 @@ def test_windows_factory_fails_closed_on_posix_or_ambiguous_cli():
 @pytest.mark.parametrize(
     "executable", ("C:\\Docker\\docker.exe", "C:\\Docker\\DOCKER.EXE"),
 )
+@_WINDOWS_LANE
 def test_windows_factory_accepts_exact_case_insensitive_docker_basename(
     executable,
 ):
@@ -395,25 +421,6 @@ def test_windows_factory_rejects_inexact_docker_basename_before_inspection(
 # tests/synaptic_host/docker_v1/test_real_docker_wsl.py is the execution half
 # and runs on the Windows Host only.
 # ---------------------------------------------------------------------------
-
-
-# LANE.  E1-E3 exercise the same `_windows_platform` helper as the four tests
-# above, and that family is WINDOWS-ONLY by construction: the composition
-# validates its executable candidate with `pathlib.Path`, whose flavour follows
-# the RUNNING interpreter rather than the `os_name` argument, and
-# `DockerCLIPolicyV1` then requires an uppercase-drive Windows path for the
-# same string (`_windows_drive_path_v1`).  No single literal is both absolute
-# under POSIX `Path` and a Windows drive path, so there is no lane-portable
-# fixture short of changing production validation, which 22.9 forbids.  The
-# four tests above are simply RED in the WSL lane at and before aa841609;
-# that is pre-existing and left alone.  E1-E3 declare the gate instead, so a
-# WSL run reports them as skipped rather than adding three failures a reader
-# would have to sort from real ones.  This is a PLATFORM gate, not the daemon
-# gate 22.10 forbids: E4 still refuses to skip when the daemon is down.
-_WINDOWS_LANE = pytest.mark.skipif(
-    os.name != "nt",
-    reason="the prepared Windows composition validates Windows-drive paths",
-)
 
 
 @_WINDOWS_LANE

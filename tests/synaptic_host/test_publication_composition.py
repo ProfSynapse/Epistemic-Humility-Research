@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -895,6 +894,95 @@ def test_r4_creatable_roots_outside_synaptic_are_not_created(tmp_path, monkeypat
         assert not (context.project_root / "training" / "output").exists()
         assert not (context.project_root / "training").exists()
         assert not (context.project_root / ".synaptic" / "model-inventory").exists()
+    finally:
+        facade.close()
+
+
+def test_r5_absent_private_storage_root_is_reported_not_created(tmp_path) -> None:
+    """TEST-M2: the absent-`.synaptic` arm of `_ensure_declared_private_roots`.
+
+    27.3 gives the helper two deliberate limits, and only one of them was
+    pinned.  R4 pins the containment predicate; this pins the other -- the
+    helper never creates `.synaptic` itself, because the evidence authority
+    mints that chain one statement earlier through the B-11 repair, so a
+    missing parent means the caller ran out of order and is reported rather
+    than papered over.  Composing cannot reach the arm (the evidence authority
+    always runs first), so the helper is called directly on a project root
+    that has no private chain at all.
+    """
+
+    context = _context(tmp_path)
+    _, storage_path = _write_declared_configs(tmp_path)
+    storage = composition.StorageRegistryV1.from_bytes(
+        storage_path.read_bytes(), project_root=context.project_root,
+    )
+    private_root = Path(os.path.abspath(context.project_root / ".synaptic"))
+    assert not private_root.exists()
+
+    with pytest.raises(RuntimeError) as raised:
+        composition._ensure_declared_private_roots(storage, context)
+
+    assert str(raised.value) == (
+        "host publication private storage root is missing: " + str(private_root)
+    )
+    assert not private_root.exists()
+    for relative in _ENSURED_ROOTS:
+        assert not (context.project_root / relative).exists(), relative
+
+
+_NESTED_PARENT_UNDECLARED = _DECLARED_ROOTS + (
+    ("artifact-nested-leaf", "project://.synaptic/nested/leaf", "read_create"),
+)
+
+_NESTED_PARENT_DECLARED = _NESTED_PARENT_UNDECLARED + (
+    ("artifact-nested-branch", "project://.synaptic/nested", "read_create"),
+)
+
+
+def test_r6_nested_root_is_refused_unless_its_parent_is_itself_declared(
+    tmp_path, monkeypatch,
+) -> None:
+    """TEST-M1: the raise that replaced the deleted Y1 ancestor walk.
+
+    Architect-review's dated Y1 ruling (section 27.12) is sharper than "nested
+    roots are refused": nesting IS served, by DECLARATION rather than by
+    walking, because `sorted(absent)` visits an ancestor before its descendant
+    -- an ancestor is always a strict string prefix.  The refusal fires only
+    when the parent is absent AND undeclared.  A refusal-only test would pass
+    against an implementation that refused every nested root, so both arms are
+    asserted here, on documents that differ by exactly one declared root.
+    """
+
+    with pytest.raises(RuntimeError) as raised:
+        _compose_declared(tmp_path, monkeypatch, _NESTED_PARENT_UNDECLARED)
+    assert str(raised.value) == "host publication composition failed"
+    project = tmp_path / "project"
+    assert str(raised.value.__cause__) == (
+        "host publication private storage root parent is missing: "
+        + str(Path(os.path.abspath(project / ".synaptic" / "nested")))
+    )
+    assert not (project / ".synaptic" / "nested").exists()
+
+
+def test_r6_declared_intermediate_is_created_before_its_nested_root(
+    tmp_path, monkeypatch,
+) -> None:
+    """TEST-M1, the second arm: declaring the intermediate makes nesting work.
+
+    The only difference from the arm above is one extra declared root, so a
+    green here and a red there together pin the ruling's actual predicate --
+    parent absent AND undeclared -- rather than "nested" alone.
+    """
+
+    facade, context = _compose_declared(
+        tmp_path, monkeypatch, _NESTED_PARENT_DECLARED,
+    )
+    try:
+        branch = context.project_root / ".synaptic" / "nested"
+        assert branch.is_dir()
+        assert (branch / "leaf").is_dir()
+        for relative in _ENSURED_ROOTS:
+            assert (context.project_root / relative).is_dir(), relative
     finally:
         facade.close()
 

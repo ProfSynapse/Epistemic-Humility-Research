@@ -1732,6 +1732,7 @@ def _verify_worker_closure_binding(
     bundle: object,
     closure: _LockedClosureV1,
 ) -> PurePosixPath:
+    invalid_cause: BaseException | None = None
     try:
         transport = worker.transport
         if (
@@ -1778,10 +1779,18 @@ def _verify_worker_closure_binding(
                 & set(bundle.dispatch.environment_map)
             )
         )
-    except (AttributeError, KeyError, TypeError, ValueError):
+    except (AttributeError, KeyError, TypeError, ValueError) as error:
+        # Section 27.4 shape.  The raise below runs outside this handler,
+        # where the `as` binding is already gone, so bind a copy here: it is
+        # what carries the rejection into `__cause__`.  It stays `None` on
+        # the ordinary mismatch route, where `valid` is simply False and
+        # there is no originating exception to name.
+        invalid_cause = error
         valid = False
     if not valid:
-        raise ValueError("worker bundle differs from the locked source closure")
+        raise ValueError(
+            "worker bundle differs from the locked source closure"
+        ) from invalid_cause
     return _control_manifest_relative(bundle.closure_manifest_runtime_path)
 
 

@@ -1357,6 +1357,17 @@ raise SystemExit(main([
     assert json.loads(completed.stdout)["code"] == "RESOLUTION_UNAVAILABLE"
 
 
+# TEST-M4 (peer review of the feature #73 closeout).  This is the one
+# Windows-only test in this file: it builds a Docker Desktop platform out of
+# `npipe:` and `C:` drive literals, and `docker_v1/prepared.py:53` then refuses a
+# staging source that is not a Windows drive path, which `tmp_path` on a POSIX
+# lane can never be.  The gate is the same PLATFORM predicate
+# `test_docker_prepared_composition.py` declares; it is spelled out here
+# because that constant is private to that module.
+@pytest.mark.skipif(
+    os.name != "nt",
+    reason="the prepared Windows composition validates Windows-drive paths",
+)
 def test_activation_stages_bridge_bundle_and_persists_initial_pair(
     monkeypatch, clean_project,
 ) -> None:
