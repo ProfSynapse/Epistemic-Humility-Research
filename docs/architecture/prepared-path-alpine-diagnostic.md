@@ -6749,6 +6749,34 @@ ruled above and none is landed here; the auditor re-audits the delta.
 | 4 | Correct the `_close_sqlite_errors` docstring: drop "deliberately", say the raise falls outside the handler and the bound copy carries the chain across it | `publication_store.py:45-51` | Y2, 27.4 correction |
 | 5 | Correct the `C2` docstring: the chain buys recoverability, and the 22.14 renderer does not walk it | `test_publication_composition.py:910-911` | Y4, 27.4 correction |
 | 6 | New test `C6`: a forced decode failure carries the original as `__cause__` | beside `C5` | Y3 disposition |
+| 7 | Amend the corrupt-record test's cause arm: the cause survives on both `store.get` and `store.begin_transfer`; keep the closed-message match and the `__context__`-is-`None` assertion | `test_publication_store.py`, `test_corrupt_persisted_record_is_closed_for_reads_and_mutations` | `#344` teachback ruling; correction below |
+
+**Correction 2026-09-05 — a seventh item, and the table's tense (audit #347,
+YELLOW-1).** The table above listed six items; the coder commit landed seven,
+and row 7 now records the one that was missing. `Y3` chains the decode error at
+`publication_store.py:228`, and
+`test_corrupt_persisted_record_is_closed_for_reads_and_mutations` asserted the
+opposite — that the translated error carries no cause. That test pinned the
+destruction `Y3` removes, so `Y3` could not land beside it unamended. The lead
+ruled it in scope for the same commit at the `#344` teachback: flip the cause
+arm to assert the cause survives on both the `store.get` and the
+`store.begin_transfer` arms, and keep both the closed-message match and the
+`__context__` is `None` assertion. The kept assertion stays true because the
+flag still falls out of the handler before `_closed_persistence_failure` runs,
+and binding an exception with `as` does not put it back in flight — the fix
+sets `__cause__` without setting `__context__`. **Its pre-change red is `Y3`'s
+red-first evidence, beside `C6`.** Audit #347 reproduced that red from the
+source at `bae922ae` with only the two post-change test files overlaid, and got
+exactly two failures: `C6`, and this test failing on its **cause arm** at
+`test_publication_store.py:131` — not on the `__context__` arm. That
+measurement is what proves the edit is a cause-arm flip and nothing wider; a
+red on the `__context__` arm would have meant the chaining reached further than
+ruled, and would have owed a correction before the push. **And the table's
+tense.** “Every item is ruled above and none is landed here” was true when this
+section was written and is not true now. All seven landed in `5d816658`, on top
+of this document's own commit `bae922ae`, audited GREEN by #347. Read that
+sentence as the record of what this docs commit owed, not as the state of the
+tree.
 
 **Follow-ups this closure hands on.** #339, the publication receipt's
 `recorded_at` of `2013-11-22T15:29:11Z` against history events timestamped
