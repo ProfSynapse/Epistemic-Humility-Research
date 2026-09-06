@@ -8,6 +8,7 @@ import inspect
 import json
 import os
 import stat
+import subprocess
 from pathlib import Path
 from types import MappingProxyType
 
@@ -493,18 +494,59 @@ def test_host_config_direct_construction_rejects_nonexact_retained_values() -> N
         })
 
 
+def commit_project(project: Path) -> None:
+    """Give the fixture project a HEAD so the committed blob exists.
+
+    C1 (section 29.5(f)).  `ModalHostConfigV1.load` now reads the provider
+    configuration out of the project's committed tree instead of the worktree,
+    so a bare directory holding a JSON file is no longer a project.  This is
+    the same repair `test_modal_training.py::_commit_project` applies for the
+    training input; the identity is a test identity and no global git
+    configuration is read or written.
+    """
+
+    identity = (
+        "-c", "user.name=synaptic-test",
+        "-c", "user.email=synaptic-test@example.invalid",
+        "-c", "commit.gpgsign=false",
+    )
+    for arguments in (
+        ("init", "--quiet", "--initial-branch", "main"),
+        ("add", "--force", "--", "training"),
+        (*identity, "commit", "--quiet", "-m", "committed provider configuration"),
+    ):
+        subprocess.run(
+            ("git", "-C", str(project), *arguments),
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+
+
+def write_provider_configuration(
+    context: ProjectContext, value: dict[str, object] | None = None,
+) -> Path:
+    """Write `training/providers/modal.json` into the fixture worktree."""
+
+    selected = context.config_root / "providers" / "modal.json"
+    selected.parent.mkdir(parents=True, exist_ok=True)
+    selected.write_text(
+        json.dumps(
+            value if value is not None else config().to_dict(),
+            sort_keys=True, separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+    return selected
+
+
 def authority_inputs(
     tmp_path: Path,
 ) -> tuple[
     ProjectContext, ModalHostConfigV1, object, ModalDeploymentJournalV1,
 ]:
     context = project_context(tmp_path)
-    selected = context.config_root / "providers" / "modal.json"
-    selected.parent.mkdir(parents=True)
-    selected.write_text(
-        json.dumps(config().to_dict(), sort_keys=True, separators=(",", ":")),
-        encoding="utf-8",
-    )
+    write_provider_configuration(context)
+    # Once, after the configuration is written and before any load reads it.
+    commit_project(Path(context.project_root))
     session = ExplicitModalHostSession.from_credentials(
         sdk=FakeSdk, config=config(), token_id="token-id", token_secret="token-secret"
     )
@@ -1070,3 +1112,132 @@ def test_f5_each_durable_writer_requires_its_private_root(name: str) -> None:
     ).parameters["private_root"]
     assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
     assert parameter.default is inspect.Parameter.empty
+
+
+# --- C1 (section 29.5(f)): the modal arm executes only released source -----
+#
+# 29.5(f) singles C1 out because it is the only item on the 29.5 list whose
+# failure is silent.  The container clones the committed commit from the
+# committed origin, so nothing downstream ever disagrees with a Host that
+# configured the run from an uncommitted edit.  These four tests are the
+# executed gate the ruling asks for in place of inspection.
+
+
+def test_c1_the_host_configuration_comes_from_the_committed_tree(
+    tmp_path: Path,
+) -> None:
+    """C1-1 — a worktree-only edit does not reach the loaded configuration.
+
+    Two arms over one fixture.  The committed configuration names one provider
+    environment; the worktree copy is then rewritten to name another.  The
+    load must return the committed one.  Before the fix the worktree value was
+    what the Host acted under, so this test measures a difference rather than
+    restating the implementation.
+    """
+
+    context = project_context(tmp_path)
+    write_provider_configuration(context)
+    commit_project(Path(context.project_root))
+
+    released = config()
+    edited = config().to_dict()
+    edited["environment_name"] = "operator-worktree-only"
+    selected = write_provider_configuration(context, edited)
+    assert json.loads(selected.read_text(encoding="utf-8"))[
+        "environment_name"
+    ] == "operator-worktree-only"
+
+    loaded = ModalHostConfigV1.load(context)
+    assert loaded.environment_name == released.environment_name
+    assert loaded.environment_name != "operator-worktree-only"
+    assert loaded == released
+
+
+def test_c1_a_configuration_the_released_checkout_lacks_is_unreadable(
+    tmp_path: Path,
+) -> None:
+    """C1-2 — an uncommitted configuration refuses instead of being used.
+
+    The refusal is the point: a file the released checkout does not contain
+    cannot configure a paid provider call, and the run stops on the Host.
+    """
+
+    context = project_context(tmp_path)
+    project = Path(context.project_root)
+    project.mkdir(parents=True, exist_ok=True)
+    (project / "placeholder").write_text("committed\n", encoding="utf-8")
+    for arguments in (
+        ("init", "--quiet", "--initial-branch", "main"),
+        ("add", "--force", "--", "placeholder"),
+        (
+            "-c", "user.name=synaptic-test",
+            "-c", "user.email=synaptic-test@example.invalid",
+            "-c", "commit.gpgsign=false",
+            "commit", "--quiet", "-m", "no provider configuration",
+        ),
+    ):
+        subprocess.run(
+            ("git", "-C", str(project), *arguments),
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    written = write_provider_configuration(context)
+    assert written.is_file()
+
+    with pytest.raises(ValueError):
+        ModalHostConfigV1.load(context)
+
+
+def test_c1_the_provider_authority_is_bound_to_the_released_checkout(
+    tmp_path: Path,
+) -> None:
+    """C1-3 — the whole authority, not only the parsed config, follows HEAD.
+
+    `authority_inputs` deploys against the committed configuration, so state
+    and journal carry the committed environment.  Rewriting the worktree copy
+    to a second environment would, on the pre-fix route, load a configuration
+    whose identities disagree with the deployed pair.  Here the authority
+    loads and equals the committed configuration.
+    """
+
+    context, expected_config, _state, _journal = authority_inputs(tmp_path)
+    edited = config().to_dict()
+    edited["environment_name"] = "operator-worktree-only"
+    write_provider_configuration(context, edited)
+
+    authority = ModalProviderAuthorityV1.load(context)
+    assert authority.config == expected_config
+    assert authority.config.environment_name != "operator-worktree-only"
+
+
+def test_c1_the_container_source_route_is_the_committed_dual_clone(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """C1-4 — the deployed worker materializes source by committed clone.
+
+    This is the `GitDualCloneMaterializer` half named in the dispatch.  The
+    materializer clones the committed origin at the committed commit and
+    refuses an unclean checkout, so it is what makes the container side of C1
+    true; nothing on the Host uploads a worktree.  Pinning the constructed
+    port by exact type makes a future substitution that copied local files
+    red here rather than silent in the cloud.
+    """
+
+    recorded: dict[str, object] = {}
+    real_worker = modal_provider.MountedModalWorkerV1
+
+    def observing_worker(**arguments):
+        recorded.update(arguments)
+        return real_worker(**arguments)
+
+    monkeypatch.setattr(modal_provider, "MountedModalWorkerV1", observing_worker)
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    session.deploy(
+        context=context, authenticator=StubAuthenticator(), hf_token="hf-value",
+    )
+
+    assert set(recorded) == {"verifier", "sources", "processes", "completion"}
+    assert type(recorded["sources"]) is modal_provider.GitDualCloneMaterializer

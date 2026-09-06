@@ -30,6 +30,7 @@ from synaptic_tuner.api.v1.modal import (
     modal_function_name,
 )
 
+from .cli import _read_committed_git_blob_v1
 from .modal_resolver import ModalProviderStateV1, _closed, _read_json, _text
 from .security import FileHmacAuthenticator, _lexical_absolute
 
@@ -187,6 +188,54 @@ class ModalTrainingPolicyV1:
         ).hexdigest()
 
 
+_MAX_MODAL_CONFIG_BYTES = 1024 * 1024
+
+
+def _read_committed_configuration_v1(
+    context: ProjectContext, selected: Path
+) -> dict[str, object]:
+    """Read one provider configuration from the project's committed HEAD tree.
+
+    C1 (section 29.5(f)).  The docker arm has read the committed blob since
+    `cli.py` was written; the modal arm read whatever happened to be on disk.
+    That asymmetry is the one item on the 29.5 list whose failure is silent.
+    The container materializes the project by cloning the committed commit
+    from the committed origin (`GitDualCloneMaterializer`, wired into the
+    worker below), so a worktree-only edit to this file changed which provider
+    environment, which two volumes, which Secret and which cost ceiling the
+    Host acted under while the cloud job executed released source.  Nothing
+    raised.  Nothing in the run record disagreed with itself.
+
+    The route is `cli._read_committed_git_blob_v1`, the same helper the docker
+    arm reads its training input through, so the two arms cannot drift apart
+    again without one diff touching both.  No worktree byte of this file is
+    parsed here, which also removes the symlink and size questions the
+    worktree read had to answer for itself.
+
+    A configuration the released checkout does not contain is not readable at
+    all: the helper refuses, and the run stops before any provider call.  That
+    is the intended refusal, not a regression.
+    """
+
+    project = Path(context.project_root).resolve(strict=True)
+    try:
+        relative = selected.relative_to(project).as_posix()
+    except ValueError:
+        raise ValueError(
+            "Modal host config must live below the project root"
+        ) from None
+    blob = _read_committed_git_blob_v1(
+        project, relative, maximum_bytes=_MAX_MODAL_CONFIG_BYTES,
+    )
+    try:
+        value = json.loads(blob.content.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("configuration must contain valid JSON") from exc
+    if not isinstance(value, dict):
+        raise ValueError("configuration must contain a JSON object")
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class ModalHostConfigV1:
     environment_name: str
@@ -295,7 +344,8 @@ class ModalHostConfigV1:
         selected = selected.resolve()
         if not selected.is_relative_to(context.config_root.resolve()):
             raise ValueError("Modal host config must live below the host config root")
-        return cls.from_mapping(_read_json(selected))
+        # C1 (section 29.5(f)).  The committed blob, not the worktree file.
+        return cls.from_mapping(_read_committed_configuration_v1(context, selected))
 
     @property
     def digest(self) -> str:
