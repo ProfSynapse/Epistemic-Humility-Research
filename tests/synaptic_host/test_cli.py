@@ -4,6 +4,7 @@ import dataclasses
 import hashlib
 import itertools
 import json
+import subprocess
 import sys
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
@@ -74,6 +75,30 @@ def _document() -> dict[str, object]:
     }
 
 
+def _commit_project(project: Path) -> Path:
+    """Commit the project's training tree so it has a HEAD to read from.
+
+    C1 (section 29.5(f)).  Both arms now read the COMMITTED blob, so a bare
+    directory is no longer a project: the harness commits what it writes.
+    """
+
+    identity = (
+        "-c", "user.name=synaptic-test",
+        "-c", "user.email=synaptic-test@example.invalid",
+        "-c", "commit.gpgsign=false",
+    )
+    for arguments in (
+        ("init", "--quiet", "--initial-branch", "main"),
+        ("add", "--force", "--", "training"),
+        (*identity, "commit", "--quiet", "-m", "committed training input"),
+    ):
+        subprocess.run(
+            ("git", "-C", str(project), *arguments),
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    return project
+
+
 def _project(tmp_path: Path, content: bytes | None = None) -> Path:
     training = tmp_path / "training"
     training.mkdir(parents=True)
@@ -82,7 +107,7 @@ def _project(tmp_path: Path, content: bytes | None = None) -> Path:
         if content is None else content
     )
     (training / "input.json").write_bytes(payload)
-    return tmp_path
+    return _commit_project(tmp_path)
 
 
 def _argv(provider: str = "modal", config: str = "project://training/input.json",
@@ -223,6 +248,21 @@ def test_config_missing_oversize_and_invalid_utf8_are_totalized(tmp_path: Path) 
 
 
 def test_config_file_must_be_stable(monkeypatch, tmp_path: Path) -> None:
+    """`_read_config` refuses a file whose identity moves under the read.
+
+    Re-pointed by C1 (section 29.5(f)).  This drove the property through
+    `prepare_training_run_ingress_v1` while the modal arm was the worktree
+    reader.  Both arms now take the committed blob, so that route no longer
+    reaches `_read_config` at all and the same monkeypatch would land its
+    fourth call in the engine contract loader instead, asserting a different
+    refusal from a different mechanism.  The property is unchanged and is
+    still worth holding, so it is exercised on the function that owns it.
+
+    `_read_config` has no production caller after C1.  That is reported as a
+    finding, not resolved here: deleting it is a scope decision, and a bound
+    whose last consumer went away is still a bound until someone rules on it.
+    """
+
     project = _project(tmp_path)
     original = cli._stat_identity
     calls = 0
@@ -233,11 +273,14 @@ def test_config_file_must_be_stable(monkeypatch, tmp_path: Path) -> None:
         identity = original(value)
         return identity if calls < 4 else (*identity[:-1], identity[-1] + 1)
 
+    # Unpatched, the same call reads the file.
+    assert cli._read_config(project, ("input.json",)) is not None
+
     monkeypatch.setattr(cli, "_stat_identity", changed)
-    result = prepare_training_run_ingress_v1(
-        _argv(), project_root=project, engine_root=ENGINE
+    assert cli._read_config(project, ("input.json",)) is None, (
+        "a file whose identity moved between the four stats was accepted"
     )
-    assert result.code is TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE
+    assert calls == 4, "the four-stat window is what makes the check a check"
 
 
 def test_invalid_training_document_is_closed_and_adjacent(tmp_path: Path) -> None:
@@ -632,3 +675,43 @@ def test_concurrent_dispatch_authentication_converges(tmp_path: Path) -> None:
         and result.input_digest == ingress.input_digest
         for result in results
     )
+
+
+def test_modal_arm_binds_the_committed_blob_not_the_dirty_worktree(
+    tmp_path: Path,
+) -> None:
+    """C1, section 29.5(f).  The one item on the list that fails SILENTLY.
+
+    `cli.py` read the committed git blob on the docker arm and fell through
+    to a plain worktree read on the modal arm.  Executing a cloud job from a
+    worktree violates the standing ruling that execution uses only a released
+    checkout, and nothing anywhere refuses it: the run simply trains whatever
+    the operator happened to have on disk.  That is why this is gated by an
+    executed test rather than by inspection.
+
+    The dirty content is a VALID document with a different seed, so the only
+    thing that can distinguish the two arms is which bytes were read.
+    """
+
+    project = _project(tmp_path)
+    committed = (project / "training/input.json").read_bytes()
+
+    dirty_document = _document()
+    dirty_document["hyperparameters"]["seed"] = 4242  # type: ignore[index]
+    dirty = json.dumps(
+        dirty_document, sort_keys=True, separators=(",", ":")
+    ).encode()
+    assert dirty != committed, "the harness must actually dirty the worktree"
+    (project / "training/input.json").write_bytes(dirty)
+
+    result = prepare_training_run_ingress_v1(
+        _argv("modal"), project_root=project, engine_root=ENGINE,
+    )
+    assert type(result) is TrainingRunIngressV1, (
+        "the modal arm refused a committed project: {!r}".format(result)
+    )
+    assert result.source_sha256 == hashlib.sha256(committed).hexdigest(), (
+        "the modal arm bound the DIRTY worktree bytes; C1 recurs and it "
+        "recurs silently"
+    )
+    assert result.source_sha256 != hashlib.sha256(dirty).hexdigest()

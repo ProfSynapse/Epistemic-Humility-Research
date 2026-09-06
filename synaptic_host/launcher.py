@@ -120,6 +120,31 @@ def _validated_child_environment_value(value: object) -> str | None:
     return snapshot
 
 
+def _closed_child_environment(names: tuple[str, ...]) -> dict[str, str]:
+    """Build a subprocess environment from a NAMED allowlist, value by value.
+
+    A closed constructor: a name absent from the parent is simply absent from
+    the child, and a name whose value does not validate refuses the whole
+    environment rather than being dropped silently.  Nothing outside `names`
+    can reach the child, whatever the operator's shell holds.
+
+    Extracted so the uv subprocesses are built the same way the re-exec child
+    is (R7, section 29.5(d)).  It is the same rule and there is no reason for
+    two of it.
+    """
+
+    environment: dict[str, str] = {}
+    for name in names:
+        value = os.environ.get(name)
+        if value is None:
+            continue
+        snapshot = _validated_child_environment_value(value)
+        if snapshot is None:
+            raise RuntimeError("child environment value is invalid")
+        environment[name] = snapshot
+    return environment
+
+
 def _launcher_chain(
     launcher: Path, venv_root: Path, managed_root: Path,
 ) -> tuple[list[dict[str, object]], Path]:
@@ -363,7 +388,17 @@ def _uv_binary(project_root: Path) -> Path:
 
 
 def _uv_environment(project_root: Path) -> dict[str, str]:
-    environment = dict(os.environ)
+    """The environment handed to `uv venv` and `uv pip install`.
+
+    R7 (section 29.5(d)).  This opened with `dict(os.environ)`, which made it
+    the one code path in the package that hands the operator's whole
+    environment -- the provider token pair included, now that the submit host
+    holds it -- to a third-party process tree.  It is built from the same
+    closed allowlist as the re-exec child; the uv settings below are the only
+    additions.
+    """
+
+    environment = _closed_child_environment(_ALLOWED_CHILD_ENV)
     cache = _cache_root(project_root)
     environment.update({
         "UV_CACHE_DIR": str(cache / "uv-cache-v1"),
@@ -618,15 +653,7 @@ def ensure_and_reexec(
             expected=_runtime_stamp(requirements),
         )
         _body, proof_digest = _runtime_proof(project_root, engine_root)
-    environment: dict[str, str] = {}
-    for name in _ALLOWED_CHILD_ENV:
-        value = os.environ.get(name)
-        if value is None:
-            continue
-        snapshot = _validated_child_environment_value(value)
-        if snapshot is None:
-            raise RuntimeError("child environment value is invalid")
-        environment[name] = snapshot
+    environment = _closed_child_environment(_ALLOWED_CHILD_ENV)
     modal_credentials: dict[str, str] = {}
     for name in _MODAL_CREDENTIAL_ENV:
         value = os.environ.get(name)

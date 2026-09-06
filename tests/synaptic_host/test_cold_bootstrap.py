@@ -30,6 +30,32 @@ ROOT = Path(__file__).resolve().parents[2]
 ENGINE = ROOT / "synaptic-tuner"
 
 
+def _commit_project(project: Path) -> Path:
+    """Commit the project's training tree so it has a HEAD to read from.
+
+    C1 (section 29.5(f)).  Both provider arms now read the COMMITTED blob, so
+    a bare directory is no longer a project: the harness commits what it
+    writes.  Without this every modal-arm case here would refuse with
+    CONFIG_UNAVAILABLE before reaching the behaviour it is about.
+    """
+
+    identity = (
+        "-c", "user.name=synaptic-test",
+        "-c", "user.email=synaptic-test@example.invalid",
+        "-c", "commit.gpgsign=false",
+    )
+    for arguments in (
+        ("init", "--quiet", "--initial-branch", "main"),
+        ("add", "--force", "--", "training"),
+        (*identity, "commit", "--quiet", "-m", "committed training input"),
+    ):
+        subprocess.run(
+            ("git", "-C", str(project), *arguments),
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    return project
+
+
 def _ingress(
     tmp_path: Path, provider: str = "modal", suffix: str = "1",
 ) -> TrainingRunIngressV1:
@@ -81,6 +107,7 @@ def _ingress(
         json.dumps(document, sort_keys=True, separators=(",", ":")),
         encoding="utf-8",
     )
+    _commit_project(project)
     prepared = prepare_training_run_ingress_v1(
         [
             "training", "run", "--provider", provider, "--config",
@@ -993,3 +1020,163 @@ def test_opt_in_wsl_drvfs_runtime_build_reaches_authoritative_child(
     )
     assert completed.returncode == 2
     assert json.loads(completed.stdout)["code"] == "COMMAND_INVALID"
+
+
+# --- Section 29.5(a): B-15 recurrence on the modal arm (feature #420). -------
+
+
+def test_modal_arm_establishes_the_engine_import_root_before_its_import(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """29.5(a).  The modal arm must establish what the docker arm establishes.
+
+    `cli.py` calls `_establish_engine_import_root` inside the docker branch and
+    imports `synaptic_host.docker_training` on the next line.  The modal arm
+    imports `synaptic_host.modal_training`, whose module scope imports
+    top-level `tuner`, with no establishment anywhere above it.  With
+    `PYTHONPATH` never exported (standing rule 21.2) that import dies exactly
+    as run 9 died on the other provider, and the ninety-line handler behind it
+    reports an opaque failure rather than the missing name.
+
+    The reading is taken AT THE MOMENT OF THE IMPORT rather than after the
+    dispatch returns, and that is the point of the fixture: an establishment
+    that ran after the import would leave `sys.path` correct at the end and
+    still have failed.  `sys.path` is snapshotted through `monkeypatch` so the
+    appended entry cannot leak into the rest of the session.
+    """
+
+    ingress = _ingress(tmp_path / "ingress")
+    authority = _mint_child_authority(monkeypatch, tmp_path / "runtime", ingress)
+    engine = tmp_path / "runtime" / "engine"
+    monkeypatch.setattr(sys, "path", list(sys.path))
+
+    at_import: list[list[str]] = []
+    fake = types.ModuleType("synaptic_host.modal_training")
+    fake.execute_modal_training_run_v2 = lambda value, **_kwargs: cli._failure(
+        TrainingRunCommandCodeV2.CAPABILITY_UNSUPPORTED,
+        provider_ref=value.provider_ref, config_ref=value.config_ref,
+        destination_ref=value.destination_ref, input_digest=value.input_digest,
+    )
+    original_import = cli.importlib.import_module
+
+    def guarded(name: str, *args, **kwargs):
+        if name == "synaptic_host.modal_training":
+            at_import.append(list(sys.path))
+            return fake
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(cli.importlib, "import_module", guarded)
+    cli.dispatch_validated_training_run_v1(
+        ingress, isolated_child_authority=authority
+    )
+
+    assert at_import, "the modal arm never reached its own import"
+    assert str(engine) in at_import[0], (
+        "the modal arm imported modal_training with the engine root absent "
+        "from sys.path; B-15 recurs on this provider"
+    )
+    assert at_import[0][-1] == str(engine), (
+        "the engine root must be APPENDED, never given precedence (24.3)"
+    )
+
+
+def test_launcher_refusal_at_the_entrypoint_names_its_own_cause(
+    monkeypatch, capsys, tmp_path: Path,
+) -> None:
+    """B-18 fourth site (29.5(b)) and the item 3 disposition under gate G6.
+
+    `__main__.py`'s modal arm wrapped `ensure_and_reexec` in a bare
+    `except BaseException` and returned BOOTSTRAP_UNAVAILABLE with the
+    exception unbound, unchained and unlogged.  The launcher's own refusals
+    are the ones that arrive here -- `launcher.py:628` refuses an allowlisted
+    child environment value over the 4096-byte bound, which is exactly what a
+    long operator PATH produces (#432) -- so the operator learned that
+    bootstrap was unavailable and nothing about which refusal fired.
+
+    The result contract does NOT widen: the envelope is what the run driver
+    parses, so the code, the exit status and stdout stay byte-identical and
+    the cause goes to stderr on the mechanism 20.11 ruled and 24.4 already
+    uses at `cli.py`'s own bare catch.  The exception's CLASS is named and its
+    TEXT never is.
+    """
+
+    prepared = _ingress(tmp_path)
+    fake = types.ModuleType("synaptic_host.launcher")
+
+    def ensure(**_kwargs):
+        # The literal refusal at launcher.py:628, reached under a long PATH.
+        raise RuntimeError("child environment value is invalid")
+
+    fake.ensure_and_reexec = ensure
+    monkeypatch.setitem(sys.modules, "synaptic_host.launcher", fake)
+    monkeypatch.setattr(
+        entry, "prepare_training_run_ingress_v1", lambda *_a, **_k: prepared
+    )
+
+    assert entry.main(["training", "run"]) == 4
+    captured = capsys.readouterr()
+
+    # The contract the driver parses is unchanged.
+    assert json.loads(captured.out)["code"] == "BOOTSTRAP_UNAVAILABLE"
+
+    # G6: the refusal names its own cause.
+    assert "RuntimeError" in captured.err, (
+        "the launcher refusal reached the operator unnamed; the fourth "
+        "B-18 site still swallows its cause"
+    )
+    assert "BOOTSTRAP_UNAVAILABLE" in captured.err
+    assert "__main__.py" in captured.err, (
+        "the cause line must name the frame that decided the refusal"
+    )
+    # The renderer names the class, never the text (20.11).
+    assert "child environment value is invalid" not in captured.err
+
+
+def test_uv_subprocess_environment_is_a_closed_allowlist(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """R7, section 29.5(d).  No whole-environment copy to the uv subprocesses.
+
+    `_uv_environment` opened with `dict(os.environ)` and handed the entire
+    operator environment to `uv venv` and `uv pip install`.  The submit host
+    now holds the provider token pair by user decision, so this is the one
+    code path in the package that hands credentials to a third-party process
+    tree.  The ruled shape is the closed constructor this file already uses
+    for the child environment: a NAMED allowlist, each value validated.
+
+    The assertion is on the KEY SET, never on a value: the test sets its own
+    non-secret sentinels and proves they do not cross the boundary.
+    """
+
+    uv_keys = {
+        "UV_CACHE_DIR", "UV_LINK_MODE", "UV_NO_PROGRESS",
+        "UV_PYTHON_INSTALL_DIR", "UV_PYTHON_PREFERENCE",
+    }
+
+    # An allowlisted name, an arbitrary operator name, and the credential
+    # pair -- all present in the parent environment, all non-secret values.
+    monkeypatch.setenv("PATH", "/usr/bin")
+    monkeypatch.setenv("SYNAPTIC_R7_OPERATOR_SENTINEL", "sentinel")
+    monkeypatch.setenv("MODAL_TOKEN_ID", "sentinel-not-a-credential")
+    monkeypatch.setenv("MODAL_TOKEN_SECRET", "sentinel-not-a-credential")
+
+    environment = launcher._uv_environment(tmp_path)
+    observed = set(environment)
+
+    allowed = set(launcher._ALLOWED_CHILD_ENV) | uv_keys
+    assert observed <= allowed, (
+        "the uv subprocesses receive names outside the allowlist: {}".format(
+            sorted(observed - allowed)
+        )
+    )
+    assert uv_keys <= observed, "the uv settings must still be applied"
+    assert "PATH" in environment, "uv needs the allowlisted PATH"
+
+    # The two findings the ruling names, stated separately so a failure says
+    # which one recurred.
+    assert "SYNAPTIC_R7_OPERATOR_SENTINEL" not in environment
+    for name in launcher._MODAL_CREDENTIAL_ENV:
+        assert name not in environment, (
+            "the provider credential pair reaches the uv process tree; R7 "
+            "recurs"
+        )

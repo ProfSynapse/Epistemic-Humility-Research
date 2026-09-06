@@ -197,19 +197,27 @@ def test_the_establishment_sits_between_the_bound_root_check_and_the_import(
         if isinstance(node, ast.Call)
         and getattr(node.func, "id", None) == "_establish_engine_import_root"
     ]
-    assert len(establishments) == 1
+    assert len(establishments) == 2, (
+        "one establishment PER ARM.  Section 29.5(a) forbids a shared hoist "
+        "above the branch because the two arms derive their engine root "
+        "differently, so a single call cannot serve both."
+    )
 
-    imports = [
-        node for node in ast.walk(tree)
-        if isinstance(node, ast.Call)
-        and getattr(node.func, "attr", None) == "import_module"
-        and any(
-            isinstance(arg, ast.Constant)
-            and arg.value == "synaptic_host.docker_training"
-            for arg in node.args
-        )
-    ]
-    assert len(imports) == 1
+    def _import_calls(module_name: str) -> list[ast.Call]:
+        return [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and getattr(node.func, "attr", None) == "import_module"
+            and any(
+                isinstance(arg, ast.Constant) and arg.value == module_name
+                for arg in node.args
+            )
+        ]
+
+    docker_imports = _import_calls("synaptic_host.docker_training")
+    modal_imports = _import_calls("synaptic_host.modal_training")
+    assert len(docker_imports) == 1
+    assert len(modal_imports) == 1
 
     comparisons = [
         node for node in ast.walk(tree)
@@ -222,8 +230,22 @@ def test_the_establishment_sits_between_the_bound_root_check_and_the_import(
     ]
     assert comparisons, "the bound-root equality check has moved or gone"
 
-    assert max(node.lineno for node in comparisons) < establishments[0].lineno
-    assert establishments[0].lineno < imports[0].lineno
+    bound_check = max(node.lineno for node in comparisons)
+    docker_establishment, modal_establishment = sorted(
+        node.lineno for node in establishments
+    )
+
+    # Both arms establish DOWNSTREAM of the bound-root refusal.
+    assert bound_check < docker_establishment
+    assert bound_check < modal_establishment
+
+    # Each arm establishes immediately above its OWN import.
+    assert docker_establishment < docker_imports[0].lineno
+    assert modal_establishment < modal_imports[0].lineno
+
+    # The modal establishment sits BELOW the docker arm's import, which is only
+    # possible inside the modal branch: this is the no-hoist pin of 29.5(a).
+    assert docker_imports[0].lineno < modal_establishment
 
 
 @_LAYOUT_PRESENT

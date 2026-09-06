@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .cli import (
+    TrainingRunCommandCodeV2,
     TrainingRunIngressV1,
     bootstrap_unavailable_result_v2,
     dispatch_validated_training_run_v1,
@@ -40,7 +41,29 @@ def main(argv: list[str] | None = None) -> int:
             ingress_digest=prepared.envelope_digest,
             contract_identity_digest=prepared.contract_identity_digest,
         )
-    except BaseException:
+    except BaseException as error:
+        # B-18 fourth site (section 29.5(b)).  This catch used to leave the
+        # exception unbound, unchained and unlogged, so a launcher refusal --
+        # `launcher.py:628` refuses an allowlisted child environment value
+        # over the 4096-byte bound, which a long operator PATH produces
+        # (#432) -- reached the operator as a bare BOOTSTRAP_UNAVAILABLE that
+        # named nothing.  Gate G6 requires a refusal to name its own cause.
+        #
+        # The result contract does NOT widen: the envelope is what the run
+        # driver parses, so the code, the exit status and stdout stay
+        # byte-identical and the cause goes to stderr on the mechanism 20.11
+        # ruled and 24.4 already uses at `cli.py`'s own bare catch.
+        #
+        # Imported inside the handler and guarded, by that same convention: a
+        # diagnostic that can fail the path it diagnoses is worse than none.
+        try:
+            from .cause_line import report_cause_line_v1
+
+            report_cause_line_v1(
+                error, TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
+            )
+        except BaseException:
+            pass
         return emit_training_run_result_v2(
             bootstrap_unavailable_result_v2(prepared)
         )

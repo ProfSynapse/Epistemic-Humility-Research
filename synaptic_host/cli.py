@@ -383,16 +383,19 @@ def _install_ingress_provenance_v1():
             or identity_digest != contract_identity_digest
         ):
             raise ValueError("training run ingress authority is invalid")
-        if provider_ref == "docker":
-            if (
-                not isinstance(project_root, Path)
-                or not isinstance(engine_root, Path)
-                or not project_root.is_absolute()
-                or not engine_root.is_absolute()
-                or type(config_blob) is not _CommittedGitBlobV1
-                or config_blob.sha256 != source_sha256
-            ):
-                raise ValueError("Docker ingress source binding is invalid")
+        # C1 (section 29.5(f)).  This bound the committed source on the docker
+        # arm only.  Both arms now read the committed blob, so both are held
+        # to it: an ingress may not carry a source the released checkout does
+        # not contain, whichever provider is about to execute it.
+        if (
+            not isinstance(project_root, Path)
+            or not isinstance(engine_root, Path)
+            or not project_root.is_absolute()
+            or not engine_root.is_absolute()
+            or type(config_blob) is not _CommittedGitBlobV1
+            or config_blob.sha256 != source_sha256
+        ):
+            raise ValueError("ingress source binding is invalid")
         baseline = tuple(
             field_value for name, field_value in assigned if name != "training_input"
         )
@@ -871,17 +874,20 @@ def _prepare_training_run_ingress_v1(
             TrainingRunCommandCodeV2.BOOTSTRAP_UNAVAILABLE,
             provider_ref=provider, config_ref=config_ref, destination_ref=destination,
         )
+    # C1 (section 29.5(f)).  Both arms read the COMMITTED blob.  The modal arm
+    # used to fall through to a plain worktree read, which let a cloud job run
+    # from whatever the operator had on disk -- a silent violation of the
+    # standing ruling that execution uses only a released checkout, and the one
+    # item on the 29.5 list whose failure is silent.  `provider` is already
+    # constrained to the two providers above, so this is now unconditional.
     config_blob = None
-    if provider == "docker":
-        try:
-            config_blob = _read_committed_git_blob_v1(
-                project, "training/" + "/".join(components), maximum_bytes=65536,
-            )
-            loaded = (config_blob.content, config_blob.sha256)
-        except ValueError:
-            loaded = None
-    else:
-        loaded = _read_config(project, components)
+    try:
+        config_blob = _read_committed_git_blob_v1(
+            project, "training/" + "/".join(components), maximum_bytes=65536,
+        )
+        loaded = (config_blob.content, config_blob.sha256)
+    except ValueError:
+        loaded = None
     if loaded is None:
         return _failure(
             TrainingRunCommandCodeV2.CONFIG_UNAVAILABLE,
@@ -1069,6 +1075,7 @@ def dispatch_validated_training_run_v1(
                 provider_ref=provider_ref, config_ref=config_ref,
                 destination_ref=destination_ref, input_digest=input_digest,
             )
+        _establish_engine_import_root(engine_root)
         modal_training = importlib.import_module("synaptic_host.modal_training")
         executor = modal_training.execute_modal_training_run_v2
         if _authenticate_training_run_ingress_v1(ingress) != authenticated:
