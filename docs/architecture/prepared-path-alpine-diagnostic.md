@@ -8052,6 +8052,30 @@ go green while proving nothing about key separation.** K3 therefore mutates the
 tag, not the declared field, and asserts the exception type rather than the
 message, because the cryptographic refusal surfaces as the collapsed `:465` text.
 
+*Scope of the property gate, stated honestly: it is Host-side only.* The gate
+above covers the Host's operator-visible surface. It does **not** cover the
+Modal container's own console, which the operator also reads and which reaches
+no redactor on this lane. That surface is covered at TEST by the post-run log
+sweep, and by nothing earlier. The precise shape matters, because the obvious
+reading of it is wrong at this pin:
+
+- **The trainer's own output does not reach the console today.** `runtime.py`
+  invokes the trainer at `:233-243` with `stdout=subprocess.PIPE` and
+  `stderr=subprocess.PIPE`, so its streams are captured rather than inherited;
+  the success arm at `:246-247` then returns `ProcessResultV1(0)` and the
+  captured bytes are **discarded**. The failure arm maps the return code to a
+  closed token. No trainer text crosses this seam.
+- **What does reach the console is the wrapper's own output.** Anything the
+  Modal function body writes to the container's stderr — an uncaught traceback
+  above the closed-token layer, or output from the SDK itself — is operator
+  visible and unredacted. That is the surface the sweep is for.
+- **There is a latent carrier worth naming.** `ProcessResultV1` at
+  `remote.py:85-89` already declares `stdout: bytes` and `stderr: bytes` fields
+  that nothing on this path populates. A future change that fills and forwards
+  them would put trainer output on a surface with no redactor. That is exactly
+  the class of change the property gate exists to make fail loudly, and it is
+  the reason the gate is worth having even though the lane is closed today.
+
 **(f) C1 — the released checkout.** `cli.py:874-884` reads the committed blob
 only on the docker arm; the modal arm falls through to a plain worktree read.
 Executing a cloud job from the worktree would violate the standing ruling that
