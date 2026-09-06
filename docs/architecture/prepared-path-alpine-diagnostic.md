@@ -8006,6 +8006,125 @@ exactly the case it exists to catch, because a namespace package has
 Gate G2 below is read with this correction: it requires the containment check
 and the gitlink assertion, not the gitlink alone.
 
+**Correction 2026-09-06 (second).** This block carries the citation fixes from
+the verify-only review of ruling (1) and the credential clauses. No ruling
+changes; two additions are recorded in item (2) and read back into 29.3 and
+29.12 at the end. Every `file:line` below was re-measured against the tree at
+Host `ce5b2df2` with the engine pinned at `ce539b70`. Where the review's
+citation and the tree disagreed, the measured value is written here and the
+divergence is named, so a later reader is not left comparing two numbers with
+no account of which was checked.
+
+*(1) The stage-claim key reference.* 29.2 and 29.3 cite
+`modal_training.py:553`. That is the wrong line: `:553` is the
+`compose_modal_source_finalizer` call. The stage-claim reference is
+`modal_training.py:560`, the fourth positional argument to
+`ModalTrainingIntentV1`. **CODE edits `:560`, not `:553`.** The value then
+travels one hop further than the review states: `modal_resolver.py:744` copies
+`baseline.intent.key_ref` into `ModalPlanContextV1`, and the stage target is
+built engine-side from `context.key_ref` at
+`providers/modal/training.py:889-895`; `training.py:488` then refuses any plan
+whose `context.key_ref` differs from `operation.stage_target.key_ref`. So
+`:744` writes the plan context, not `stage_target.key_ref` directly.
+
+*(2) The authenticator port is gated, and the port that governs.* 29.2 says
+the authenticator port is a bare `Protocol` with no `isinstance` gate. **That
+sentence is withdrawn.** `tuner/execution/evidence.py:91-94` declares
+`EvidenceAuthenticator` under `@runtime_checkable`, with `sign` at `:93` and
+`verify` at `:94`, and three constructors refuse a non-conforming object:
+`tuner/execution/providers/modal/resolution.py:433-434`,
+`tuner/execution/providers/modal/verification.py:31` and
+`tuner/project/git_verification.py:121`. (The review placed the first three
+directly under `tuner/execution/`; the line numbers are exact, the directories
+are not.) `synaptic_tuner/api/v1/host.py:40-42` declares a same-named
+`Protocol` **without** `@runtime_checkable`; it does not govern, and none of
+the three gates consults it.
+
+Ruling (1) survives, because a `runtime_checkable` check is structural: it
+tests that `sign` and `verify` are present, not that the object inherits a
+nominal base, so the Host-side routing facade passes by shape.
+
+**CODE CONDITION (new).** The facade exposes `sign` and `verify` as real
+attributes on **one long-lived object**: no `__getattr__` delegation, no
+`functools.partial` rebuilt per access, no per-call rebinding. The reason is
+measured, not stylistic. `providers/modal/training.py` pins the authenticator
+twice and re-checks both mid-run: `:1177` pins the object in
+`pinned_port_fields` and `:1192` pins it again as the stage control's `auth`
+attribute in `pinned_attributes`, both compared with `is` at `:1271-1278`;
+`:1236-1245` pins `_callable_identity(authenticator, "sign")` and
+`(..., "verify")`, which is the pair `(__self__, __func__)` computed at
+`:580-582`, and the guard re-reads each and compares **both** elements with
+`is not` at `:1280-1284`. Any construction that yields a fresh callable object
+per attribute access fails that comparison and the run closes at `:1288`. (The
+review cited this pin as `:1236-1244`; the `sign` and `verify` entries together
+span `:1236-1245`.)
+
+**Gate K5 (new).** An executed test that a facade instance (a) passes all three
+`isinstance` gates named above and (b) survives the identity guard: read `sign`
+and `verify` twice and assert both elements of `_callable_identity` are
+identical across the reads, and assert the authenticator attribute is the same
+object each time. K5 fails if only (a) is tested. A facade that satisfies the
+structural check and rebuilds its callables per access is exactly the shape
+that passes admission and then closes the run mid-flight, so testing (a) alone
+is the false negative this gate exists to prevent.
+
+*(3) The redactor spans, and the true shape of the gap.* 29.5(e) cites
+`redaction.py:7-12` and `:21-24`. By AST at
+`tuner/execution/providers/modal/redaction.py`, `_SENSITIVE_KEY` spans
+`:7-11` and `_TEXT_PATTERNS` spans `:12-23`. The gap is also wider than the
+two shapes 29.5(e) names. Measured by executing the module against the five
+credential names:
+
+- The dict-key rule (`_SENSITIVE_KEY.search`, applied at `:50`) **matches**
+  `HF_TOKEN`, `HUGGING_FACE_HUB_TOKEN`, `MODAL_TOKEN_ID` and
+  `MODAL_TOKEN_SECRET`, and **misses** `SYNAPTIC_EVIDENCE_MAC_KEY` and
+  `encoded_key`. The alternation carries `api_key`, `apikey` and `secret` but
+  no bare `key`, so a name ending `_MAC_KEY` or `_key` falls through and
+  `redact({"SYNAPTIC_EVIDENCE_MAC_KEY": v})` returns `v` verbatim.
+- The free-text rule **misses all five** names in `NAME=value` form. The sixth
+  pattern at `:18-22` anchors every alternative with `\b`, and `_` is a word
+  character, so there is no boundary between `_` and `TOKEN`: `token=...`
+  redacts and `HF_TOKEN=...` does not. A bare `hf_` prefix is not covered
+  either; the prefix pattern at `:17` covers `sk-`, `rk-` and `pk-`, with a
+  hyphen.
+- What the free-text rule does catch is more than 29.5(e) implies: `Bearer`
+  and `Basic` headers (`:13-14`), JWTs (`:15`), URL userinfo (`:16`), the
+  `sk-`/`rk-`/`pk-` prefixes (`:17`) and bare-word `NAME=value` (`:18-22`).
+
+The operative reading for this lane: in dict form the redactor already
+protects every credential name **except the two that R1 is about**; in
+free-text form it protects none of the five. R4 keeps its shape; only the
+scope sentence changes.
+
+*(4) The credential-passing restatement, and what the engine refuses.* 29.10
+item 3 is restated in the plan's words: **credential values pass only as
+in-process parameters and a closed child environment block, never argv, never
+any durable artifact; the training container receives its credentials as a
+named Modal Secret.**
+
+The engine-side refusal that backs this is `deployment_v1.py:60-70`, and it is
+larger than the review's citation of `:61-70` and four names.
+`forbidden_symbols` is built at `:60-63` as the union of the deployment's own
+`runtime_secret_keys` with **five** literal names — `HF_TOKEN`,
+`HUGGING_FACE_HUB_TOKEN`, `SYNAPTIC_EVIDENCE_MAC_KEY`, `MODAL_TOKEN_ID` and
+`MODAL_TOKEN_SECRET`. The refusal at `:64-70` has **three** arms: the key is in
+that set (`:65`), the key matches `_SECRET_NAME` (`:66`, defined at `:24-26` as
+`(?:^|_)(?:TOKEN|SECRET|PASSWORD|PASSWD|API_KEY|PRIVATE_KEY|CREDENTIALS?)(?:_|$)`),
+or the **value** is in that set (`:67`). Only the first and third arms read
+values; the pattern arm is key-only, so "keys or values" is true of the literal
+set alone. Note that `_SECRET_NAME` does not match `SYNAPTIC_EVIDENCE_MAC_KEY`
+either, for the same bare-`key` reason as item (3): that name is refused by the
+literal set and by nothing else.
+
+**How the rest of section 29 is read with this Correction.** The gate list at
+29.12 now carries **K5** alongside G1-G6. Ruling (1) at 29.3 is read with the
+CODE CONDITION in item (2): the facade is one long-lived object exposing `sign`
+and `verify` as real attributes. And 29.5(b) is read with this addition: the
+engine-side `_admit_evidence` site that catches `BaseException` at
+`providers/modal/resolution.py:462` and re-raises `from None` at `:465` (the
+method opens at `:444`) is recorded on follow-up #438; it is **not** one of the
+four Host sites listed in 29.5(b), and it is **not** in the B-19 engine rePACT.
+
 ### 29.11 Rulings (9) and (10) — the two smaller owed decisions
 
 **Owed decision (6), the overlap trap.** The manifest overlap check is empty at
