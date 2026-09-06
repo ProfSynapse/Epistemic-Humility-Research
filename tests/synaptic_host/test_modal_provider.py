@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import ast
 import copy
 import dataclasses
 import hashlib
+import inspect
 import json
+import os
+import stat
 from pathlib import Path
 from types import MappingProxyType
 
@@ -917,3 +921,152 @@ def test_r1_upgrade_refuses_a_host_ref_authenticator_before_any_replacement(
         (context.state_root / "modal" / "provider-state.json").read_text("utf-8")
     )
     assert current["selection"]["deployment_ref"] == prior.selection.deployment_ref
+
+
+# --- SEC-F2 (section 29.5(c)): the .synaptic chain this lane writes ---------
+#
+# Before this, every durable record on this lane reached its parent directory
+# with a bare `path.parent.mkdir(parents=True, exist_ok=True)`.  The `0o600` on
+# the record file was real; the directory holding it inherited whatever the
+# parent granted.  `.synaptic` is where this lane's evidence keys live, so an
+# inherited list there is an ACL property of the key material.
+#
+# Ruling decision (2) scopes the fix to the whole `.synaptic` subtree, so F1
+# walks the chain from the root, not from `state/modal`.
+
+_POSIX_MODES = os.name != "nt"
+
+
+def _chain(context: ProjectContext) -> tuple[Path, ...]:
+    private_root = context.project_root / ".synaptic"
+    leaf = context.state_root / "modal"
+    relative = leaf.relative_to(private_root)
+    return (private_root,) + tuple(
+        private_root.joinpath(*relative.parts[: index + 1])
+        for index in range(len(relative.parts))
+    )
+
+
+def test_f1_every_member_of_the_written_chain_is_private_after_a_deploy(
+    tmp_path: Path,
+) -> None:
+    """F1 — the whole subtree, not only the leaf.
+
+    A bare `mkdir(parents=True)` would create each of these under the process
+    umask.  Each one is now built by the same primitive the private storage
+    chain uses and validated by the same validator.
+    """
+
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(), token_id="token-id",
+        token_secret="token-secret",
+    )
+    session.deploy(
+        context=context, authenticator=StubAuthenticator(), hf_token="hf-value"
+    )
+
+    members = _chain(context)
+    assert len(members) >= 2
+    for directory in members:
+        assert directory.is_dir()
+        # The validator is the production predicate, so this asserts exactly
+        # what the Host itself demands rather than a restatement of it.
+        modal_provider.FileHmacAuthenticator._validate_private_directory(directory)
+    if _POSIX_MODES:
+        for directory in members:
+            assert stat.S_IMODE(directory.lstat().st_mode) == 0o700
+
+
+def test_f2_an_operator_created_chain_member_is_narrowed_before_the_write(
+    tmp_path: Path,
+) -> None:
+    """F2 — the repair arm, which is what the bare mkdir could never do.
+
+    `exist_ok=True` accepts a directory the operator or a shell already made
+    under an ordinary umask and writes into it unchanged.  Here `.synaptic`
+    exists first and is world-readable; the write must narrow it rather than
+    inherit it.
+    """
+
+    if not _POSIX_MODES:
+        pytest.skip("POSIX mode bits; the Windows arm is the DACL repair")
+
+    context = project_context(tmp_path)
+    private_root = context.project_root / ".synaptic"
+    private_root.mkdir(parents=True)
+    os.chmod(private_root, 0o755)
+    assert stat.S_IMODE(private_root.lstat().st_mode) == 0o755
+
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(), token_id="token-id",
+        token_secret="token-secret",
+    )
+    session.deploy(
+        context=context, authenticator=StubAuthenticator(), hf_token="hf-value"
+    )
+
+    assert stat.S_IMODE(private_root.lstat().st_mode) == 0o700
+
+
+def test_f3_the_chain_carrier_never_mints_a_file(tmp_path: Path) -> None:
+    """F3 — the carrier authenticator is a carrier and nothing more.
+
+    `_ensure_private_chain` constructs a `FileHmacAuthenticator` only to reuse
+    its two-pass chain walk, and the method it calls uses `key_path.parent`
+    alone.  If a future change there started touching `key_path`, this lane
+    would silently mint a file under `.synaptic`.  Pinning the absence is what
+    makes that reuse safe to keep.
+    """
+
+    context = project_context(tmp_path)
+    leaf = context.state_root / "modal"
+
+    modal_provider._ensure_private_chain(
+        modal_provider._private_storage_root(context), leaf
+    )
+
+    assert leaf.is_dir()
+    sentinel = leaf / modal_provider._SENTINEL_KEY_NAME
+    assert not sentinel.exists() and not sentinel.is_symlink()
+    assert sorted(entry.name for entry in leaf.iterdir()) == []
+
+
+def test_f4_no_bare_parent_mkdir_survives_on_this_lane() -> None:
+    """F4 — the boundary, pinned over the syntax tree.
+
+    A behavioural test shows that the routed sites are private; it cannot show
+    that no site was missed.  This walks the module and requires that no call
+    to `mkdir` passes `parents=True`, which is the exact shape 29.5(c) names.
+    The pin is on AST nodes rather than source text because this module's own
+    docstrings quote the ruling and would match a text scan.
+    """
+
+    tree = ast.parse(inspect.getsource(modal_provider))
+    offenders = [
+        node.lineno
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "mkdir"
+        and any(keyword.arg == "parents" for keyword in node.keywords)
+    ]
+    assert offenders == [], f"bare parent-creating mkdir at lines {offenders}"
+
+
+@pytest.mark.parametrize(
+    "name", ["_atomic_json", "_replace_json", "_record_or_verify"]
+)
+def test_f5_each_durable_writer_requires_its_private_root(name: str) -> None:
+    """F5 — required, keyword-only, and with no default.
+
+    The same shape as the B-11 `repair=` flag: every call site states the root
+    it is confined to, so a future writer cannot inherit a bare mkdir by
+    omitting the argument.  A default would make that omission silent.
+    """
+
+    parameter = inspect.signature(
+        getattr(modal_provider, name)
+    ).parameters["private_root"]
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameter.default is inspect.Parameter.empty

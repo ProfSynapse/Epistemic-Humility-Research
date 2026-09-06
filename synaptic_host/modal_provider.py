@@ -31,7 +31,7 @@ from synaptic_tuner.api.v1.modal import (
 )
 
 from .modal_resolver import ModalProviderStateV1, _closed, _read_json, _text
-from .security import FileHmacAuthenticator
+from .security import FileHmacAuthenticator, _lexical_absolute
 
 
 # --- R1 (section 29.3 ruling (1)): two keys, three refs -------------------
@@ -456,8 +456,76 @@ class ModalUpgradeJournalV1:
         }
 
 
-def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+# SEC-F2: the carrier authenticator in `_ensure_private_chain` needs a key
+# path to derive its leaf from, and a key reference to satisfy the
+# constructor.  Neither names anything real: the file is never created, read
+# or written, and the reference never signs or verifies.  They are spelled
+# distinctly so a grep for either evidence key ref cannot match them.
+_SENTINEL_KEY_NAME = ".private-chain-anchor"
+_SENTINEL_KEY_REF = "modal-private-chain-anchor-not-a-key"
+
+
+def _private_storage_root(context: ProjectContext) -> Path:
+    """The `.synaptic` root that confines everything this lane writes.
+
+    SEC-F2 (section 29.5(c)).  The ruling's decision (2) scopes the fix to the
+    whole `.synaptic` subtree this lane writes, not only `state/modal`, so the
+    chain to repair and validate starts here and not at the leaf.  This is the
+    same anchor `FileHmacAuthenticator.for_docker` uses for the Docker control
+    key, read from the same field of the same context.
+    """
+
+    return _lexical_absolute(Path(context.project_root) / ".synaptic")
+
+
+def _ensure_private_chain(private_root: Path, leaf: Path) -> None:
+    """Create and validate every directory from `private_root` down to `leaf`.
+
+    SEC-F2 (section 29.5(c)).  Before this, the durable-record writers below
+    reached their parent directory with a bare
+    `path.parent.mkdir(parents=True, exist_ok=True)`: none of the B-11
+    private-chain construction, none of the B-11-R1 leaf-first repair, no
+    validation.  The `0o600` on the record file was real, and the directory
+    holding it inherited whatever the parent granted.  `.synaptic` is where
+    this lane's evidence keys live, so an inherited list there is an ACL
+    property of the key material, not of the record.
+
+    *Reuse, and no new mechanism.*  The ruling requires exactly that, so this
+    delegates to `FileHmacAuthenticator._ensure_private_storage_directories`
+    rather than restating its walk.  That method derives its chain from
+    `_private_storage_root` down to `key_path.parent` and runs the B-11-R1 two
+    passes over it: pass A repairs leaf first, so a member is judged before a
+    write higher up the chain can alter it, and pass B creates missing members
+    root first and validates every member unconditionally and last.  Keeping
+    one copy of that order matters more than the small awkwardness here: the
+    ordering rule is the whole content of B-11-R1, and a second copy of it
+    would be a second thing to keep correct.
+
+    The authenticator constructed here is a carrier for those two fields and
+    nothing else.  `_SENTINEL_KEY_NAME` names a file that is never created,
+    never read, and never written; the method uses only its parent.  A test
+    pins that the sentinel does not exist after this returns, so a future
+    change that started touching `key_path` would be caught rather than
+    silently minting a file under `.synaptic`.
+
+    It carries no key material and mints none.
+    """
+
+    carrier = FileHmacAuthenticator(
+        _lexical_absolute(Path(leaf)) / _SENTINEL_KEY_NAME,
+        key_ref=_SENTINEL_KEY_REF,
+    )
+    carrier._private_storage_root = _lexical_absolute(Path(private_root))
+    carrier._ensure_private_storage_directories(repair=True)
+
+
+def _atomic_json(
+    path: Path, value: Mapping[str, object], *, private_root: Path
+) -> None:
+    # SEC-F2: keyword-only and REQUIRED, with no default, in the same shape as
+    # the B-11 `repair=` flag.  Every call site states the root it is confined
+    # to, and a future one cannot inherit a bare mkdir by omission.
+    _ensure_private_chain(private_root, path.parent)
     if path.exists() or path.is_symlink():
         raise FileExistsError("durable host record already exists")
     temporary = path.parent / ("." + path.name + "." + secrets.token_hex(8) + ".tmp")
@@ -475,8 +543,10 @@ def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
         raise
 
 
-def _replace_json(path: Path, value: Mapping[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def _replace_json(
+    path: Path, value: Mapping[str, object], *, private_root: Path
+) -> None:
+    _ensure_private_chain(private_root, path.parent)
     temporary = path.parent / (
         "." + path.name + "." + secrets.token_hex(8) + ".tmp"
     )
@@ -498,12 +568,14 @@ def _replace_json(path: Path, value: Mapping[str, object]) -> None:
         raise
 
 
-def _record_or_verify(path: Path, value: Mapping[str, object]) -> None:
+def _record_or_verify(
+    path: Path, value: Mapping[str, object], *, private_root: Path
+) -> None:
     if path.exists() or path.is_symlink():
         if _read_json(path) != dict(value):
             raise ValueError("durable Modal history changed")
         return
-    _atomic_json(path, value)
+    _atomic_json(path, value, private_root=private_root)
 
 def _opaque_ref(kind: str, *values: str) -> str:
     payload = "\0".join(_text(value, f"{kind} identity component") for value in values)
@@ -900,6 +972,7 @@ class ExplicitModalHostSession:
         _require_worker_authenticator(authenticator)
         if type(adopt_empty) is not bool:
             raise TypeError("adopt_empty must be an exact boolean")
+        private_root = _private_storage_root(context)
         state_path = context.state_root / "modal" / "provider-state.json"
         journal_path = context.state_root / "modal" / "deployment-journal.json"
         if state_path.exists() or state_path.is_symlink():
@@ -936,7 +1009,9 @@ class ExplicitModalHostSession:
             journal = ModalDeploymentJournalV1.create(
                 self.config, adopt_empty=adopt_empty
             )
-            _atomic_json(journal_path, journal.to_dict())
+            _atomic_json(
+                journal_path, journal.to_dict(), private_root=private_root
+            )
 
         authenticator.initialize()
         if journal.resource_policy == "adopt-empty":
@@ -976,7 +1051,7 @@ class ExplicitModalHostSession:
         state = self._deploy_journal(
             journal=journal, worker_authenticator=authenticator
         )
-        _atomic_json(state_path, state.to_dict())
+        _atomic_json(state_path, state.to_dict(), private_root=private_root)
         return state
 
     def _validate_upgrade_source(
@@ -1056,6 +1131,7 @@ class ExplicitModalHostSession:
         # R1: `authenticator` is the WORKER key.  Refused at the entry, before
         # any Modal resource is replaced, per section 29.3 ruling (1).
         _require_worker_authenticator(authenticator)
+        private_root = _private_storage_root(context)
         modal_root = context.state_root / "modal"
         state_path = modal_root / "provider-state.json"
         journal_path = modal_root / "deployment-journal.json"
@@ -1086,13 +1162,17 @@ class ExplicitModalHostSession:
             upgrade = ModalUpgradeJournalV1.create(
                 self.config, prior_deployment_ref=prior.deployment_ref
             )
-            _atomic_json(upgrade_path, upgrade.to_dict())
+            _atomic_json(
+                upgrade_path, upgrade.to_dict(), private_root=private_root
+            )
             history_root = modal_root / "history" / prior.deployment_ref
             _record_or_verify(
-                history_root / "provider-state.json", prior_state_value
+                history_root / "provider-state.json", prior_state_value,
+                private_root=private_root,
             )
             _record_or_verify(
-                history_root / "deployment-journal.json", prior_journal_value
+                history_root / "deployment-journal.json", prior_journal_value,
+                private_root=private_root,
             )
 
         if (
@@ -1121,8 +1201,12 @@ class ExplicitModalHostSession:
             state = self._deploy_journal(
                 journal=replacement, worker_authenticator=authenticator
             )
-            _replace_json(journal_path, replacement.to_dict())
-            _replace_json(state_path, state.to_dict())
+            _replace_json(
+                journal_path, replacement.to_dict(), private_root=private_root
+            )
+            _replace_json(
+                state_path, state.to_dict(), private_root=private_root
+            )
         elif current_selection.deployment_ref == replacement.deployment_ref:
             state = ModalProviderStateV1.from_mapping(current_value)
             if _read_json(journal_path) != replacement.to_dict():
@@ -1135,9 +1219,14 @@ class ExplicitModalHostSession:
             / "upgrade-journal.json"
         )
         if completed_path.exists() or completed_path.is_symlink():
-            _record_or_verify(completed_path, upgrade.to_dict())
+            _record_or_verify(
+                completed_path, upgrade.to_dict(), private_root=private_root
+            )
             upgrade_path.unlink()
         else:
-            completed_path.parent.mkdir(parents=True, exist_ok=True)
+            # SEC-F2: the fourth bare mkdir on this lane.  The rename writes
+            # a durable record into the same subtree, so its parent chain is
+            # built and validated the same way as the writers' above.
+            _ensure_private_chain(private_root, completed_path.parent)
             os.replace(upgrade_path, completed_path)
         return state
