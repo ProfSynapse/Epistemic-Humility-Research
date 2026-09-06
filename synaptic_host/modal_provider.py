@@ -918,6 +918,7 @@ class ExplicitModalHostSession:
         callback = getattr(function_call, "from_id")
         restored = None
         failed = False
+        swallowed_class = ""
         try:
             if not self._restore_callback_is_current():
                 raise ValueError
@@ -929,10 +930,38 @@ class ExplicitModalHostSession:
                 or object.__getattribute__(restored, "object_id") != reference
             ):
                 raise ValueError
-        except BaseException:
+        except BaseException as error:
             failed = True
+            # Section 29 judgement item, security-review #468, adopted by the
+            # lead.  The chain stays severed (see the raise below), so the
+            # ONLY thing that leaves this handler is the exception's class
+            # NAME.  Never its message, never its args, never the object
+            # itself: the swallowed exception can be a provider exception
+            # raised from a call holding an authenticated client, and making
+            # it reachable would expose its text to any later traceback
+            # rendering, repr, or handler.  A class name is our own vocabulary
+            # for a type, not provider-controlled text.
+            swallowed_class = type(error).__name__
         if failed:
-            raise ValueError("Modal function call could not be restored") from None
+            # `from None` is KEPT on measurement, not inertia.  The cause-line
+            # renderer walks __traceback__ only; it never reads __cause__ and
+            # never renders a message.  So restoring the chain would be inert
+            # exactly where it is claimed to help, while making the provider
+            # exception reachable from what we raise.  Naming the class gives
+            # the operator the discriminator the chain would not have given
+            # them, at no exposure.
+            #
+            # What the name discriminates, stated honestly: a PROVIDER fault
+            # from a Host guard refusal.  It does NOT separate the four Host
+            # guards above from one another -- the stale-callback check, the
+            # two identity swaps and the object_id mismatch all raise a bare
+            # ValueError inside the try, so all four read as `ValueError`.
+            # Telling those apart would mean capturing our own message text,
+            # which this ruling does not authorise.
+            raise ValueError(
+                "Modal function call could not be restored after "
+                f"{swallowed_class}"
+            ) from None
         return restored
 
     def _deploy_journal(

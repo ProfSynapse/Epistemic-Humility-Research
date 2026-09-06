@@ -894,6 +894,99 @@ def test_session_rejects_function_call_callback_replacement_during_restore() -> 
         FakeFunctionCall.from_id = original
 
 
+def test_j1_the_restore_refusal_names_the_swallowed_class_and_no_provider_text(
+) -> None:
+    """The refusal names the CLASS of what it swallowed, never its message.
+
+    Section 29 judgement item from security-review's #468 review, adopted by
+    the lead.  `restore_function_call` KEEPS its `from None`: the cause-line
+    renderer walks the traceback only and never reads `__cause__` or any
+    message, so restoring the chain would be inert exactly where it is
+    claimed to help, while making a provider exception raised from a call
+    that holds an authenticated client reachable from the ValueError.  The
+    remedy is to fold the swallowed exception's CLASS NAME, and nothing else,
+    into our own message.
+
+    What this buys, stated honestly.  It separates a PROVIDER fault from a
+    Host guard refusal.  It does NOT separate the four Host guards from each
+    other: the stale-callback check, the two identity swaps and the object_id
+    mismatch all raise a bare ValueError inside the try block, so all four
+    render as `ValueError`.  Telling those apart would need our own message
+    text captured too, which the ruling forbids.  The J2 arm below pins that
+    limit rather than leaving it for a reader to discover.
+
+    Why the absence assertion cannot pass by coincidence: the swallowed
+    message is built from tokens that appear nowhere in this module or in the
+    refusal we raise, so an implementation that leaked the whole message
+    would fail on every one of them.
+    """
+
+    class _ProviderSideFailure(RuntimeError):
+        pass
+
+    swallowed_tokens = ("swordfish", "tourniquet", "4711")
+    original = FakeFunctionCall.from_id
+
+    def fail(*_args, **_kwargs):
+        raise _ProviderSideFailure(" ".join(swallowed_tokens))
+
+    FakeFunctionCall.from_id = fail
+    try:
+        session = ExplicitModalHostSession.from_credentials(
+            sdk=FakeSdk, config=config(),
+            token_id="token-id", token_secret="token-secret",
+        )
+        with pytest.raises(ValueError) as caught:
+            session.restore_function_call("fc-durable-1")
+    finally:
+        FakeFunctionCall.from_id = original
+
+    message = str(caught.value)
+    assert "could not be restored" in message
+    assert "_ProviderSideFailure" in message
+    for token in swallowed_tokens:
+        assert token not in message
+    # The chain stays severed; this is the point of the remedy.
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+
+
+def test_j2_a_host_guard_refusal_reports_its_own_class_not_a_provider_one(
+) -> None:
+    """J1's limit, pinned: a Host guard renders as ValueError.
+
+    This is the counter-arm to J1.  It drives the identity-swap guard, which
+    raises a bare ValueError from inside the try block rather than letting a
+    provider exception through, and requires the captured class to be that
+    one.  Two things follow.  The capture is populated on the guard path as
+    well as the provider path, so J1's green is not an artifact of the only
+    exercised route.  And the operator's discriminator is coarser than five
+    ways: this arm and the three sibling guards are indistinguishable from
+    one another by design, which is exactly what the commit body states.
+    """
+
+    original = FakeFunctionCall.from_id
+
+    def replace_during_call(reference, *, client):
+        FakeFunctionCall.from_id = staticmethod(lambda *_args, **_kwargs: None)
+        return FakeObject(reference)
+
+    FakeFunctionCall.from_id = replace_during_call
+    try:
+        session = ExplicitModalHostSession.from_credentials(
+            sdk=FakeSdk, config=config(),
+            token_id="token-id", token_secret="token-secret",
+        )
+        with pytest.raises(ValueError) as caught:
+            session.restore_function_call("fc-durable-1")
+    finally:
+        FakeFunctionCall.from_id = original
+
+    message = str(caught.value)
+    assert "could not be restored" in message
+    assert "ValueError" in message
+
+
 # --- R1 acceptance: K4 and the two entry guards (section 29.3) -----------
 
 
