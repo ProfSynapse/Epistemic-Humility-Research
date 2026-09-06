@@ -7989,6 +7989,23 @@ exceeds the bound. **The submit container's PATH must be measured before submit*
 and kept under 4096 bytes. This is a container-recipe constraint, and the gate
 that records it is G2 below.
 
+**Correction 2026-09-06.** Item 2 above states where the engine goes but not
+how the binding is verified, and the verifier is the load-bearing half. The
+convention this section adopts is the corrected one from the external-surface
+measurement, not the naive form: resolve each engine module with
+`importlib.util.find_spec(name)`; if `spec.origin` is a real path, assert it is
+relative to the engine root; if `spec.origin` is `None` or `"namespace"`, assert
+every entry of `spec.submodule_search_locations` is relative to the engine root
+and treat an empty search-location list as a failure; and pair that with a
+**separate** assertion that the gitlink equals the pinned engine sha. The two
+are not interchangeable: containment proves which tree, the gitlink proves which
+commit, and neither implies the other. The naive form the plan proposed —
+asserting `synaptic_tuner.__file__` starts with the engine root — fails on
+exactly the case it exists to catch, because a namespace package has
+`__file__ is None` and the read raises rather than reporting a wrong binding.
+Gate G2 below is read with this correction: it requires the containment check
+and the gitlink assertion, not the gitlink alone.
+
 ### 29.11 Rulings (9) and (10) — the two smaller owed decisions
 
 **Owed decision (6), the overlap trap.** The manifest overlap check is empty at
