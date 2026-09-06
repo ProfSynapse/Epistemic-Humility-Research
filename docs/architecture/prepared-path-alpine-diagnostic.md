@@ -7840,6 +7840,19 @@ supports — that the key bytes are uploaded whole into the named Secret — is 
 of that span. The wrong single-line citation is the section author's, recorded
 here rather than attributed to the review that found it.
 
+**Correction 2026-09-06 (fourth): the vehicle above is WITHDRAWN.** The third
+Correction ruled R4 into a second engine commit and narrowed the sentence above
+to *"no other engine edit rides inside the regeneration commit itself"*. A later
+measurement (recorded in full at the end of 29.5(e)) shows R4 has no live target,
+so there is no second engine commit to sequence. **The narrowing is withdrawn and
+the original sentence stands unqualified: the regeneration is the deliverable and
+no other engine edit rides with it.** The nested engine cycle regenerates the
+lock and moves the pin, and nothing else. Everything the third Correction
+measured remains true and is simply no longer load-bearing: the redactor is
+engine code, it is not a `locked_files` member, and no manifest, lock or toml in
+the tree names it. The citation fix in 29.3 immediately above is unaffected by
+this withdrawal and stands.
+
 ### 29.5 Ruling (3) — the six pre-submit fix shapes, in gating order
 
 The census yields six items that gate the submit as code or ruling. They are
@@ -7939,6 +7952,105 @@ engine commit on the same branch in the nested engine cycle, after the B-19 lock
 regeneration and before the pin move, under one pin move. It does not re-open
 B-19: the redactor is not a `locked_files` member and no manifest in the tree
 names it.
+
+*Correction 2026-09-06 (fourth): R4 has no live target. The shape above is
+withdrawn as a code change and re-issued as a property gate; the vehicle ruled in
+the third Correction is withdrawn with it.* Three measurements, taken at this
+pin, none copied.
+
+1. **The redactor has no production caller.** `providers/modal/redaction.py`'s
+   `redact()` has exactly one non-test reference in the tracked tree — its own
+   export at `providers/modal/__init__.py:7` — and one test caller at
+   `tests/execution/providers/test_modal_control_plane.py:145` via `import *`.
+   A static reference scan can miss a dynamic caller, so that was falsified
+   separately: across all of `tuner/` and `synaptic_host/` there is no
+   `importlib`, `__import__`, `import_module`, `getattr`, `pkgutil` or
+   entry-point registration naming `redact` or the modal redaction module.
+2. **The reason is structural, not an oversight.** The whole `providers/modal/`
+   package emits no free text: zero `print`, zero `logging`, zero `logger`, zero
+   `sys.stderr`/`sys.stdout` across the package. Every failure is a closed
+   `(exit_code, token)` pair — `ModalRemotePhaseError(124,
+   "locked_source_mismatch")`, `(120, "credential_unavailable")`, `(123,
+   "trainer_invocation_failed")` and so on across sixteen construction sites.
+   There is no free text on the engine side of this lane for a pattern-based
+   redactor to guard.
+3. **The Host side is closed the same way.** `modal_provider.py` and
+   `modal_training.py` carry no print, logging, stderr or redaction call. The
+   operator-visible diagnostic on this lane is `synaptic_host/cause_line.py`
+   `report_cause_line_v1`, reached from `cli.py:1114-1116` and
+   `__main__.py:60-62`. It renders exactly `"synaptic-host: {code}
+   {ExceptionClassName}{missing-module clause} at {frame}"`, truncated at `:135`
+   to the 400-byte limit. **It never renders the exception's message**, and a
+   test already pins that:
+   `tests/synaptic_host/test_cause_line.py::test_cause_line_carries_no_text_no_path_and_no_traceback`.
+
+**The two redactors that ARE called are on other lanes**, and the modal package
+imports neither (no reference to `bootstrap_core`, `cloud.checkout` or
+`capabilities` appears anywhere under `providers/modal/`).
+`capabilities/events.py:189` is reached only from
+`tuner/handlers/capabilities_handler.py` at `:28`, `:39` and `:79` — the
+capabilities CLI. `cloud/bootstrap_core.py:400` is called at `:475` and `:477`
+inside its own git-checkout runner, on the capsule source-reconstruction lane;
+`cloud/checkout.py:350` `_redact` is a wrapper with no caller in that file.
+Neither module is a `locked_files` member: the lock's seven are
+`requirements/modal-launcher-v1.lock`, `deployment_v1.py`, `mounted_io.py`,
+`producer.py`, `remote.py`, `runtime.py` and `Trainers/sft/runtime_v1.py`, read
+from the lock document itself rather than from the name list.
+
+**Both candidate dispositions are refused.** Extending the modal redactor anyway
+is refused because the future caller and the dynamic import were both looked for
+and neither exists; the honest reason the module is uncalled is that its package
+renders no text, which argues for leaving it alone rather than extending it, and
+the change would buy an engine commit, a pin move and an audit for a pattern that
+cannot fire. Aiming R4 at the module the lane's diagnostics traverse is refused
+because the measured answer is *none*: the lane's one operator-visible renderer
+is pattern-free by construction.
+
+***Ruling.*** **R4 is withdrawn as a pattern change and re-issued as a property
+gate.** The goal behind R4 — that no credential reaches an operator-visible
+surface on this lane — is met today by a stronger mechanism than redaction:
+closed tokens on the engine side and a text-free cause line on the Host side.
+Redaction defends surfaces that render arbitrary text; this lane has none. What
+R4 buys instead is **a Host-side test pinning that property**, so that the first
+future change which renders free text on this lane fails loudly rather than
+silently opening the gap the patterns were meant to cover. It needs no engine
+commit and no pin move. The post-run sweep keeps the standing it has in the
+shape above: still the compensating control, still not a substitute.
+
+*Consequences for work in flight.* The nested engine cycle's scope is the B-19
+lock regeneration only; nothing rides with it, and 29.4's original sentence is
+restored unqualified. The `cli.py`/`__main__.py`/`launcher.py`/`redaction.py` fix
+set loses its fourth file: `redaction.py` is not edited, and the R4 line in that
+dispatch becomes the property test.
+
+*Two citation fixes owed by the section author.* The shape paragraph above cites
+`redaction.py:7-12` and `:21-24`; measured at this pin, `_SENSITIVE_KEY` spans
+`:7-11` and `_TEXT_PATTERNS` spans `:12-23`. Both are recorded here rather than
+edited into a shape that no longer governs. The second fix is in 29.10 and is
+recorded there.
+
+*The `_admit_evidence` refusal arms, and what K3 must mutate.* Verified at this
+pin: `resolution.py:447` raises `SourceLockError("authenticated evidence issuer,
+key, or audience mismatch")` with its own text, **outside** the `try` that opens
+at `:449`. That `try` spans `:450-461`, and its `except BaseException` at `:462`
+re-raises at `:465` `SourceLockError("authenticated evidence admission failed")
+from None`. Five modes share `:465`: the `checkpoint`/clock calls,
+`validate_evidence_window` at `:453`, the payload-digest comparison at
+`:454-455`, the cryptographic `verify` at `:457-458`, and `admit_evidence` replay
+admission at `:460` — the cryptographic path and four neighbours. **Neither 29.3
+nor 29.13 claims the declared-field refusal and the cryptographic refusal
+collapse together**; the only statement in this document about the collapse is
+the Correction at the end of 29.10, and it is accurate as written. But the two
+arms prove different things, and K3 at 29.3 is the gate for R1, so the
+distinction is recorded here. If the evidence's **declared** `key_ref` still
+names the source ref while the **tag** was produced with the worker key, `:446`
+passes and `:457` catches it: that is the cryptographic arm, and it is the arm
+K3's `resolution.py:457` citation correctly names. If instead the declared
+`key_ref` is edited to the worker ref, `:446-447` refuses first with its own
+message and the signature is never checked. **A K3 written the second way would
+go green while proving nothing about key separation.** K3 therefore mutates the
+tag, not the declared field, and asserts the exception type rather than the
+message, because the cryptographic refusal surfaces as the collapsed `:465` text.
 
 **(f) C1 — the released checkout.** `cli.py:874-884` reads the committed blob
 only on the docker arm; the modal arm falls through to a plain worktree read.
@@ -8056,6 +8168,17 @@ measured at 5248 bytes in the WSL shell and 3903 on Windows: the first already
 exceeds the bound. **The submit container's PATH must be measured before submit**
 and kept under 4096 bytes. This is a container-recipe constraint, and the gate
 that records it is G2 below.
+
+**Correction 2026-09-06 (fourth): the citation above is wrong; the bound is
+real.** `launcher.py:628` is `python = launcher_python(project_root)`. The
+4096-byte bound on an allowlisted child environment **value** is in
+`_validated_child_environment_value` at `launcher.py:104-120`, with the byte test
+at `:113`, applied to the allowlisted child environment at `:141` and `:660`. The
+file's two other `4096` sites are unrelated and must not be cited for this: `:82`
+bounds a contained relative path, and `:170` bounds accumulated symlink text.
+Nothing else in the paragraph changes — the measured PATH lengths, the
+constraint, and G2 as the recording gate all stand. Follow-up #432 carries the
+same wrong citation in its own text and needs the same repoint.
 
 **Correction 2026-09-06.** Item 2 above states where the engine goes but not
 how the binding is verified, and the verifier is the load-bearing half. The
