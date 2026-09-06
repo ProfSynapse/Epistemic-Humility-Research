@@ -1241,3 +1241,101 @@ def test_c1_the_container_source_route_is_the_committed_dual_clone(
 
     assert set(recorded) == {"verifier", "sources", "processes", "completion"}
     assert type(recorded["sources"]) is modal_provider.GitDualCloneMaterializer
+
+
+# ---------------------------------------------------------------------------
+# Retry semantics for the write-once durable records (section 29.6, ruling (4)).
+#
+# The ruling settles WHAT a retry is: a new run id, never an operator deletion,
+# because the record is the deliverable of the attempt that failed on a lane
+# whose whole point is evidence.  It then says the operator half belongs to the
+# run driver's recipe and changes nothing in the Host.  What DOES belong here is
+# the legibility half the same ruling names: the refusal "surfaces through the
+# ninety-line handler as an opaque failure".  29.5(b) restored the cause line at
+# those handlers, and the cause line renders a code and a frame, never a
+# message.  So an operator who reaches the record's own refusal reads only its
+# text, and that text has to say which record refused and what to do instead of
+# deleting it.  These three tests pin exactly that, and they pin the containment
+# with it: the file NAME identifies the record, and no absolute path, no
+# directory component and no key material goes into an operator-visible string.
+# ---------------------------------------------------------------------------
+
+
+def test_rt1_the_write_once_refusal_names_the_record_and_the_retry_rule(
+    tmp_path: Path,
+) -> None:
+    """RT1 — `_atomic_json`, the innermost of the three refusals."""
+
+    context = project_context(tmp_path)
+    private_root = modal_provider._private_storage_root(context)
+    path = context.state_root / "modal" / "durable-record.json"
+
+    modal_provider._atomic_json(path, {"a": 1}, private_root=private_root)
+    with pytest.raises(FileExistsError) as caught:
+        modal_provider._atomic_json(path, {"a": 2}, private_root=private_root)
+
+    message = str(caught.value)
+    assert path.name in message
+    assert "new run" in message
+    # The refusal preserves the record it names.
+    assert json.loads(path.read_text(encoding="utf-8")) == {"a": 1}
+    # Containment: a name, never a location.
+    assert str(path) not in message
+    assert str(tmp_path) not in message
+    assert "/" not in message and "\\" not in message
+
+
+def test_rt2_a_changed_history_record_is_named_and_left_intact(
+    tmp_path: Path,
+) -> None:
+    """RT2 — `_record_or_verify`, one step out, on the reconcile path."""
+
+    context = project_context(tmp_path)
+    private_root = modal_provider._private_storage_root(context)
+    path = context.state_root / "modal" / "history-record.json"
+
+    modal_provider._record_or_verify(path, {"a": 1}, private_root=private_root)
+    # An identical second call is the agreeing case and stays silent.
+    modal_provider._record_or_verify(path, {"a": 1}, private_root=private_root)
+    with pytest.raises(ValueError) as caught:
+        modal_provider._record_or_verify(path, {"a": 2}, private_root=private_root)
+
+    message = str(caught.value)
+    assert path.name in message
+    assert json.loads(path.read_text(encoding="utf-8")) == {"a": 1}
+    assert str(tmp_path) not in message
+    assert "/" not in message and "\\" not in message
+
+
+def test_rt3_a_second_deploy_names_the_state_record_it_refuses(
+    tmp_path: Path,
+) -> None:
+    """RT3 — the outermost refusal, and the one an operator meets first.
+
+    A redeploy over a live state file is not a retry at all, so this refusal
+    points at the record to READ rather than at a run id to mint.
+    """
+
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    authenticator = StubAuthenticator()
+    session.deploy(
+        context=context, authenticator=authenticator, hf_token="hf-value",
+    )
+    state_path = context.state_root / "modal" / "provider-state.json"
+    before = state_path.read_bytes()
+
+    with pytest.raises(FileExistsError) as caught:
+        session.deploy(
+            context=context, authenticator=authenticator, hf_token="hf-value",
+        )
+
+    message = str(caught.value)
+    assert "already deployed" in message
+    assert state_path.name in message
+    assert state_path.read_bytes() == before
+    assert str(tmp_path) not in message
+    assert "/" not in message and "\\" not in message

@@ -577,7 +577,19 @@ def _atomic_json(
     # to, and a future one cannot inherit a bare mkdir by omission.
     _ensure_private_chain(private_root, path.parent)
     if path.exists() or path.is_symlink():
-        raise FileExistsError("durable host record already exists")
+        # 29.6.  This is the write-once refusal a second attempt at the same
+        # run meets.  The ruling is that a retry is a NEW RUN ID, never an
+        # operator deletion of this record: the record is the deliverable of
+        # the attempt that failed, on a lane whose whole point is evidence.
+        # So the refusal names the record it is protecting instead of leaving
+        # the operator to guess that deleting it would clear the way.  The
+        # name is the record's file name, which carries no key material, no
+        # credential and no path outside the private root.
+        raise FileExistsError(
+            "durable host record already exists and is retained as the "
+            "evidence of the attempt that wrote it; retry under a new run "
+            f"id rather than deleting {path.name}"
+        )
     temporary = path.parent / ("." + path.name + "." + secrets.token_hex(8) + ".tmp")
     payload = json.dumps(value, sort_keys=True, separators=(",", ":"), indent=2) + "\n"
     descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -623,7 +635,10 @@ def _record_or_verify(
 ) -> None:
     if path.exists() or path.is_symlink():
         if _read_json(path) != dict(value):
-            raise ValueError("durable Modal history changed")
+            # 29.6, the same rule one step further in: a history record that
+            # already disagrees is not re-written and not deleted.  Naming it
+            # is what tells the operator which record to read.
+            raise ValueError(f"durable Modal history changed at {path.name}")
         return
     _atomic_json(path, value, private_root=private_root)
 
@@ -1026,7 +1041,15 @@ class ExplicitModalHostSession:
         state_path = context.state_root / "modal" / "provider-state.json"
         journal_path = context.state_root / "modal" / "deployment-journal.json"
         if state_path.exists() or state_path.is_symlink():
-            raise FileExistsError("Modal provider is already deployed for this host")
+            # 29.6, the outermost of the three write-once refusals and the one
+            # an operator meets first.  The same rule: the record is kept and
+            # the retry is a new run id.  A redeploy over a live state file is
+            # not a retry at all, so this one names what to read instead of
+            # what to delete.
+            raise FileExistsError(
+                "Modal provider is already deployed for this host; read "
+                f"{state_path.name} rather than removing it"
+            )
         if not hf_token:
             raise ValueError("HF_TOKEN is required to bind the named Modal Secret")
 
