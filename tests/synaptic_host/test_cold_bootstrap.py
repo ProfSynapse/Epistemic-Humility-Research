@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -1235,4 +1236,201 @@ print(json.dumps({{'path_tail': sys.path[1:], 'resident': resident}}))
         "trips the residency refusal on a later cold contract load: {}".format(
             observed["resident"]
         )
+    )
+
+
+
+
+def _chain_modes(project: Path) -> dict[str, int]:
+    """Every directory at and beneath `.synaptic`, mapped to its POSIX mode.
+
+    Keyed on the path RELATIVE to the project root so a failure message names
+    `.synaptic/cache` rather than a temporary directory nobody can read.
+    """
+
+    private_root = project / ".synaptic"
+    observed: dict[str, int] = {}
+    if not private_root.exists():
+        return observed
+    observed[".synaptic"] = stat.S_IMODE(os.lstat(private_root).st_mode)
+    for path in sorted(private_root.rglob("*")):
+        if path.is_dir() and not path.is_symlink():
+            relative = path.relative_to(project).as_posix()
+            observed[relative] = stat.S_IMODE(os.lstat(path).st_mode)
+    return observed
+
+
+def _reach_the_network_boundary(monkeypatch, project: Path) -> None:
+    """Drive the launcher to the deepest point before it would use the network.
+
+    Every directory-creating site on the fresh path (`_build_runtime`'s own
+    two, and the three inside `_uv_binary`) runs before `_download` is
+    reached, so aborting there observes the chain exactly as a real bootstrap
+    would leave it, with no network, no uv and no subprocess.
+
+    The seam is deliberately the PRODUCTION entry point rather than the
+    helper: these tests pin what the launcher leaves on disk, not which module
+    the chain primitive lives in, so they keep their meaning if the helper
+    moves.
+    """
+
+    def refuse(url: str, destination: Path) -> None:
+        raise RuntimeError("network boundary reached in test")
+
+    monkeypatch.setattr(launcher, "_download", refuse)
+    # The allowlisted PATH is bounded at 4096 bytes and a developer shell can
+    # exceed it; the value is irrelevant here, only its admissibility is.
+    monkeypatch.setenv("PATH", "/usr/bin")
+    with pytest.raises(RuntimeError, match="network boundary reached in test"):
+        launcher._build_runtime(
+            project_root=project,
+            requirements=project / "synaptic-tuner" / "modal" / "requirements.txt",
+            expected="0" * 64,
+        )
+
+
+def test_launcher_cache_root_chain_is_private_on_a_fresh_project_root(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """SEC-F2 launcher half.  The cache root is private storage, not scratch.
+
+    `_cache_root` returns `project_root/.synaptic/cache`, so every directory
+    the launcher creates beneath it sits INSIDE the same `.synaptic` root the
+    durable-record side treats as private storage.  Those directories were
+    created by a bare `mkdir(parents=True)` under the operator umask, which
+    on a default umask of 022 leaves `.synaptic` itself world-readable, and
+    leaves the launcher's whole cache subtree world-readable permanently:
+    nothing repairs it later, because the private-storage chain's leaf is the
+    key path's parent and never reaches the cache tree.
+
+    The assertion is on EVERY directory rather than on a named list, so a
+    site added later cannot slip past this test by not being enumerated here.
+    """
+
+    if platform.system() != "Linux":
+        pytest.skip("mode assertions are POSIX; the Windows half is ACL-based")
+
+    project = tmp_path / "project"
+    project.mkdir()
+    _reach_the_network_boundary(monkeypatch, project)
+
+    observed = _chain_modes(project)
+    assert observed, "the launcher created no private-storage chain at all"
+    offenders = {
+        relative: oct(mode)
+        for relative, mode in observed.items()
+        if mode != 0o700
+    }
+    assert not offenders, (
+        "the launcher created cache-root directories outside the "
+        "private-storage chain: {}".format(sorted(offenders.items()))
+    )
+
+
+def test_launcher_cache_root_chain_repairs_a_degraded_project_root(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """A chain member the operator created first is repaired, not refused.
+
+    B-11 established that the Host must accept or repair a chain directory
+    something else created; the launcher half inherits that obligation.  The
+    degraded premise here is the one a real operator produces: `.synaptic`
+    and `.synaptic/cache` already exist under an ordinary umask, so they
+    carry group and other bits the contract forbids.
+    """
+
+    if platform.system() != "Linux":
+        pytest.skip("mode assertions are POSIX; the Windows half is ACL-based")
+
+    project = tmp_path / "project"
+    project.mkdir()
+    degraded = (project / ".synaptic", project / ".synaptic" / "cache")
+    for directory in degraded:
+        directory.mkdir()
+        os.chmod(directory, 0o755)
+    for directory in degraded:
+        assert stat.S_IMODE(os.lstat(directory).st_mode) == 0o755, (
+            "the degraded premise did not hold; this filesystem does not "
+            "carry POSIX modes and the test would pass without repairing"
+        )
+
+    _reach_the_network_boundary(monkeypatch, project)
+
+    for directory in degraded:
+        relative = directory.relative_to(project).as_posix()
+        assert stat.S_IMODE(os.lstat(directory).st_mode) == 0o700, (
+            f"{relative} existed before the launcher ran and was left "
+            "world-readable; the chain did not repair it"
+        )
+
+
+def test_uv_cache_and_python_roots_are_created_through_the_chain(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    """The two roots the launcher NAMES for uv are chained before uv runs.
+
+    `_uv_environment` points `UV_CACHE_DIR` and `UV_PYTHON_INSTALL_DIR` at
+    paths beneath the cache root but creates neither, so uv creates them
+    itself under the operator umask and they are never chained.  They are the
+    residual: everything under the cache root that our process names has to
+    have chained ancestry, and naming a path to a third-party process is
+    naming it.
+    """
+
+    if platform.system() != "Linux":
+        pytest.skip("mode assertions are POSIX; the Windows half is ACL-based")
+
+    project = tmp_path / "project"
+    project.mkdir()
+    monkeypatch.setenv("PATH", "/usr/bin")
+
+    environment = launcher._uv_environment(project)
+
+    for name in ("UV_CACHE_DIR", "UV_PYTHON_INSTALL_DIR"):
+        root = Path(environment[name])
+        assert root.is_dir(), (
+            f"{name} is handed to the uv subprocess but never created, so uv "
+            "creates it under the operator umask outside the chain"
+        )
+        assert stat.S_IMODE(os.lstat(root).st_mode) == 0o700, (
+            f"{name} was created outside the private-storage chain"
+        )
+
+
+def test_no_unchained_mkdir_survives_in_the_launcher() -> None:
+    """The boundary, pinned over the syntax tree.
+
+    The three tests above show that the sites they reach are private; they
+    cannot show that no site was missed.  Two shapes reintroduce an unchained
+    ancestor under `.synaptic`: a `mkdir` that passes `parents=True`, which is
+    the exact shape section 29.5(c) names, and a `mkdir` that passes no mode,
+    which takes the process umask.  The one surviving `mkdir` in this module
+    creates a directory `os.replace` renames into the cache tree, so it states
+    its mode; everything else goes through `_ensure_cache_chain`.
+    """
+
+    tree = ast.parse(Path(launcher.__file__).read_text(encoding="utf-8"))
+    parents = []
+    unmoded = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if not (isinstance(node.func, ast.Attribute) and node.func.attr == "mkdir"):
+            continue
+        keywords = {keyword.arg for keyword in node.keywords}
+        if "parents" in keywords:
+            parents.append(node.lineno)
+        if "mode" not in keywords:
+            unmoded.append(node.lineno)
+
+    assert not parents, (
+        "launcher.py creates a directory tree with mkdir(parents=True) at "
+        f"line(s) {parents}; that is the shape SEC-F2 replaced with "
+        "_ensure_cache_chain, and it creates every missing ancestor under "
+        "the process umask"
+    )
+    assert not unmoded, (
+        "launcher.py calls mkdir without a mode at line(s) "
+        f"{unmoded}; a directory under .synaptic born with the process umask "
+        "is outside the private-storage chain"
     )

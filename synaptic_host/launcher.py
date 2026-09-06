@@ -65,6 +65,41 @@ def _cache_root(project_root: Path) -> Path:
     return project_root / ".synaptic" / "cache"
 
 
+def _ensure_cache_chain(project_root: Path, leaf: Path) -> None:
+    """Create or repair every directory from `.synaptic` down to `leaf`.
+
+    SEC-F2 (section 29.5(c)), launcher half.  `_cache_root` names a directory
+    inside `.synaptic`, and every directory beneath it was reached here by a
+    bare `mkdir(parents=True, exist_ok=True)`, which creates under the process
+    umask: measured 0o755 on a fresh project root at umask 022.  `.synaptic`
+    is where this project's evidence keys live, so an inherited list anywhere
+    in that subtree is an ACL property of the key material, not of a cache.
+    The durable-record half of this ruling and this half therefore construct
+    the subtree the same way.
+
+    *Reuse, and no new mechanism.*  This delegates to
+    `security._ensure_private_chain`, which is
+    `FileHmacAuthenticator._ensure_private_storage_directories`.  There is
+    deliberately no launcher-local walk or chmod loop: the B-11-R1 two-pass
+    ordering (repair leaf first, then create root first and validate last) is
+    the whole content of that fix, and a second copy of it would be a second
+    thing to keep correct.
+
+    *Why the import is inside the function.*  This module's header is
+    stdlib-only on purpose.  `__main__.main` hands the modal provider to
+    `ensure_and_reexec` before `_establish_engine_import_root` has run, so the
+    engine root is not on `sys.path` when this module is imported.  `security`
+    is engine-free at module level from the commit that moved its engine names
+    under `if TYPE_CHECKING:`, so this import is safe wherever it sits; keeping
+    it here leaves the module header's stdlib-only property readable without
+    having to check what `security` pulls in.
+    """
+
+    from .security import _ensure_private_chain
+
+    _ensure_private_chain(project_root / ".synaptic", leaf)
+
+
 def launcher_python(project_root: Path) -> Path:
     return _cache_root(project_root) / "modal-launcher-v1" / "bin" / "python"
 
@@ -358,14 +393,19 @@ def _uv_binary(project_root: Path) -> Path:
         raise RuntimeError(
             f"pinned uv bootstrap is incomplete; remove only {root} and retry"
         )
-    root.parent.mkdir(parents=True, exist_ok=True)
+    _ensure_cache_chain(project_root, root.parent)
     with tempfile.TemporaryDirectory(
         dir=root.parent, prefix=f".uv-{_UV_VERSION}-build-"
     ) as temporary:
         temporary_root = Path(temporary)
         archive = temporary_root / _UV_ARCHIVE
         payload = temporary_root / "payload"
-        payload.mkdir()
+        # SEC-F2: `os.replace` below renames this directory to `root`, so the
+        # mode it is born with is the mode the installed uv tree keeps.  A
+        # bare `mkdir()` gave it the umask (0o755 measured), and no chain runs
+        # over a path this short-lived, so it is created private and the chain
+        # validates the renamed result.
+        payload.mkdir(mode=0o700)
         _download(_UV_URL, archive)
         if _digest(archive) != _UV_ARCHIVE_SHA256:
             raise RuntimeError("pinned uv archive digest mismatch")
@@ -384,6 +424,7 @@ def _uv_binary(project_root: Path) -> Path:
             _UV_ARCHIVE_SHA256 + "\n", encoding="ascii"
         )
         os.replace(payload, root)
+    _ensure_cache_chain(project_root, root)
     return binary
 
 
@@ -400,11 +441,21 @@ def _uv_environment(project_root: Path) -> dict[str, str]:
 
     environment = _closed_child_environment(_ALLOWED_CHILD_ENV)
     cache = _cache_root(project_root)
+    uv_cache = cache / "uv-cache-v1"
+    uv_python = cache / "uv-python-v1"
+    # SEC-F2 (section 29.5(c)).  These two are named here and created by uv on
+    # first use, under uv's umask rather than ours -- the one pair of
+    # directories in this subtree that a third-party process would otherwise
+    # mint.  Pre-creating them through the chain means uv is handed a
+    # directory that already exists and is already private, so nothing under
+    # `.synaptic` is created by a process outside this package.
+    _ensure_cache_chain(project_root, uv_cache)
+    _ensure_cache_chain(project_root, uv_python)
     environment.update({
-        "UV_CACHE_DIR": str(cache / "uv-cache-v1"),
+        "UV_CACHE_DIR": str(uv_cache),
         "UV_LINK_MODE": "copy",
         "UV_NO_PROGRESS": "1",
-        "UV_PYTHON_INSTALL_DIR": str(cache / "uv-python-v1"),
+        "UV_PYTHON_INSTALL_DIR": str(uv_python),
         "UV_PYTHON_PREFERENCE": "only-managed",
     })
     return environment
@@ -417,7 +468,9 @@ def _build_runtime(*, project_root: Path, requirements: Path, expected: str) -> 
             "isolated Modal launcher exists with an incomplete or stale lock; "
             "remove only .synaptic/cache/modal-launcher-v1 and retry"
         )
-    root.parent.mkdir(parents=True, exist_ok=True)
+    _ensure_cache_chain(project_root, root.parent)
+    # `mkdtemp` creates at 0o700 by construction, and `os.replace` below keeps
+    # that mode on `root`; the chain then validates the renamed result.
     build = Path(tempfile.mkdtemp(dir=root.parent, prefix=".modal-launcher-v1-build-"))
     try:
         uv = _uv_binary(project_root)
@@ -463,6 +516,7 @@ def _build_runtime(*, project_root: Path, requirements: Path, expected: str) -> 
             encoding="utf-8",
         )
         os.replace(build, root)
+        _ensure_cache_chain(project_root, root)
     except BaseException:
         shutil.rmtree(build, ignore_errors=True)
         raise

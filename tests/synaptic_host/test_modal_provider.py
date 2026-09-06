@@ -16,6 +16,7 @@ import pytest
 
 from synaptic_tuner.api.v1 import ProjectContext
 import synaptic_host.modal_provider as modal_provider
+import synaptic_host.security as security
 from synaptic_host.modal_provider import (
     HOST_EVIDENCE_KEY_REF,
     WORKER_EVIDENCE_KEY_REF,
@@ -1162,7 +1163,7 @@ def test_f3_the_chain_carrier_never_mints_a_file(tmp_path: Path) -> None:
     )
 
     assert leaf.is_dir()
-    sentinel = leaf / modal_provider._SENTINEL_KEY_NAME
+    sentinel = leaf / security._SENTINEL_KEY_NAME
     assert not sentinel.exists() and not sentinel.is_symlink()
     assert sorted(entry.name for entry in leaf.iterdir()) == []
 

@@ -1086,6 +1086,65 @@ class FileHmacAuthenticator:
         return isinstance(tag, bytes) and hmac.compare_digest(expected, tag)
 
 
+# SEC-F2: the carrier authenticator in `_ensure_private_chain` needs a key
+# path to derive its leaf from, and a key reference to satisfy the
+# constructor.  Neither names anything real: the file is never created, read
+# or written, and the reference never signs or verifies.  They are spelled
+# distinctly so a grep for either evidence key ref cannot match them.
+_SENTINEL_KEY_NAME = ".private-chain-anchor"
+_SENTINEL_KEY_REF = "modal-private-chain-anchor-not-a-key"
+
+
+def _ensure_private_chain(private_root: Path, leaf: Path) -> None:
+    """Create and validate every directory from `private_root` down to `leaf`.
+
+    SEC-F2 (section 29.5(c)).  Two lanes reached a directory under
+    `.synaptic` with a bare `path.parent.mkdir(parents=True, exist_ok=True)`:
+    none of the B-11 private-chain construction, none of the B-11-R1
+    leaf-first repair, no validation.  In `modal_provider` those were the
+    durable-record writers, where the `0o600` on the record file was real but
+    the directory holding it inherited whatever the parent granted.  In
+    `launcher` they are the cache-root creations, which is the same subtree.
+    `.synaptic` is where this project's evidence keys live, so an inherited
+    list there is an ACL property of the key material, not of whatever the
+    directory happens to hold.
+
+    *Home.*  This lives beside `FileHmacAuthenticator` rather than in either
+    caller because both callers now need it, and because the launcher may not
+    import a module that reaches the engine: `launcher` runs before the engine
+    root is on `sys.path`, so its import of this helper has to land somewhere
+    the engine is not needed at import time.  That is this module, from the
+    commit that moved its engine imports under `if TYPE_CHECKING:`.
+
+    *Reuse, and no new mechanism.*  The ruling requires exactly that, so this
+    delegates to `FileHmacAuthenticator._ensure_private_storage_directories`
+    rather than restating its walk.  That method derives its chain from
+    `_private_storage_root` down to `key_path.parent` and runs the B-11-R1 two
+    passes over it: pass A repairs leaf first, so a member is judged before a
+    write higher up the chain can alter it, and pass B creates missing members
+    root first and validates every member unconditionally and last.  Keeping
+    one copy of that order matters more than the small awkwardness here: the
+    ordering rule is the whole content of B-11-R1, and a second copy of it
+    would be a second thing to keep correct.
+
+    The authenticator constructed here is a carrier for those two fields and
+    nothing else.  `_SENTINEL_KEY_NAME` names a file that is never created,
+    never read, and never written; the method uses only its parent.  A test
+    pins that the sentinel does not exist after this returns, so a future
+    change that started touching `key_path` would be caught rather than
+    silently minting a file under `.synaptic`.
+
+    It carries no key material and mints none.
+    """
+
+    carrier = FileHmacAuthenticator(
+        _lexical_absolute(Path(leaf)) / _SENTINEL_KEY_NAME,
+        key_ref=_SENTINEL_KEY_REF,
+    )
+    carrier._private_storage_root = _lexical_absolute(Path(private_root))
+    carrier._ensure_private_storage_directories(repair=True)
+
+
 class BoundedGrantProvider:
     """Issues one-process grants only within the configured paid-effect ceiling."""
 
