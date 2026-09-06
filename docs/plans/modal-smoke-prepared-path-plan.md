@@ -315,3 +315,82 @@ After the Require User Decision items are answered and the plan is approved:
 /PACT:orchestrate Modal smoke of the prepared path per docs/plans/modal-smoke-prepared-path-plan.md (scope A; R1 redesign gates any submit; all six pre-submit fixes; submit from a Linux container via docker.exe)
 ```
 The orchestrator references this plan and passes each phase its section. All work stays on `feat/submodule-cloud-api-v1-host`; PR #596 remains review-only; nothing merges to main.
+
+---
+
+## Correction 2026-09-06: citation baseline `0371d495`, and four claims this plan makes that the tree does not support
+
+**Baseline.** Every line number in this section is measured against the
+**committed** Host tree at `0371d495` with engine pin `5db2809d`, read from the
+committed blob with unproxied git and never from a working tree. Line numbers
+elsewhere in this plan were written against `d0888ed6` and the CODE phase moved
+most of them; where the two disagree, the figure here governs. The full
+re-anchoring table for section 29's citations, and the mechanism that produced
+the drift, are in section 29.15 of
+`docs/architecture/prepared-path-alpine-diagnostic.md` and are not repeated.
+
+**(1) `synaptic_host/redaction.py` does not exist.** This plan cites it twice,
+once with line ranges. There is no such path in the Host tree at any commit in
+this arc; the redactor is engine-side at
+`tuner/execution/providers/modal/redaction.py`, which this lane does not modify.
+The R4 item those two rows describe was withdrawn as a pattern change to a
+nonexistent module and re-issued as a Host-side property gate, which is what
+landed. Both rows are void as written; the gate that governs is the one in
+section 29 and its widened scope statement.
+
+**(2) The Modal committed-configuration read is not `GitDualCloneMaterializer`.**
+The row citing `synaptic_host/modal_provider.py:759` for that claim is
+superseded: the C1 site on this lane is `ModalHostConfigV1.load`
+(`modal_provider.py:346`) reached from `:686`, and the committed-blob read on the
+CLI side is `_read_committed_git_blob_v1` (`cli.py:606`, called at `:885`).
+`modal_provider.py:759` at this baseline is a parameter list.
+
+**(3) The engine pin moved and nothing else in the engine did.** The pin is now
+`5db2809d`, one commit past `ce539b70`, touching one file
+(`modal-runtime-v1.lock.json`, two insertions and two deletions) with every
+locked member blob byte-identical across the two commits. This plan's
+engine-side citations, written against `ce539b70`, therefore remain true. The
+regeneration **removes** one suite failure and adds none: 72 at `ce539b70`, 71 at
+`5db2809d`, the single flipped node being the modal runtime lock contract test.
+
+**(4) The roadmap plan is not in this worktree.** The row citing
+`docs/plans/submodule-first-training-product-roadmap-plan.md` points at a file
+that is untracked in the parent repository and absent here, so that citation
+cannot be verified from this tree and is not repointed. Treat it as an external
+pointer, not as a measured line.
+
+**The plan's own Host citations, re-anchored by symbol.** Rows marked *holds*
+are unchanged at this baseline.
+
+| module, symbol | as cited | measured at `0371d495` |
+|---|---|---|
+| `cli.py` `_DESTINATION` | `:23` | `:23` *holds* |
+| `cli.py` modal destination constraint | `:90` | `:90` *holds* |
+| `cli.py` C1 comment block | `:386-395` | `:386` *holds* |
+| `cli.py` `_read_committed_git_blob_v1` | `:874-884` | def `:606`, call `:885` |
+| `cli.py` `_establish_engine_import_root` | `:1001-1011`, `:1072` | def `:941`; docker arm `:1007`; modal arm `:1078` |
+| `launcher.py` `_uv_environment` (R7) | `:365-366` | `:431` |
+| `launcher.py` `_uv_binary` cache-hit arm | `:329-334` | def `:378`, arm `:386-391` |
+| `modal_provider.py` `_atomic_json` | `:404` | `:526` |
+| `modal_provider.py` `ModalHostConfigV1.load`, fixed filename (B-20) | `:237` | `:346`, literal at `:347` |
+| `modal_training.py` top-level engine import | `:35` | `:35` *holds* |
+| `artifact_destinations.py` `_ALLOWED_CONFIGURATION_KEYS` | `:62-64` | `:62` *holds* |
+| `sqlite_repository.py` engine import block | `:34-38` | `:34` *holds* |
+| `docker_training.py` destination refusal | `:693` | `:693` *holds* |
+| `docker_training.py` `SqliteTrainingRepository.from_context` | `:879` | `:879` *holds* |
+| `modal_resolver.py` `required_kinds` | `:768` | `:768` *holds* |
+
+Citations in this plan that point at a region rather than a named symbol were
+checked for file existence and for being in range at this baseline, and are left
+as written; they are prose pointers, not symbol anchors, and re-anchoring them
+would assert a precision the original did not claim.
+
+**B-20 as it actually stands.** The configuration filename is fixed inside
+`ModalHostConfigV1.load` and the only parameter that could override it,
+`config_path` at `modal_provider.py:684`, is consumed at `:686` and supplied by
+nothing on the training path (`modal_training.py` contains no occurrence of
+`config_path`). Route A on #457 therefore mutates the one shared configuration
+file rather than selecting a new one, which is why the names in that file changed
+during CODE. The previous and current values live in #446's handoff and are
+deliberately not repeated here: they carry the workspace handle, which these
+documents do not name.

@@ -8193,16 +8193,20 @@ exceeds the bound. **The submit container's PATH must be measured before submit*
 and kept under 4096 bytes. This is a container-recipe constraint, and the gate
 that records it is G2 below.
 
-**Correction 2026-09-06 (fourth): the citation above is wrong; the bound is
-real.** `launcher.py:628` is `python = launcher_python(project_root)`. The
-4096-byte bound on an allowlisted child environment **value** is in
-`_validated_child_environment_value` at `launcher.py:104-120`, with the byte test
-at `:113`, applied to the allowlisted child environment at `:141` and `:660`. The
-file's two other `4096` sites are unrelated and must not be cited for this: `:82`
-bounds a contained relative path, and `:170` bounds accumulated symlink text.
+**Correction 2026-09-06 (fourth, as repaired by 29.15; authored against Host
+`886f4166`): the citation above MOVED, it was not wrong; the bound is real.**
+The bound belongs to `_validated_child_environment_value`, not to a line number.
+At `886f4166`, the sha this Correction was authored against, `launcher.py:628`
+was the raise this paragraph and #432 both cite, so both were accurate when
+written; `python = launcher_python(project_root)` did not occupy `:628` until
+`d4758762`, thirteen seconds later. Follow-up #432 therefore needs a repoint by
+symbol, not a correction. The bound is applied at **three** call sites, not the
+two this Correction first named, and the third is the enforcement pass. The
+file's other `4096` sites are unrelated and must not be cited for this: one
+bounds a contained relative path and one bounds accumulated symlink text. For
+every line number, see the symbol table in 29.15, measured against `0371d495`.
 Nothing else in the paragraph changes — the measured PATH lengths, the
-constraint, and G2 as the recording gate all stand. Follow-up #432 carries the
-same wrong citation in its own text and needs the same repoint.
+constraint, and G2 as the recording gate all stand.
 
 **Correction 2026-09-06.** Item 2 above states where the engine goes but not
 how the binding is verified, and the verifier is the load-bearing half. The
@@ -8405,3 +8409,151 @@ clean released checkout.
 
 **Flag.** `CLAUDE.md` was not written by any route during this ruling, per the
 dispatch, and no route to it is proposed. Recorded here as required.
+
+### 29.15 Correction 2026-09-06 (fifth): the citation baseline, re-anchoring by symbol, and two authoring errors in the fourth Correction
+
+**Baseline.** Every line number in this subsection is measured against the
+**committed** Host tree at `0371d495` with engine pin `5db2809d`, read from the
+committed blob with unproxied git and never from a working tree. Where a figure
+below disagrees with a figure earlier in section 29, the earlier figure was
+correct at the commit that wrote it and this one governs at `0371d495`. Nothing
+is renumbered: 29.1 through 29.14 keep their headings and their prose except
+where a paragraph is named below.
+
+**The mechanism, recorded so it is not repeated.** The fourth Correction
+(886f4166) was measured against a working tree that carried a peer's
+`launcher.py` edits **staged but not committed**, and was then committed without
+them. The tree measured was never the tree committed, so two of its statements
+were false at its own commit and became true only thirteen seconds later when
+the peer landed `d4758762`. A dated Correction must therefore name the sha it
+was measured against, as the second ("against the tree at Host `ce5b2df2`") and
+third ("at Host `919045f5`") both do. The fourth names none. That omission is
+the root defect and this paragraph supplies the missing declaration
+retroactively: **the fourth Correction was authored against `886f4166`.**
+
+**(a) The 29.10 citation was correct when written; it MOVED, it was not wrong.**
+29.10 reads "the citation above is wrong". Strike that reading. At `886f4166`,
+the sha the fourth Correction was itself authored against, `launcher.py:628` was
+the `raise RuntimeError("child environment value is invalid")` that #432 cited,
+so #432's citation was accurate at its authoring sha. The line the fourth
+Correction reports at `:628` (`python = launcher_python(project_root)`) did not
+occupy `:628` until `d4758762`. The correct verb is **moved**. The same applies
+to the closing sentence: **#432 does not carry a wrong citation and needs no
+correction, only a repoint by symbol.** Its bound is real and its symbol is
+`_validated_child_environment_value`.
+
+**(b) Three call sites, not two.** The fourth Correction says the bound is
+"applied to the allowlisted child environment at `:141` and `:660`". Two. There
+are **three**, and there were three at every commit measured, including the
+fourth Correction's own authoring baseline: `886f4166` [447, 626, 633],
+`d4758762` [141, 482, 660], `f5ebc0b1` and `0371d495` [176, 536, 714]. This is
+not drift. It is an authoring error in the fourth Correction, it survived the
+repoint that fixed the line numbers, and the missing third site is the one that
+matters most: the enforcement pass at `:536`. Corrected here.
+
+**(c) The symlink bound also moved.** 29.10 says `:170` bounds accumulated
+symlink text. At `886f4166` that bound was at `:145` and `:170` was
+`def _python_identity`, so this statement too was false at its own commit and
+true only after `d4758762`. At `0371d495` the bound is at `:205`. The other two
+statements in that sentence, `:82` for the contained relative path and `:113`
+for the byte test, held at both shas and moved only later.
+
+**The `launcher.py` symbol table at `0371d495`** (735 lines):
+
+| symbol | as cited in section 29 | measured at `0371d495` |
+|---|---|---|
+| `_cache_root` | `:64-65` | `:64` |
+| `launcher_python` (definition) | — | `:103` |
+| contained relative path 4096 bound | `:82` | `:117` |
+| `_validated_child_environment_value` | `:104-120` | `:139` |
+| its byte test `len(encoded) > 4096` | `:113` | `:148` |
+| `_closed_child_environment` | `:123-145`, earlier `:620-639` | `:158` |
+| `raise RuntimeError("child environment value is invalid")` | `:143`, earlier `:628` | `:178` |
+| the **three** call sites of `_validated_child_environment_value` | `:141` and `:660` (two) | `:176`, `:536`, `:714` |
+| accumulated symlink text bound `total_text > 4096` | `:170` | `:205` |
+| `_uv_binary`, and its cache-hit return arm | `:325-331` | def `:378`, arm `:386-391` |
+| `_uv_environment` (R7) | `:365-366` | `:431` |
+| `--require-hashes --only-binary :all:` | `:401-402` | `:490` |
+| `python = launcher_python(project_root)` | `:628` | `:682` |
+| `_ensure_private_chain` lazy import and call (SEC-F2 launcher half) | — | `:98`, `:100` |
+
+**Re-anchoring the remaining Host citations of section 29.** Same baseline.
+Rows marked *holds* are unchanged and are listed so the census is complete.
+
+| module, symbol | as cited | measured at `0371d495` |
+|---|---|---|
+| `cli.py` `_DESTINATION` | `:23` | `:23` *holds* |
+| `cli.py` the two destination refusals | `:87-97`, `:847-857` | `:90`, `:853` |
+| `cli.py` `_read_committed_git_blob_v1` | `:874-884` | def `:606`, call `:885` |
+| `cli.py` `_establish_engine_import_root` | `:1001`, `:1072` | def `:941`; docker arm `:1007`; modal arm `:1078` |
+| `cli.py` `report_cause_line_v1` import and call | `:1114-1116` | `:1114`, `:1116` *holds* |
+| `__main__.py` B-18 fourth site `except BaseException as error` | `:43-46` | `:44` |
+| `__main__.py` cause-line import and call | `:60-62` | `:70`, `:72` |
+| `docker_training.py` destination refusal | `:693` | `:693` *holds* |
+| `security.py` `HOST_EVIDENCE_KEY_REF` | `modal_provider.py:52` | `security.py:686` |
+| `security.py` `class FileHmacAuthenticator`, `__init__` | `:654` | `:689`, `:692` |
+| `security.py` `from_context` | `:669` | `:702` |
+| `security.py` `_key` | `:963-965` | `:1005` |
+| `security.py` base64 of the raw key | `:1047` | `:1090` |
+| `security.py` `_ensure_private_chain` | — | `:1116` |
+| `modal_training.py` top-level engine import | `:35` | `:35` *holds* |
+| `modal_training.py` `FileHmacAuthenticator.from_context` | `:518` | `:641`, explicit `key_ref=HOST_EVIDENCE_KEY_REF` at `:642` |
+| `modal_training.py` `source_key_ref` | `:544` | `:678` |
+| `modal_training.py` `deployment_key_ref` | `:545` | `:679` |
+| `modal_training.py` `ModalTrainingIntentV1(` | `:553`, corrected in 29.11 to `:560` | `:694` |
+| `modal_provider.py` `WORKER_EVIDENCE_KEY_REF` | `:52` | `:57` |
+| `modal_provider.py` `class ModalHostConfigV1`, `runtime_secret_name` | `:136-141` | `:244`, `:250` |
+| `modal_provider.py` `function_name` | same paragraph | `:402` |
+| `modal_provider.py` Secret key-set refusal | `:168` | `:277` |
+| `modal_provider.py` `_atomic_json`, its `FileExistsError` | `:403-410` | `:526`, `:542` |
+| `modal_provider.py` `_deploy_journal` | `:745-760` | `:921` |
+| `modal_provider.py` `EnvironmentHmacAuthenticator(` | `:752-755` | `:932`, environment key at `:933` |
+| `modal_provider.py` redeploy refusal `FileExistsError` | `:842` | `:1032` |
+| `modal_provider.py` guarded Secret creation | `:902-907` | `:1096-1097` |
+| `modal_provider.py` the worker key into the Secret | `:906` | `:1101` |
+| `modal_provider.py` `_ensure_private_chain` call sites | `:578`, `:611`, `:1303` | `:532`, `:565`, `:1286` |
+| `modal_resolver.py` `key_ref=baseline.intent.key_ref` | `:744` | `:744` *holds* |
+
+**The engine citations are unaffected and are not repointed.** The pin moved
+`ce539b70` to `5db2809d` in **one** commit touching **one** file,
+`modal-runtime-v1.lock.json`, two insertions and two deletions, with every
+locked member blob byte-identical across the two commits. No engine line
+therefore moved, and section 29's engine citations, authored against `ce539b70`,
+remain true at `5db2809d`.
+
+**A correction to what 29.4 expects of the B-19 fix.** The regeneration
+**removes** one failure and adds none: the engine suite fails 72 at `ce539b70`
+and 71 at `5db2809d`, symmetric difference one, and the single node that flips is
+the modal runtime lock contract test. Any reading in which the fix trades one
+failure for another is a swapped reading of the same two numbers and is wrong.
+Separately, the lock is mentioned in **eleven** files, **eight** of them outside
+`config.py` and the tests.
+
+**`_ensure_private_chain` takes no keyword-only parameter.** Its signature at
+`security.py:1116` is `(private_root: Path, leaf: Path)` and all four call sites
+at this baseline (`launcher.py:100`, `modal_provider.py:532`, `:565`, `:1286`)
+pass positionally. No paragraph of section 29 should describe `leaf` as
+keyword-only.
+
+**B-20 at this baseline.** The configuration filename is fixed inside
+`ModalHostConfigV1.load` (`modal_provider.py:346`, the literal at `:347`), and
+the only parameter that could override it, `config_path` at `modal_provider.py:684`,
+is consumed at `:686` and is supplied by nothing on the training path;
+`modal_training.py` contains no occurrence of `config_path`. Route A on #457
+therefore mutates the one shared configuration file rather than selecting a new
+one, which is why the names in that file changed during CODE. The previous and
+current values are recorded in #446's handoff and are deliberately not repeated
+here: they carry the workspace handle, which these documents do not name.
+
+**The in-code comment at `__main__.py:54-60` is left alone.** It repeats the
+pre-`d4758762` figures (`:628`, `:113`, `:104-120`, `:143`, `:123-145`), but it
+opens by saying "Cited by SYMBOL, not by line" and names every symbol correctly,
+so it is accurate on its own terms. It is application code and out of scope for
+a docs-only pass; noted here only so a later reader does not mistake it for a
+second uncorrected citation.
+
+**Census.** 160 code citations across section 29 and the Modal smoke plan,
+counted by instrument, not by hand: 94 Host, 63 engine, 3 neither (one
+self-reference into this document, one into the roadmap plan that is not in this
+worktree, one into the checked-in inventory script under `.skills/` and its three
+generated mirrors).
