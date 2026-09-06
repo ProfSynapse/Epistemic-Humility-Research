@@ -1422,12 +1422,24 @@ def _k3_container_signature(secret_value, key_ref, payload):
         os.environ.pop(_K3_ENVIRONMENT_KEY, None)
 
 
-def _k3_evidence(binding, declared_ref, signing_secret):
+def _k3_evidence(binding, declared_ref, signing_secret, *, signing_ref=None):
     """Source evidence declaring `declared_ref`, signed by `signing_secret`.
 
-    The declared ref and the signing key are separate arguments on purpose:
-    that separation is what lets an arm mutate the KEY while holding every
-    declared field constant, so a refusal cannot be the declared-field guard.
+    Three independent arguments, and the third is the point.  An arm can
+    mutate the signing KEY while holding every declared field constant, which
+    is what stops a refusal from being the declared-field guard; and it can
+    also state the ref the SIGNER presents, which defaults to the declared one.
+
+    Why the signing ref is not simply the declared ref.  The real post-change
+    container carries the WORKER ref and its own authenticator refuses any
+    other, so it could never sign under the host ref.  A forger modelled by
+    signing under the ref it declares is therefore a forger that cannot exist.
+    That distinction is invisible today because `key_ref` is NOT an input to
+    the MAC: it is measured to compute over the purpose, a NUL, and the
+    payload, with the ref used only to gate the key lookup, so both spellings
+    produce byte-identical tags.  Passing the worker ref here keeps the test
+    honest against a future that binds the ref into the MAC, in which the real
+    forger's tags would change and a self-referential one's would not.
     """
 
     import base64
@@ -1448,7 +1460,9 @@ def _k3_evidence(binding, declared_ref, signing_secret):
         attestation_digest="0" * 64,
     )
     payload = draft.authenticated_payload  # excludes the tag and the digest
-    tag = _k3_container_signature(signing_secret, declared_ref, payload)
+    tag = _k3_container_signature(
+        signing_secret, signing_ref or declared_ref, payload
+    )
     return AuthenticatedSourceEvidenceV1(
         **fields,
         tag_base64=base64.b64encode(tag).decode("ascii"),
@@ -1526,7 +1540,10 @@ def test_k3_a_container_signed_source_attestation_is_refused(
     ]
 
     # K3.  Identical declared fields; only the signing key differs.
-    forged = _k3_evidence(binding, HOST_EVIDENCE_KEY_REF, worker.encoded_key)
+    forged = _k3_evidence(
+        binding, HOST_EVIDENCE_KEY_REF, worker.encoded_key,
+        signing_ref=WORKER_EVIDENCE_KEY_REF,
+    )
     recorder = _RecordingEvidenceAuthenticator(host)
     with pytest.raises(SourceLockError):
         _k3_admit(recorder, forged, HOST_EVIDENCE_KEY_REF)
@@ -1546,6 +1563,18 @@ def test_k3_the_declared_ref_guard_refuses_before_reaching_verify(
     audience guard, which runs before any signature is checked.  A K3 written
     that way would be green for the wrong reason.  The discriminator here is an
     EMPTY verify call list, measured, not a comparison of message text.
+
+    Why the positive control below is load-bearing and not ceremony.  A
+    refusal plus an empty call list means only "refused before reaching
+    verify", which is a LARGER set than the declared-field guard: the window
+    validation and the payload digest comparison also precede the verify call,
+    and either produces the identical observation.  That was measured, not
+    assumed -- an expired window on this same fixture refuses with the same
+    outer message and an equally empty call list.  So the control admits the
+    SAME fixture with the host ref declared and requires that it reaches
+    verify.  That proves the fixture is otherwise admissible, which leaves the
+    declared ref as the only operative difference and makes the empty list
+    attributable to the guard this test is named for.
     """
 
     from tuner.project.source_bundle import (
@@ -1564,6 +1593,18 @@ def test_k3_the_declared_ref_guard_refuses_before_reaching_verify(
         SOURCE_LOCK_BINDING_SCHEMA, SOURCE_LOCK_SCHEMA, "c" * 64
     )
 
+    # Control: the same fixture, host ref declared, DOES reach verify.
+    control = _RecordingEvidenceAuthenticator(host)
+    _k3_admit(
+        control,
+        _k3_evidence(binding, HOST_EVIDENCE_KEY_REF, host.encoded_key),
+        HOST_EVIDENCE_KEY_REF,
+    )
+    assert [call[1:] for call in control.verify_calls] == [
+        (HOST_EVIDENCE_KEY_REF, True)
+    ]
+
+    # One field changes: the ref the evidence declares.
     recorder = _RecordingEvidenceAuthenticator(host)
     with pytest.raises(SourceLockError):
         _k3_admit(
