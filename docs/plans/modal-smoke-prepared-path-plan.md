@@ -385,12 +385,22 @@ checked for file existence and for being in range at this baseline, and are left
 as written; they are prose pointers, not symbol anchors, and re-anchoring them
 would assert a precision the original did not claim.
 
-**B-20 as it actually stands.** The configuration filename is fixed inside
-`ModalHostConfigV1.load` and the only parameter that could override it,
-`config_path` at `modal_provider.py:684`, is consumed at `:686` and supplied by
-nothing on the training path (`modal_training.py` contains no occurrence of
-`config_path`). Route A on #457 therefore mutates the one shared configuration
-file rather than selecting a new one, which is why the names in that file changed
-during CODE. The previous and current values live in #446's handoff and are
-deliberately not repeated here: they carry the workspace handle, which these
-documents do not name.
+**B-20 as it actually stands.** The configuration path is fixed inside
+`ModalHostConfigV1.load` (`modal_provider.py:346`, resolving
+`context.config_root / "providers" / "modal.json"` at `:347`), and the only
+parameter that could override it, `config_path` at `modal_provider.py:684`, is
+consumed at `:686` and supplied by nothing on the training path:
+`modal_training.py` contains no occurrence of `config_path`. A dedicated
+environment cannot be selected by adding a second configuration file, so route A
+on #457 mutates the one shared file, `training/providers/modal.json`, in place.
+Four values moved: `environment_name` from `main` to `synaptic-smoke-v1`,
+`control_volume_name` from `synaptic-training-control-v1` to
+`synaptic-training-control-smoke-v1`, `artifact_volume_name` from
+`synaptic-training-artifacts-v1` to `synaptic-training-artifacts-smoke-v1`, and
+`runtime_secret_name` from `synaptic-training-runtime-v1` to
+`synaptic-training-runtime-smoke-v1`. Nothing there is generalised: no value in
+this file identifies a product, a consumer or a workspace, and the workspace
+handle is not a configuration value at all. It is read at run time from the
+provider SDK and carried on the client binding. Section 29.15 carries the same
+table with the field-level citations and a measured note on how the binding's
+two workspace-derived positions are filled.

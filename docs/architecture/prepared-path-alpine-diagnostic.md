@@ -8535,15 +8535,56 @@ at this baseline (`launcher.py:100`, `modal_provider.py:532`, `:565`, `:1286`)
 pass positionally. No paragraph of section 29 should describe `leaf` as
 keyword-only.
 
-**B-20 at this baseline.** The configuration filename is fixed inside
-`ModalHostConfigV1.load` (`modal_provider.py:346`, the literal at `:347`), and
-the only parameter that could override it, `config_path` at `modal_provider.py:684`,
-is consumed at `:686` and is supplied by nothing on the training path;
-`modal_training.py` contains no occurrence of `config_path`. Route A on #457
-therefore mutates the one shared configuration file rather than selecting a new
-one, which is why the names in that file changed during CODE. The previous and
-current values are recorded in #446's handoff and are deliberately not repeated
-here: they carry the workspace handle, which these documents do not name.
+**B-20 at this baseline, with the file and its fields named.** The configuration
+path is fixed inside `ModalHostConfigV1.load` (`modal_provider.py:346`), which
+resolves `context.config_root / "providers" / "modal.json"` at `:347`. The only
+parameter that could override it, `config_path` at `modal_provider.py:684`, is
+consumed at `:686` and is supplied by nothing on the training path:
+`modal_training.py` contains no occurrence of `config_path` at all. A dedicated
+environment therefore cannot be selected by adding a second configuration file,
+and route A on #457 mutates the one shared file, `training/providers/modal.json`,
+in place.
+
+The loader admits an exact key set (`from_mapping`, `modal_provider.py:294`, the
+set at `:298-300`), so the file carries no comment key and this paragraph is
+where the change is recorded. Four values moved, one per field:
+
+| field | before | after |
+|---|---|---|
+| `environment_name` | `main` | `synaptic-smoke-v1` |
+| `control_volume_name` | `synaptic-training-control-v1` | `synaptic-training-control-smoke-v1` |
+| `artifact_volume_name` | `synaptic-training-artifacts-v1` | `synaptic-training-artifacts-smoke-v1` |
+| `runtime_secret_name` | `synaptic-training-runtime-v1` | `synaptic-training-runtime-smoke-v1` |
+
+Nothing is generalised in that table. No value in this file identifies a product,
+a consumer or a workspace: the fields are the system's own resource names in its
+own namespace, and the workspace handle is not a configuration value at all. It
+is read at run time from the provider SDK (`modal_provider.py:746`, named at
+`:750`) and compared on every scope observation (`:775-776`). It is then carried
+on the engine's `ModalClientBinding`, whose fields are, in order, `account_ref`,
+`workspace_ref`, `environment_ref`, `client_ref`, `sdk_version`, and which the
+positional construction at `modal_provider.py:758-760` fills with the opaque
+reference built at `:754` first and the plaintext workspace name second. The
+opaque value therefore lands in `account_ref` and the plaintext name in
+`workspace_ref`, and the binding's `safe_ref` guard validates without
+transforming. That ordering is recorded here as measured; whether the two
+positions are as intended is a code question this docs pass does not decide, and
+it is raised to the lead as an observation. `runtime_secret_keys` is not in the
+table because it is not configurable: `__post_init__` fixes it at `:277` and
+refuses any other pair.
+
+**Correction 2026-09-06 (this subsection, against baseline `0371d495`): the
+values above were withheld on a premise that was wrong, not stale.** The first
+revision of this subsection, landed at `aae09f8d`, said the configuration values
+were not repeated here because they carry the workspace handle. That was never
+measured. `ModalHostConfigV1` declares `environment_name`, `profile`, `training`,
+`control_volume_name`, `artifact_volume_name`, `runtime_secret_name`,
+`runtime_secret_keys`, `runtime_environment`, `timeout_seconds`,
+`maximum_cost_minor_units` and `currency` (`modal_provider.py:244-255`), and no
+member of that set is a workspace handle. This is an authoring error of the same
+class this subsection corrects elsewhere: a citation-shaped claim asserted from
+prose rather than from the tree. It is recorded rather than silently replaced so
+that the count of defects this pass introduced is honest.
 
 **The in-code comment at `__main__.py:54-60` is left alone.** It repeats the
 pre-`d4758762` figures (`:628`, `:113`, `:104-120`, `:143`, `:123-145`), but it
@@ -8551,6 +8592,23 @@ opens by saying "Cited by SYMBOL, not by line" and names every symbol correctly,
 so it is accurate on its own terms. It is application code and out of scope for
 a docs-only pass; noted here only so a later reader does not mistake it for a
 second uncorrected citation.
+
+**Supersession table: where two sources of a figure disagree.** Several figures
+reach this pass from more than one place, measured at different shas. Rather than
+choose silently, each conflict and its governing value:
+
+| claim | sources, with vintage | governs at `0371d495` | why |
+|---|---|---|---|
+| `--require-hashes --only-binary :all:` | section 29 `:401-402`; the #423 pending item `:437`; audit Y-A `:490` | **`:490`** | Y-A measured at HEAD and reproduces here. The pending item's `:437` was measured at an intermediate sha, before `f5ebc0b1`. |
+| `_uv_environment` (R7) | section 29 `:365-366`; the #423 pending item `:390-410`; audit Y-A `:431` | **`:431`** | Same reason. Y-A and this pass agree; the pending item is intermediate. |
+| `_closed_child_environment` | section 29 `:620-639`; the #423 pending item `:123-145` | **`:158`** | Both predate `f5ebc0b1`. Neither was measured at this baseline. |
+| the uv cache-hit arm | section 29 `:325-331`; audit Y-A `:383-388` | **`_uv_binary` def `:378`, arm `:386-391`** | Y-A points at the right function. `:383-385` are the root, binary and stamp bindings; the arm proper begins at the `if` on `:386` and returns at `:391`. The tighter span is cited with the function named, so the difference cannot mislead. |
+| `_ensure_private_chain` call sites | the #464 lead note `:578`, `:611`, `:1303` (three) | **four: `launcher.py:100`, `modal_provider.py:532`, `:565`, `:1286`** | The note's three were `modal_provider`'s three at an earlier sha and have moved. The fourth did not exist when the note was written: it arrived with the SEC-F2 launcher half (#466). The note's substantive point, that the parameter is positional and not keyword-only, holds at all four. |
+| `HOST_EVIDENCE_KEY_REF` home | section 29 `modal_provider.py:52` | **`security.py:686`** | Superseded by the LOW-2 single-definition change, as the #423 fourth addendum states. `modal_provider.py:57` is `WORKER_EVIDENCE_KEY_REF`, a different constant. |
+
+The rule this table applies: where an intermediate-sha figure and a
+baseline-measured figure disagree, the baseline governs, because a document
+citation is a claim about one commit and this document now declares which.
 
 **Census.** 160 code citations across section 29 and the Modal smoke plan,
 counted by instrument, not by hand: 94 Host, 63 engine, 3 neither (one
