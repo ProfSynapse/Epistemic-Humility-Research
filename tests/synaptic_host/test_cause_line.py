@@ -347,3 +347,112 @@ def test_a_raise_inside_a_helper_renders_both_frames_deciding_frame_last(
     solo = capsys.readouterr().err.strip()
     assert ", from " not in solo, solo
     assert solo.endswith(" in _package_root"), solo
+
+
+# --- R4 property gate (section 29, fourth dated Correction, 886f4166) --------
+#
+# R4 was withdrawn as a pattern change and re-issued as a property gate.  The
+# measured reason: the Modal lane has no surface for a redactor to guard.  The
+# engine half emits only closed `(exit_code, token)` pairs, and the Host half
+# emits no free text at all -- its one operator-visible renderer is
+# `report_cause_line_v1` above, which renders an exception CLASS and a frame
+# and never the exception's message.
+#
+# So the credential-exposure goal is met today by construction rather than by
+# redaction.  What the gate buys is that the FIRST future change which renders
+# free text on this lane fails loudly, instead of silently opening the gap the
+# withdrawn patterns were meant to cover.
+#
+# Scope, per the Correction at 052da1a6: HOST-SIDE ONLY.  The Modal container's
+# own console is NOT covered here and is covered at TEST by the post-run log
+# sweep.  Do not read a green here as covering that surface.
+
+_LANE_MODULES = ("modal_provider.py", "modal_training.py")
+
+
+def _free_text_emitters(source: str) -> list[str]:
+    """Report every free-text emission site in `source`, as sorted labels.
+
+    Four shapes, because those are the four ways this package could grow an
+    unredacted operator-visible surface: a bare `print`, a `logging` import,
+    any reference to `sys.stdout`/`sys.stderr`, and a `.write(` onto either.
+    Returns labels rather than a bool so a failure names the line.
+    """
+
+    found: list[str] = []
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Call):
+            function = node.func
+            if isinstance(function, ast.Name) and function.id == "print":
+                found.append(f"print at :{node.lineno}")
+            if (
+                isinstance(function, ast.Attribute)
+                and function.attr == "write"
+                and isinstance(function.value, ast.Attribute)
+                and function.value.attr in ("stdout", "stderr")
+            ):
+                found.append(f"{function.value.attr}.write at :{node.lineno}")
+        elif isinstance(node, ast.Attribute) and node.attr in ("stdout", "stderr"):
+            found.append(f"{node.attr} reference at :{node.lineno}")
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.split(".")[0] == "logging":
+                    found.append(f"import logging at :{node.lineno}")
+        elif isinstance(node, ast.ImportFrom):
+            if (node.module or "").split(".")[0] == "logging":
+                found.append(f"from logging at :{node.lineno}")
+    return sorted(found)
+
+
+def test_the_host_modal_lane_renders_no_free_text() -> None:
+    """R4 as a property gate: this lane has no unredacted text surface.
+
+    Counter-tested in the same test.  A sweep that reports "no findings" is
+    worth nothing until its detector has been shown to fire, and an AST sweep
+    over a file it failed to find reports exactly the same empty list as a
+    clean one -- so the module sizes are asserted too.
+    """
+
+    # The detector fires.  Each shape is exercised, so a future edit that
+    # breaks one arm cannot leave the gate silently half-blind.
+    violating = textwrap.dedent(
+        """
+        import logging
+        import sys
+        from logging import getLogger
+
+        def emit(secret):
+            print(secret)
+            sys.stderr.write(secret)
+            sys.stdout.write(secret)
+        """
+    )
+    fired = _free_text_emitters(violating)
+    assert [label.split(" at ")[0] for label in fired] == [
+        "from logging", "import logging", "print",
+        "stderr reference", "stderr.write", "stdout reference", "stdout.write",
+    ], fired
+
+    # And it reports nothing on a closed module.
+    assert _free_text_emitters("def f(x):\n    return (124, 'locked_source_mismatch')\n") == []
+
+    # The sweep proper.  `synaptic_host` is imported above via `cli`, so the
+    # package directory is derived, never guessed.
+    package_root = Path(cli.__file__).resolve().parent
+    for name in _LANE_MODULES:
+        module = package_root / name
+        assert module.is_file(), (
+            f"{name} is missing, so the sweep below would pass vacuously."
+        )
+        source = module.read_text(encoding="utf-8")
+        assert len(source) > 1000, (
+            f"{name} is {len(source)} bytes; too small to be the real module, "
+            "so an empty finding list would prove nothing."
+        )
+        assert _free_text_emitters(source) == [], (
+            f"{name} now renders free text on the Modal lane, which has no "
+            "redactor. Section 29's fourth Correction withdrew R4 because this "
+            "lane was closed by construction. It is no longer closed: either "
+            "route this through the cause line, which renders no message, or "
+            "re-open R4 as a real redaction change."
+        )

@@ -192,7 +192,48 @@ def test_options_may_reorder_but_each_occurs_once(tmp_path: Path) -> None:
 
 
 def test_destination_rejects_before_config_or_engine_effects(monkeypatch) -> None:
-    monkeypatch.setattr(cli, "_read_config", lambda *_args: pytest.fail("read"))
+    """The destination refusal precedes every read and every engine effect.
+
+    The guard used to patch `_read_config`.  After C1 (section 29.5(f)) the
+    modal arm no longer reaches that function -- it has no production caller
+    at all -- so the guard could never fire and the ordering property was
+    pinned on a dead path while still reporting green.
+
+    It is re-pointed at the read C1 actually performs.  Measured at this
+    commit: the destination refusal returns at `cli.py:861-862` and the
+    committed-blob read is at `:885`, both inside
+    `_prepare_training_run_ingress_v1`.
+
+    Two arms, in this order, because one alone cannot discriminate.  The
+    second arm keeps the absent engine root the original guard used: it pins
+    that no engine effect precedes the refusal.  But the strict `resolve` of
+    that missing root sits ABOVE the read, so it returns BOOTSTRAP_UNAVAILABLE
+    under a refusal-below-read mutation and the reader patch never runs --
+    red for a reason that says nothing about the read.  The first arm
+    therefore supplies the real engine root, so the reader patch is the only
+    thing between the refusal and the read, and it is the arm that fires
+    first.  The patch records the call rather than only raising, because the
+    thin wrapper catches whatever escapes and returns INTERNAL_FAILURE, which
+    names the swallowing site and not the read.  Measured with the refusal
+    moved below the read: `reads` is non-empty and this test reds on that
+    assertion; with the refusal above the read, both arms pass.
+    """
+
+    reads: list[str] = []
+
+    def _refuse(*_a, **_k):
+        reads.append("read")
+        pytest.fail("read")
+
+    monkeypatch.setattr(cli, "_read_committed_git_blob_v1", _refuse)
+    reached = prepare_training_run_ingress_v1(
+        _argv(destination="hf://bucket"), project_root=ROOT, engine_root=ENGINE
+    )
+    assert reads == [], "the committed-blob read ran before the destination refusal"
+    assert reached.code is TrainingRunCommandCodeV2.DESTINATION_INVALID
+    assert reached.provider_ref == "modal"
+    assert reached.destination_ref is reached.config_ref is None
+
     result = prepare_training_run_ingress_v1(
         _argv(destination="hf://bucket"), project_root=ROOT, engine_root=Path("missing")
     )

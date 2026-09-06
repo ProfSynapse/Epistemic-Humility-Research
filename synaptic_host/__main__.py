@@ -44,10 +44,20 @@ def main(argv: list[str] | None = None) -> int:
     except BaseException as error:
         # B-18 fourth site (section 29.5(b)).  This catch used to leave the
         # exception unbound, unchained and unlogged, so a launcher refusal --
-        # `launcher.py:628` refuses an allowlisted child environment value
-        # over the 4096-byte bound, which a long operator PATH produces
-        # (#432) -- reached the operator as a bare BOOTSTRAP_UNAVAILABLE that
-        # named nothing.  Gate G6 requires a refusal to name its own cause.
+        # `launcher._closed_child_environment` raises "child environment value
+        # is invalid" when `launcher._validated_child_environment_value`
+        # refuses a value over its 4096-byte bound, which a long operator PATH
+        # produces (#432) -- reached the operator as a bare
+        # BOOTSTRAP_UNAVAILABLE that named nothing.  Gate G6 requires a
+        # refusal to name its own cause.
+        #
+        # Cited by SYMBOL, not by line.  The section 29 paragraph and #432
+        # both cite `launcher.py:628` for this bound; measured here, the byte
+        # test is at `:113` inside `_validated_child_environment_value`
+        # (`:104-:120`), the raise is at `:143` inside
+        # `_closed_child_environment` (`:123-:145`), and `:628` is
+        # `python = launcher_python(project_root)`.  Lines move; the symbols
+        # are what this comment is about.
         #
         # The result contract does NOT widen: the envelope is what the run
         # driver parses, so the code, the exit status and stdout stay
