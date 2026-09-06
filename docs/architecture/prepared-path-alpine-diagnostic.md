@@ -7908,9 +7908,9 @@ The `.synaptic` tree is where this lane's evidence keys live.
 *Ruling on the owed decision (2): the fix covers the whole `.synaptic` subtree
 this lane writes, not only `state/modal`.* The reason is the launcher cache. The
 uv binary cache root is `project_root/.synaptic/cache` (`launcher.py:64-65`), and
-its cache-hit arm at `:325-331` returns the cached binary when the file exists
+its cache-hit arm at `:385-391` returns the cached binary when the file exists
 and a sibling stamp *contains* the expected hex — **the binary itself is not
-re-hashed** (the digest is verified only on first fetch, at `:345-346`). The
+re-hashed** (the digest is verified only on first fetch, at `:410-411`). The
 integrity of that cache is therefore an ACL property of `.synaptic/cache`, not a
 launcher property. Scoping the fix to `state/modal` would leave the cache
 governed by nothing. #170 (durable rows database keeps inherited ACEs after B-11
@@ -7925,12 +7925,12 @@ the same treatment to the launcher cache root. Reuse; introduce no new mechanism
 **(d) Ruling on the owed decision (3): TWO findings on the launcher leakage.**
 The PREPARE recommendation is adopted, on its own reasoning and on one addition.
 
-- **R7 stays the environment copy.** `_uv_environment` at `launcher.py:365-366`
+- **R7 stays the environment copy.** `_uv_environment` at `launcher.py:431`
   opens with `environment = dict(os.environ)` and hands the whole operator
   environment to the uv subprocesses. The submit host now holds the provider
   token pair by user decision, so this is the one code path that hands
   credentials to a third-party process tree. *Shape:* build the uv environment
-  from a closed allowlist, the way `:620-639` already builds the child
+  from a closed allowlist, the way `:158` already builds the child
   environment. The closed constructor exists in the same file; use it.
 - **The cache-hit integrity gap is a separate finding, ruled with SEC-F2 and
   #170**, because its fix surface is the `.synaptic` ACL chain, not the
@@ -8164,7 +8164,7 @@ tied to the line that imposes it:
 1. **The SDK at exactly 1.5.4.** Not a floor, not a range: `deployment_v1.py:95`
    and `facade.py:71-74` compare the version for equality. Install from the
    hash-locked authority `synaptic-tuner/requirements/modal-launcher-v1.lock`
-   with `--require-hashes --only-binary :all:`, matching `launcher.py:401-402`.
+   with `--require-hashes --only-binary :all:`, matching `launcher.py:490`.
    No resolver.
 2. **The engine at the pinned sha on `sys.path`, established in code.** Both
    top-level packages are imported and both live at the submodule root, so one
@@ -8609,6 +8609,74 @@ choose silently, each conflict and its governing value:
 The rule this table applies: where an intermediate-sha figure and a
 baseline-measured figure disagree, the baseline governs, because a document
 citation is a claim about one commit and this document now declares which.
+
+**Correction 2026-09-06 (sixth): the five body citations repaired in place, and
+one claim the repair does not make true.** Audit Y-A was not closed by the
+re-anchoring table above. A present-tense citation in the body asserts something
+where it is read, and a table elsewhere only lets a reader who finds the table
+discover the body is wrong, so the figures are now repaired in the sentences
+themselves. Five, not the two the dispatch named, all in section 29's body and
+all measured against `91cd678b`, where `launcher.py` is byte-identical to
+`0371d495`:
+
+| where | symbol or construct | was | now |
+|---|---|---|---|
+| 29.5(c) | the uv cache-hit arm, stamp binding through the return | `:325-331` | **`:385-391`** |
+| 29.5(c) | the first-fetch digest check and its raise | `:345-346` | **`:410-411`** |
+| 29.5(d) | `_uv_environment` | `:365-366` | **`:431`** |
+| 29.5(d) | the closed child-environment constructor | `:620-639` | **`:158`** |
+| 29.10 | `--require-hashes --only-binary :all:` | `:401-402` | **`:490`** |
+
+All five MOVED; none was wrong when written. `git log -S` puts every one in
+`97a478cc`, the commit that ruled section 29, and at that sha each pointed
+exactly at what its sentence describes: `:365-366` was `def _uv_environment`
+followed by `environment = dict(os.environ)`, `:401-402` were the two pip
+argument lines, `:325-331` ran from the stamp binding through the cache-hit
+return, `:345-346` were the digest check and its raise, and `:620-639` was the
+inline child-environment construction. Two spans are repaired to spans rather
+than to the single lines an earlier reading proposed, because the originals
+pointed at constructs: `:385-391` keeps the stamp binding the original included,
+and `:410-411` keeps the raise. `:158` is a refactor rather than a move, the
+inline block having become `_closed_child_environment`.
+
+One thing this repair does NOT do. The 29.5(d) R7 bullet still reads that
+`_uv_environment` "opens with `environment = dict(os.environ)` and hands the
+whole operator environment to the uv subprocesses". That was true when the
+ruling was written and is FALSE at this baseline: R7 was implemented during
+CODE, and the function now builds from the same closed allowlist as the re-exec
+child, with its own docstring at `:432-438` recording the change in the past
+tense. The citation is repaired so the symbol resolves; the sentence is left as
+the ruling's statement of the defect it was ruling on. A reader should take that
+bullet as the problem statement that directed the fix, not as a description of
+the tree. Changing its verb is a prose change outside an in-place citation
+repair and is left to the lead.
+
+Two citations are deliberately NOT repaired. `launcher.py:628` in 29.10 is wrong
+at this baseline and stays, because the dated fourth Correction immediately
+below it exists to say so; repairing the figure would leave that Correction
+correcting nothing. The figures quoted inside this subsection are quotations
+of what other sources said and are not claims about the tree.
+
+**Census by instrument at `91cd678b`.** Fourteen `launcher.py:<n>` citations
+across both documents by regex, ten here and four in the Modal smoke plan. A
+paragraph-scoped resolver, which attributes a bare `:<n>` to the last `.py` file
+named in its own paragraph, finds six more inside section 29 that resolve to
+`launcher.py`; section 29 carries 143 such bare continuations in all, across
+fourteen distinct files, and only the launcher ones were swept here. Five of the
+section 29 body citations were mismatches and are repaired above, and three of
+those five (`:325-331`, `:345-346`, `:620-639`) are bare continuations that a
+`launcher\.py:` regex cannot see, which is why the dispatch's two became five.
+The rest resolve correctly and are untouched: `launcher.py:64-65` (`_cache_root`)
+in 29.5(c), `launcher.py:100` (the `_ensure_private_chain` call) twice in this
+subsection, and `launcher.py:43` (inside `_FIXED_BOOTSTRAP` at `:38-46`) twice in
+section 24. The three `:628` figures in 29.10 are the deliberate non-repair
+above. The Modal smoke plan carries `launcher.py:365-366` in its change table,
+repaired there to `:431` for the same reason; its three other launcher figures
+(`:632-639`, `:319-322`, `:329-334` with `:345-351`) are also stale at this
+baseline but sit in rows recording dated user decisions and in an open-questions
+checklist, so they are reported to the lead as a separate finding rather than
+rewritten here, because editing a row that records what a user decided on a date
+is not an in-place citation repair.
 
 **Census.** 160 code citations across section 29 and the Modal smoke plan,
 counted by instrument, not by hand: 94 Host, 63 engine, 3 neither (one
