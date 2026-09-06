@@ -56,8 +56,8 @@ Five items bear on this runbook. None of them changed a step.
    the record gives.** The instruction is right and is followed: a step that
    wrote a new configuration file to select the environment would not work. The
    *mechanism* relayed from blocker #457, that the filename is fixed in code
-   with no path parameter, is **stale at this sha**. Measured in the released
-   checkout:
+   with no path parameter, is **false, and was already false when it was
+   written**. Measured in the released checkout:
 
    ```
    sed -n '345,350p' synaptic_host/modal_provider.py
@@ -70,14 +70,51 @@ Five items bear on this runbook. None of them changed a step.
      -> ) -> "ModalProviderAuthorityV1":
      ->     config = ModalHostConfigV1.load(context, config_path)
 
-   rtk proxy grep -rn "ModalProviderAuthorityV1.load" synaptic_host/
-     -> synaptic_host/modal_training.py:596:  authority = ModalProviderAuthorityV1.load(context)
+   rtk proxy grep -rn "ModalProviderAuthorityV1.load|ModalHostConfigV1.load" \
+       --include=*.py .
+     -> synaptic_host/modal_provider.py:686   (the internal thread-through)
+     -> synaptic_host/modal_training.py:596   (the only production entry)
+     -> seven further call sites, all under tests/
    ```
 
-   An override parameter **does** exist and is threaded end to end. What makes a
-   new file useless is that the sole submit-path caller passes none, so the
-   committed `training/providers/modal.json` governs. Recorded as a record-premise
-   correction, not a step change.
+   An override parameter **does** exist and is threaded end to end. Three facts
+   make a new configuration file useless anyway, and a step that supplied one
+   would be refused rather than silently ignored:
+
+   - **The only production entry passes none.** `modal_training.py:596` is the
+     sole non-test call site outside the loader's own thread-through, so there
+     is no second production route that might pass an override.
+   - **An override may not point anywhere.** The resolved path must sit below
+     the host configuration root or the load raises
+     `ValueError("Modal host config must live below the host config root")`
+     (`modal_provider.py:348-350`). A step aiming at a file elsewhere on the
+     operator machine is refused at load.
+   - **The file must be committed.** The loader reads the committed git blob,
+     not the worktree file (`_read_committed_configuration_v1`, C1 per 29.5(f)),
+     so an uncommitted override would not be seen even inside the root.
+
+   **This is an authoring error, not a moved citation, and the two need opposite
+   repairs.** The override parameter was introduced on 2026-08-29 and the
+   containment guard on 2026-08-26, both **before** the blocker carrying the
+   contrary mechanism was filed:
+
+   ```
+   git.exe log -S 'config_path: Path | None = None' --format='%h %ad %s' \
+       --date=short -- synaptic_host/modal_provider.py
+     -> 52f9464f 2026-08-29 Add Modal provider policy authority
+
+   git.exe log -S 'must live below the host config root' --format='%h %ad %s' \
+       --date=short -- synaptic_host/modal_provider.py
+     -> f74c3880 2026-08-26 feat(training): compose host-owned Modal pipeline
+   ```
+
+   A moved citation is repointed and its author is blameless. A mechanism that
+   was false at its own authoring sha is corrected and reported to the author.
+   The two are indistinguishable in a relayed message and are separated only by
+   one history search, so run it whenever a cited mechanism fails to reproduce.
+   Independently confirmed by the secretary against the same checkout; the
+   record note carrying the false mechanism is corrected. #457's instruction
+   half stands unchanged.
 
 3. **Two standing user rulings do not transfer to this lane, and neither fails
    for want of a flag.** Network-disabled: the training container is its own
