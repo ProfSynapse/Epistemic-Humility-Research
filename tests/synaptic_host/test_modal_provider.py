@@ -1339,3 +1339,236 @@ def test_rt3_a_second_deploy_names_the_state_record_it_refuses(
     assert state_path.read_bytes() == before
     assert str(tmp_path) not in message
     assert "/" not in message and "\\" not in message
+
+
+# ---------------------------------------------------------------------------
+# K3 (section 29.3 ruling (1)) — the refusal at the RULED site.
+#
+# K1, K2, K4 and K5 pin the Host-side shape of the key separation: two keys,
+# three refs, one facade, and only the worker key in the Secret.  None of them
+# reaches the place where the separation actually buys something.  K3 does: it
+# drives ModalDualCloneSourceFinalizer._admit_evidence with a SOURCE attestation
+# signed by the key the CONTAINER holds, and requires a refusal.
+#
+# Construction credit and provenance, recorded because the re-dispatch had it
+# wrong.  The probe this test adopts was built and executed by coder-review on
+# task #442; security-review's #437 review supplied the recording-wrapper design
+# and three corrections and did not build it.  Both re-ran it before this test
+# was written.  The scratch probe is k3_admit.py in the session scratchpad.
+#
+# What this test is NOT.  The replay port always admits and the clock is fixed,
+# so neither the window nor the replay check can refuse.  That is deliberate:
+# both are minted by the same forger and cannot refuse him, which is exactly
+# what leaves the verify call as the deciding step.  So this is an isolation
+# test of the cryptographic arm, not an end-to-end admission test.
+#
+# Why the assertions are shaped the way they are.  Five distinct causes inside
+# the handler collapse to ONE outer message, and there is no chained cause to
+# tell them apart: the raise carries `from None` and sits outside the except
+# block, so both cause attributes are None on every path.  An assertion built on
+# those attributes would pass for any reason at all.  So the discrimination is
+# positive, not inferential: a recording authenticator records the verify call
+# and its verdict, and the arm that must not reach verify is distinguished by an
+# EMPTY call list rather than by comparing message text.  The refusal itself is
+# asserted by TYPE.
+#
+# No key value or length is printed, logged, or asserted by literal here.  Key
+# material moves only where production moves it: into the environment variable
+# the container's authenticator reads, popped in a finally.
+# ---------------------------------------------------------------------------
+
+_K3_ISSUER = "host-git-verifier-v1"
+_K3_AUDIENCE = "proj/run"
+_K3_NOW = "2026-09-06T12:00:00Z"
+_K3_EXPIRES = "2026-09-06T12:05:00Z"
+_K3_ENVIRONMENT_KEY = "SYNAPTIC_EVIDENCE_MAC_KEY"
+
+
+class _RecordingEvidenceAuthenticator:
+    """One long-lived object with real sign and verify attributes.
+
+    The engine's port has exactly two members, measured at
+    `tuner/execution/evidence.py:92-93`.  This delegates both and appends
+    (purpose, key_ref, verdict) before returning, so the verify call becomes a
+    recorded fact instead of something inferred from a message.
+    """
+
+    def __init__(self, inner) -> None:
+        self._inner = inner
+        self.verify_calls: list[tuple[str, str, bool]] = []
+
+    def sign(self, purpose, payload, key_ref):
+        return self._inner.sign(purpose, payload, key_ref)
+
+    def verify(self, purpose, payload, tag, key_ref):
+        verdict = self._inner.verify(purpose, payload, tag, key_ref)
+        self.verify_calls.append((purpose, key_ref, verdict))
+        return verdict
+
+
+def _k3_container_signature(secret_value, key_ref, payload):
+    """One signature from a container holding `secret_value` in the Secret."""
+
+    from synaptic_tuner.api.v1.modal import EnvironmentHmacAuthenticator
+    from tuner.execution.evidence import SOURCE_EVIDENCE_PURPOSE
+
+    os.environ[_K3_ENVIRONMENT_KEY] = secret_value
+    try:
+        authenticator = EnvironmentHmacAuthenticator(
+            environment_key=_K3_ENVIRONMENT_KEY, key_ref=key_ref
+        )
+        return authenticator.sign(SOURCE_EVIDENCE_PURPOSE, payload, key_ref)
+    finally:
+        os.environ.pop(_K3_ENVIRONMENT_KEY, None)
+
+
+def _k3_evidence(binding, declared_ref, signing_secret):
+    """Source evidence declaring `declared_ref`, signed by `signing_secret`.
+
+    The declared ref and the signing key are separate arguments on purpose:
+    that separation is what lets an arm mutate the KEY while holding every
+    declared field constant, so a refusal cannot be the declared-field guard.
+    """
+
+    import base64
+
+    from tuner.project.execution_source import AuthenticatedSourceEvidenceV1
+
+    fields = dict(
+        project_url="https://example.invalid/p.git", project_commit="a" * 40,
+        engine_url="https://example.invalid/e.git", engine_commit="b" * 40,
+        engine_submodule_path="engine", gitlink_commit="b" * 40,
+        source_lock_binding=binding, issuer_ref=_K3_ISSUER,
+        evidence_ref="ev-1", audience_ref=_K3_AUDIENCE, challenge_nonce="nonce-1",
+        verified_at=_K3_NOW, expires_at=_K3_EXPIRES, key_ref=declared_ref,
+    )
+    draft = AuthenticatedSourceEvidenceV1(
+        **fields,
+        tag_base64=base64.b64encode(b"\0" * 32).decode("ascii"),
+        attestation_digest="0" * 64,
+    )
+    payload = draft.authenticated_payload  # excludes the tag and the digest
+    tag = _k3_container_signature(signing_secret, declared_ref, payload)
+    return AuthenticatedSourceEvidenceV1(
+        **fields,
+        tag_base64=base64.b64encode(tag).decode("ascii"),
+        attestation_digest=hashlib.sha256(payload).hexdigest(),
+    )
+
+
+def _k3_admit(authenticator, evidence, host_ref):
+    """Drive the ruled site. Returns None on admission, raises on refusal."""
+
+    from tuner.execution.evidence import (
+        ReplayDisposition, SOURCE_EVIDENCE_POLICY, SOURCE_EVIDENCE_PURPOSE,
+    )
+    from tuner.execution.providers.modal.resolution import (
+        ModalDualCloneSourceFinalizer,
+    )
+    from tuner.project.execution_source import _capture_source_evidence_snapshot
+
+    class _Unused:
+        def inspect(self, *, context): raise AssertionError("unused")
+        def verify(self, value): raise AssertionError("unused")
+
+    class _AlwaysAdmits:
+        def admit(self, **_keywords): return ReplayDisposition.ADMITTED
+
+    finalizer = ModalDualCloneSourceFinalizer(
+        _Unused(), _Unused(), _Unused(),
+        authenticator=authenticator, replay=_AlwaysAdmits(),
+        clock=lambda: _K3_NOW,
+        source_issuer_ref=_K3_ISSUER,
+        deployment_issuer_ref="host-modal-verifier-v1",
+        source_key_ref=host_ref, deployment_key_ref=host_ref,
+    )
+    finalizer._admit_evidence(
+        _capture_source_evidence_snapshot(evidence),
+        purpose=SOURCE_EVIDENCE_PURPOSE, policy=SOURCE_EVIDENCE_POLICY,
+        issuer=_K3_ISSUER, key_ref=host_ref, audience=_K3_AUDIENCE,
+        checkpoint=lambda: None,
+    )
+
+
+def test_k3_a_container_signed_source_attestation_is_refused(
+    tmp_path: Path,
+) -> None:
+    """K3 — the separation refuses a forgery the one-key design admitted."""
+
+    from tuner.project.source_bundle import (
+        SOURCE_LOCK_BINDING_SCHEMA, SOURCE_LOCK_SCHEMA, SourceLockBindingV1,
+        SourceLockError,
+    )
+
+    context = project_context(tmp_path)
+    host = modal_provider.FileHmacAuthenticator.from_context(
+        context, key_ref=HOST_EVIDENCE_KEY_REF
+    )
+    host.initialize()
+    worker = modal_provider.build_worker_authenticator(context)
+    worker.initialize()
+    # The premise the whole test rests on, asserted rather than assumed.
+    assert worker.key_path != host.key_path
+    binding = SourceLockBindingV1(
+        SOURCE_LOCK_BINDING_SCHEMA, SOURCE_LOCK_SCHEMA, "c" * 64
+    )
+
+    # Positive control.  Without it a refusing arm below could be a broken
+    # fixture rather than the property, and nothing would show the difference.
+    control = _RecordingEvidenceAuthenticator(host)
+    _k3_admit(
+        control,
+        _k3_evidence(binding, HOST_EVIDENCE_KEY_REF, host.encoded_key),
+        HOST_EVIDENCE_KEY_REF,
+    )
+    assert [call[1:] for call in control.verify_calls] == [
+        (HOST_EVIDENCE_KEY_REF, True)
+    ]
+
+    # K3.  Identical declared fields; only the signing key differs.
+    forged = _k3_evidence(binding, HOST_EVIDENCE_KEY_REF, worker.encoded_key)
+    recorder = _RecordingEvidenceAuthenticator(host)
+    with pytest.raises(SourceLockError):
+        _k3_admit(recorder, forged, HOST_EVIDENCE_KEY_REF)
+    # Positive discrimination: the refusal IS the verify call returning False,
+    # not one of the other four causes that share its message.
+    assert [call[1:] for call in recorder.verify_calls] == [
+        (HOST_EVIDENCE_KEY_REF, False)
+    ]
+
+
+def test_k3_the_declared_ref_guard_refuses_before_reaching_verify(
+    tmp_path: Path,
+) -> None:
+    """K3's counter-arm — the guard a mis-built K3 would pass through.
+
+    Evidence that DECLARES the worker ref is refused by the issuer, key and
+    audience guard, which runs before any signature is checked.  A K3 written
+    that way would be green for the wrong reason.  The discriminator here is an
+    EMPTY verify call list, measured, not a comparison of message text.
+    """
+
+    from tuner.project.source_bundle import (
+        SOURCE_LOCK_BINDING_SCHEMA, SOURCE_LOCK_SCHEMA, SourceLockBindingV1,
+        SourceLockError,
+    )
+
+    context = project_context(tmp_path)
+    host = modal_provider.FileHmacAuthenticator.from_context(
+        context, key_ref=HOST_EVIDENCE_KEY_REF
+    )
+    host.initialize()
+    worker = modal_provider.build_worker_authenticator(context)
+    worker.initialize()
+    binding = SourceLockBindingV1(
+        SOURCE_LOCK_BINDING_SCHEMA, SOURCE_LOCK_SCHEMA, "c" * 64
+    )
+
+    recorder = _RecordingEvidenceAuthenticator(host)
+    with pytest.raises(SourceLockError):
+        _k3_admit(
+            recorder,
+            _k3_evidence(binding, WORKER_EVIDENCE_KEY_REF, worker.encoded_key),
+            HOST_EVIDENCE_KEY_REF,
+        )
+    assert recorder.verify_calls == []
