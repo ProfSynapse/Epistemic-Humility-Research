@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import hashlib
 import sqlite3
+import subprocess
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import replace
 from pathlib import Path
@@ -26,9 +27,12 @@ from synaptic_tuner.api.v1.modal import (
     ModalSecretProfileV1, modal_function_name,
 )
 from synaptic_host.modal_provider import (
+    HOST_EVIDENCE_KEY_REF, WORKER_EVIDENCE_KEY_REF,
     ExplicitModalHostSession, ModalDeploymentJournalV1, ModalHostConfigV1,
     ModalProviderAuthorityV1, ModalTrainingPolicyV1,
 )
+from synaptic_host.security import FileHmacAuthenticator as RealFileHmacAuthenticator
+from tuner.execution.evidence import EvidenceAuthenticator
 from synaptic_host.modal_resolver import ModalProviderStateV1
 from synaptic_host.sqlite_repository import SqliteTrainingRepository
 from tuner.execution.providers.modal.facade import ExplicitModal154ReadFacade
@@ -94,6 +98,33 @@ def _document() -> dict[str, object]:
     }
 
 
+def _commit_project(project: Path) -> None:
+    """Commit the project's training tree so it has a HEAD to read from.
+
+    D1 (section 29.5(f), C1).  Both provider arms now read the COMMITTED blob
+    and `cli._issue_training_run_ingress_v1` refuses an ingress whose source is
+    not the committed one, so a bare directory is no longer a project.  This
+    mirrors the repair `tests/synaptic_host/test_cli.py::_commit_project`
+    already applies; the identity is a test identity and no global git
+    configuration is read or written.
+    """
+
+    identity = (
+        "-c", "user.name=synaptic-test",
+        "-c", "user.email=synaptic-test@example.invalid",
+        "-c", "commit.gpgsign=false",
+    )
+    for arguments in (
+        ("init", "--quiet", "--initial-branch", "main"),
+        ("add", "--force", "--", "training"),
+        (*identity, "commit", "--quiet", "-m", "committed training input"),
+    ):
+        subprocess.run(
+            ("git", "-C", str(project), *arguments),
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+
+
 def _ingress(
     tmp_path: Path, document: dict[str, object] | None = None,
 ) -> tuple[TrainingRunIngressV1, Path]:
@@ -106,6 +137,8 @@ def _ingress(
     )
     (training / "dataset.jsonl").write_text('{}\n', encoding="utf-8")
     (project / "synaptic.yaml").write_text("schema_version: test\n", encoding="utf-8")
+    # Once, after the training files are written and before the blob is read.
+    _commit_project(project)
     source = (training / "input.json").read_bytes()
     bundle = load_training_input_contract_v1()
     training_input = bundle.parse_json(source.decode("utf-8"))
@@ -129,10 +162,15 @@ def _ingress(
         b"synaptic-training-run-ingress/v1\0" + canonical
     ).hexdigest()
     cli._ENGINE_CONTRACT_CACHE = (ENGINE, None, {}, bundle)
+    config_blob = cli._read_committed_git_blob_v1(
+        project, "training/input.json", maximum_bytes=65536,
+    )
     value = cli._issue_training_run_ingress_v1(
         "modal", "project://training/input.json", "provider-staging",
         training_input, input_digest, source_sha256, contract_identity_digest,
         envelope_digest, bundle,
+        project_root=project.resolve(strict=True), engine_root=ENGINE,
+        config_blob=config_blob,
     )
     assert type(value) is TrainingRunIngressV1, (
         getattr(value, "code", None), getattr(value, "status", None)
@@ -141,7 +179,20 @@ def _ingress(
 
 
 class _FakeAuthenticator:
-    key_ref = "modal-key-v1"
+    """Stands in for FileHmacAuthenticator on both R1 key channels.
+
+    `key_ref` and `key_path` are per-instance so the host and worker stand-ins
+    are distinct objects with distinct references, which is what
+    EvidenceKeyRouterV1 requires of the real pair.
+    """
+
+    def __init__(
+        self,
+        key_ref: str = "modal-host-key-v1",
+        key_path: Path = Path("/fake/host-hmac.key"),
+    ) -> None:
+        self.key_ref = key_ref
+        self.key_path = key_path
 
     @classmethod
     def from_context(cls, _context):
@@ -149,6 +200,12 @@ class _FakeAuthenticator:
 
     def initialize(self) -> None:
         pass
+
+
+def _fake_worker_authenticator(_context) -> _FakeAuthenticator:
+    """The R1 worker-channel stand-in (`build_worker_authenticator`)."""
+
+    return _FakeAuthenticator("modal-worker-key-v1", Path("/fake/worker-hmac.key"))
 
 
 class _FakeGrants:
@@ -230,6 +287,9 @@ def _install_fakes(monkeypatch: pytest.MonkeyPatch, project: Path):
         classmethod(lambda _cls, _context: authority),
     )
     monkeypatch.setattr(modal_training, "FileHmacAuthenticator", _FakeAuthenticator)
+    monkeypatch.setattr(
+        modal_training, "build_worker_authenticator", _fake_worker_authenticator
+    )
     monkeypatch.setattr(modal_training, "BoundedGrantProvider", _FakeGrants)
     monkeypatch.setattr(modal_training, "ScopedGitRemoteReader", lambda: object())
     monkeypatch.setattr(
@@ -1116,3 +1176,154 @@ def test_real_engine_sqlite_concurrent_wrappers_converge_to_one_spawn(
     found = _effect(reopened, project_ref, run_id, effect_id)
     assert found.state is EffectState.FOUND
     assert found.provider_job_ref == "fc-concurrent-1"
+
+
+# --- R1 acceptance tests K1, K2, K5 (section 29.3) -----------------------
+
+
+def _real_key_pair(tmp_path: Path):
+    """The two real R1 keys, minted the way production mints them."""
+
+    root = tmp_path / "host-state" / "modal"
+    host = RealFileHmacAuthenticator(
+        root / "evidence-hmac.key", key_ref=HOST_EVIDENCE_KEY_REF
+    )
+    worker = RealFileHmacAuthenticator(
+        root / "worker-hmac.key", key_ref=WORKER_EVIDENCE_KEY_REF
+    )
+    host.initialize()
+    worker.initialize()
+    return host, worker
+
+
+def test_k1_router_signs_distinct_tags_per_ref_and_refuses_a_third(
+    tmp_path: Path,
+) -> None:
+    """K1: same purpose and payload, two refs, two different tags."""
+
+    host, worker = _real_key_pair(tmp_path)
+    router = modal_training.EvidenceKeyRouterV1(host=host, worker=worker)
+    purpose, payload = "source-lock-evidence/v1", b"identical-payload"
+
+    host_tag = router.sign(purpose, payload, host.key_ref)
+    worker_tag = router.sign(purpose, payload, worker.key_ref)
+
+    assert host_tag != worker_tag
+    assert router.verify(purpose, payload, host_tag, host.key_ref) is True
+    assert router.verify(purpose, payload, worker_tag, worker.key_ref) is True
+    # The negative that gives the separation its meaning: each ref verifies
+    # only what its own key signed.
+    assert router.verify(purpose, payload, worker_tag, host.key_ref) is False
+    assert router.verify(purpose, payload, host_tag, worker.key_ref) is False
+
+    with pytest.raises(ValueError):
+        router.sign(purpose, payload, "modal-unknown-key-v1")
+    with pytest.raises(ValueError):
+        router.verify(purpose, payload, host_tag, "modal-unknown-key-v1")
+
+
+def test_k1_router_refuses_one_key_under_two_roles(tmp_path: Path) -> None:
+    """The router cannot be built from a single key wearing both refs."""
+
+    host, worker = _real_key_pair(tmp_path)
+    with pytest.raises(ValueError):
+        modal_training.EvidenceKeyRouterV1(host=host, worker=host)
+    same_ref = RealFileHmacAuthenticator(
+        worker.key_path, key_ref=HOST_EVIDENCE_KEY_REF
+    )
+    with pytest.raises(ValueError):
+        modal_training.EvidenceKeyRouterV1(host=host, worker=same_ref)
+
+
+def test_k5_router_satisfies_the_engine_port_and_the_identity_pin(
+    tmp_path: Path,
+) -> None:
+    """K5: the structural gate AND the mid-run callable identity pin.
+
+    Testing only the first half is the false negative this test exists to
+    prevent: a facade that satisfies `isinstance` and rebuilds its callables
+    per access passes admission and then closes the run mid-flight.
+    """
+
+    host, worker = _real_key_pair(tmp_path)
+    router = modal_training.EvidenceKeyRouterV1(host=host, worker=worker)
+
+    # (a) the runtime_checkable port the three engine constructors consult.
+    assert isinstance(router, EvidenceAuthenticator)
+
+    # (b) the identity pin: both elements of (__self__, __func__) survive a
+    # second attribute read, for sign and for verify.
+    for name in ("sign", "verify"):
+        first = getattr(router, name)
+        second = getattr(router, name)
+        assert first.__self__ is second.__self__ is router
+        assert first.__func__ is second.__func__
+
+
+def test_k2_host_refs_sign_the_attestations_and_the_worker_ref_stages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """K2: read the three refs off the constructed objects, not off literals."""
+
+    ingress, project = _ingress(tmp_path)
+    operations, _session, _repository = _install_fakes(monkeypatch, project)
+    minted: dict[str, object] = {}
+    captured: dict[str, object] = {}
+
+    def _mint_host(_cls, _context):
+        minted["host"] = _FakeAuthenticator()
+        return minted["host"]
+
+    def _mint_worker(context):
+        minted["worker"] = _fake_worker_authenticator(context)
+        return minted["worker"]
+
+    def _finalizer(_ports, verification):
+        captured["verification"] = verification
+        return object()
+
+    def _resolver(**arguments):
+        captured["intent"] = arguments["intent"]
+        return object()
+
+    def _operations(**arguments):
+        captured["ports"] = arguments["host_ports"]
+        return operations
+
+    monkeypatch.setattr(
+        _FakeAuthenticator, "from_context", classmethod(_mint_host)
+    )
+    monkeypatch.setattr(modal_training, "build_worker_authenticator", _mint_worker)
+    monkeypatch.setattr(
+        modal_training, "compose_modal_source_finalizer", _finalizer
+    )
+    monkeypatch.setattr(modal_training, "ModalTrainingResolverV1", _resolver)
+    monkeypatch.setattr(
+        modal_training, "compose_modal_training_operations", _operations
+    )
+    classifications = 0
+
+    def _classify(**arguments):
+        # Absent on the first classification so composition runs, FOUND on the
+        # second so the run closes without a provider call.
+        nonlocal classifications
+        classifications += 1
+        return None if classifications == 1 else _submitted(**arguments)
+
+    monkeypatch.setattr(modal_training, "_classify_durable", _classify)
+
+    result = modal_training.execute_modal_training_run_v2(
+        ingress, project_root=project, engine_root=ENGINE,
+        token_id="token-id", token_secret="token-secret",
+        sdk_loader=lambda: object(), clock=lambda: NOW,
+    )
+    assert result.code is TrainingRunCommandCodeV2.SUBMITTED
+
+    host, worker = minted["host"], minted["worker"]
+    verification, intent = captured["verification"], captured["intent"]
+    assert verification.source_key_ref == host.key_ref
+    assert verification.deployment_key_ref == host.key_ref
+    assert intent.key_ref == worker.key_ref
+    assert intent.key_ref != host.key_ref
+    router = captured["ports"].authenticator
+    assert type(router) is modal_training.EvidenceKeyRouterV1

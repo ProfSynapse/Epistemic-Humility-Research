@@ -34,6 +34,62 @@ from .modal_resolver import ModalProviderStateV1, _closed, _read_json, _text
 from .security import FileHmacAuthenticator
 
 
+# --- R1 (section 29.3 ruling (1)): two keys, three refs -------------------
+#
+# `modal-evidence-v1` is the HOST key.  It signs and verifies the source and
+# deployment attestations.  It never leaves the Host and is never a Secret
+# value.
+#
+# `modal-worker-v1` is the WORKER key.  It is the only key placed in the
+# runtime Secret and the only ref carried by `stage_target.key_ref`, so the
+# container channel is confined to it.
+#
+# Section 29.13 item 1: the algorithm is a symmetric HMAC, so the ability to
+# verify is the ability to sign.  Separating the keys confines the scope of
+# the container channel.  It does not make evidence produced inside a
+# container unforgeable, and nothing here should be read as claiming that.
+HOST_EVIDENCE_KEY_REF = "modal-evidence-v1"
+WORKER_EVIDENCE_KEY_REF = "modal-worker-v1"
+
+
+def build_worker_authenticator(
+    context: ProjectContext,
+) -> FileHmacAuthenticator:
+    """Open the container-channel key at `state_root/modal/worker-hmac.key`.
+
+    Section 29.3 ruling (1), key 2.  This is the ONLY key placed in the
+    runtime Secret and the only ref carried by `stage_target.key_ref`.  It is
+    a sibling of the host key inside the same private `state_root/modal`
+    directory, so it inherits that directory's already-validated
+    private-storage chain.  The caller owns `initialize()`; `initialize`
+    creates with `O_EXCL` and never overwrites, so calling it against an
+    existing key is a read.
+    """
+
+    return FileHmacAuthenticator(
+        context.state_root / "modal" / "worker-hmac.key",
+        key_ref=WORKER_EVIDENCE_KEY_REF,
+    )
+
+
+def _require_worker_authenticator(authenticator: object) -> None:
+    """Refuse any authenticator not bound to the worker key reference.
+
+    The check is POSITIVE: it admits exactly `WORKER_EVIDENCE_KEY_REF` and
+    refuses everything else, including a missing attribute.  It runs at the
+    ENTRY of `deploy` and `upgrade`, before any Modal resource is created,
+    because both creates refuse an existing resource: a guard placed later
+    would fire only after the wrong key had already been published under a
+    Secret that cannot then be replaced.
+    """
+
+    key_ref = getattr(authenticator, "key_ref", None)
+    if key_ref != WORKER_EVIDENCE_KEY_REF:
+        raise ValueError(
+            "Modal deployment requires the worker evidence key reference"
+        )
+
+
 def _exact_object(
     value: object, expected: set[str], label: str,
 ) -> dict[str, object]:
@@ -746,12 +802,16 @@ class ExplicitModalHostSession:
         self,
         *,
         journal: ModalDeploymentJournalV1,
-        authenticator: FileHmacAuthenticator,
+        worker_authenticator: FileHmacAuthenticator,
     ) -> ModalProviderStateV1:
+        # R1: the container channel is bound to the WORKER ref only.  The
+        # guard is repeated here so the binding cannot drift if a future
+        # caller reaches this method without passing the public entry point.
+        _require_worker_authenticator(worker_authenticator)
         runtime_lock = ModalRuntimeLockV1.packaged()
         remote_auth = EnvironmentHmacAuthenticator(
             environment_key="SYNAPTIC_EVIDENCE_MAC_KEY",
-            key_ref=authenticator.key_ref,
+            key_ref=worker_authenticator.key_ref,
         )
         completion = MountedCompletionProducerV1(remote_auth)
         worker = MountedModalWorkerV1(
@@ -835,6 +895,9 @@ class ExplicitModalHostSession:
         hf_token: str,
         adopt_empty: bool = False,
     ) -> ModalProviderStateV1:
+        # R1: `authenticator` is the WORKER key.  Refused at the entry, before
+        # any Modal resource exists, per section 29.3 ruling (1).
+        _require_worker_authenticator(authenticator)
         if type(adopt_empty) is not bool:
             raise TypeError("adopt_empty must be an exact boolean")
         state_path = context.state_root / "modal" / "provider-state.json"
@@ -911,7 +974,7 @@ class ExplicitModalHostSession:
                     client=self.client,
                 )
         state = self._deploy_journal(
-            journal=journal, authenticator=authenticator
+            journal=journal, worker_authenticator=authenticator
         )
         _atomic_json(state_path, state.to_dict())
         return state
@@ -990,6 +1053,9 @@ class ExplicitModalHostSession:
         authenticator: FileHmacAuthenticator,
     ) -> ModalProviderStateV1:
         """Replace provider code while preserving named durable resources."""
+        # R1: `authenticator` is the WORKER key.  Refused at the entry, before
+        # any Modal resource is replaced, per section 29.3 ruling (1).
+        _require_worker_authenticator(authenticator)
         modal_root = context.state_root / "modal"
         state_path = modal_root / "provider-state.json"
         journal_path = modal_root / "deployment-journal.json"
@@ -1053,7 +1119,7 @@ class ExplicitModalHostSession:
                 raise ValueError("Modal upgrade requires every named resource")
             authenticator.initialize()
             state = self._deploy_journal(
-                journal=replacement, authenticator=authenticator
+                journal=replacement, worker_authenticator=authenticator
             )
             _replace_json(journal_path, replacement.to_dict())
             _replace_json(state_path, state.to_dict())

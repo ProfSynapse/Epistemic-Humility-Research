@@ -41,7 +41,11 @@ from .cli import (
     TrainingRunIngressV1,
     _authenticate_training_run_ingress_v1,
 )
-from .modal_provider import ExplicitModalHostSession, ModalProviderAuthorityV1
+from .modal_provider import (
+    ExplicitModalHostSession,
+    ModalProviderAuthorityV1,
+    build_worker_authenticator,
+)
 from .modal_resolver import ModalTrainingIntentV1, ModalTrainingResolverV1
 from .security import (
     BoundedGrantProvider,
@@ -66,6 +70,59 @@ class _RejectingTrainingResolver:
 
     def resolve(self, *_args: object, **_kwargs: object) -> object:
         raise ValueError("seed training resolver is unavailable")
+
+
+class EvidenceKeyRouterV1:
+    """One long-lived object routing sign and verify to one of two keys by ref.
+
+    Section 29.3 ruling (1), item 3.  `sign` and `verify` are real methods on
+    this class, so each attribute access yields a bound method whose
+    `(__self__, __func__)` pair is stable for the life of the instance.  The
+    engine pins that pair at `providers/modal/training.py` and compares it with
+    `is not` on every subsequent cut, so a `__getattr__` shim, a
+    `functools.partial` rebuilt per access, or any per-call rebinding would fail
+    the identity pin.  Do not convert these methods into either shape.
+
+    Routing is exact-ref, never a prefix or a fallback: a ref that is neither
+    the host ref nor the worker ref raises rather than defaulting to one of
+    them, so a mis-declared ref can never be silently admitted under the wrong
+    key.  The two-method shape satisfies the engine's `EvidenceAuthenticator`
+    port, which is structural.
+
+    The scheme is symmetric HMAC.  Holding a key to verify is holding a key to
+    sign.  Separating the refs confines each channel to its own key; it does
+    not make either channel's tags unforgeable by whoever holds that key.
+    """
+
+    __slots__ = ("_by_ref",)
+
+    def __init__(
+        self,
+        *,
+        host: FileHmacAuthenticator,
+        worker: FileHmacAuthenticator,
+    ) -> None:
+        if type(host) is not FileHmacAuthenticator or type(worker) is not FileHmacAuthenticator:
+            raise TypeError("both evidence authenticators must be exact FileHmacAuthenticator")
+        if host.key_ref == worker.key_ref:
+            raise ValueError("host and worker evidence key references must differ")
+        if host.key_path == worker.key_path:
+            raise ValueError("host and worker evidence keys must be distinct files")
+        self._by_ref = {host.key_ref: host, worker.key_ref: worker}
+
+    def _route(self, key_ref: str) -> FileHmacAuthenticator:
+        if type(key_ref) is not str:
+            raise TypeError("evidence key reference must be exact text")
+        authenticator = self._by_ref.get(key_ref)
+        if authenticator is None:
+            raise ValueError("unroutable evidence key reference")
+        return authenticator
+
+    def sign(self, purpose: str, payload: bytes, key_ref: str) -> bytes:
+        return self._route(key_ref).sign(purpose, payload, key_ref)
+
+    def verify(self, purpose: str, payload: bytes, tag: bytes, key_ref: str) -> bool:
+        return self._route(key_ref).verify(purpose, payload, tag, key_ref)
 
 
 def _credential(value: object) -> str | None:
@@ -515,8 +572,21 @@ def execute_modal_training_run_v2(
         now_value = datetime.fromisoformat(now.replace("Z", "+00:00"))
         if not _ingress_is_current(ingress, baseline):
             raise ValueError
+        # R1 (section 29.3 ruling (1)).  Two keys, three refs, one facade.
+        # `authenticator` is the HOST key: it signs and verifies the source and
+        # deployment attestations and never leaves this machine.
+        # `worker_authenticator` is the container-channel key: it is the only
+        # key the provider puts in the runtime Secret and the only ref the
+        # stage claim carries.  `key_router` is the single long-lived object
+        # both are reached through; see EvidenceKeyRouterV1 for why it must
+        # stay one object with real methods.
         authenticator = FileHmacAuthenticator.from_context(context)
         authenticator.initialize()
+        worker_authenticator = build_worker_authenticator(context)
+        worker_authenticator.initialize()
+        key_router = EvidenceKeyRouterV1(
+            host=authenticator, worker=worker_authenticator,
+        )
         facade = session.facade(authority.state)
         grants = BoundedGrantProvider(
             maximum_cost_minor_units=authority.config.maximum_cost_minor_units,
@@ -529,7 +599,9 @@ def execute_modal_training_run_v2(
             grants=grants,
             secrets=_RejectingSecretProvider(),
             evidence_replay=repository,
-            authenticator=authenticator,
+            # R1: the port receives the router, not either key directly, so
+            # every engine sign and verify is dispatched by its explicit ref.
+            authenticator=key_router,
             clock=clock,
             git_remote=ScopedGitRemoteReader(),
             modal_reads=facade,
@@ -541,6 +613,8 @@ def execute_modal_training_run_v2(
             audience_ref=f"{project_ref}/{run_id}",
             source_issuer_ref="host-git-verifier-v1",
             deployment_issuer_ref="host-modal-verifier-v1",
+            # R1: the source and deployment attestations stay on the HOST key.
+            # These two refs are what makes them unforgeable by the container.
             source_key_ref=authenticator.key_ref,
             deployment_key_ref=authenticator.key_ref,
             challenge_factory=lambda purpose: _fresh_capability(
@@ -553,17 +627,26 @@ def execute_modal_training_run_v2(
         finalizer = compose_modal_source_finalizer(seed_ports, verification)
         if not _ingress_is_current(ingress, baseline):
             raise ValueError
+        # D3: constructed fully by keyword, zero positional arguments.  The
+        # ref fields differ only by their names now, and this construction is
+        # the one place the stage-claim ref is chosen, so a positional call
+        # would let a ref move role without any diff naming the field.
         intent = ModalTrainingIntentV1(
-            project_ref,
-            run_id,
-            now,
-            authenticator.key_ref,
-            (now_value + timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            authority.config.maximum_cost_minor_units,
-            authority.config.currency,
-            effect_id,
-            _identity("slot", project_ref, ingress.envelope_digest),
-            _identity("nonce", project_ref, ingress.envelope_digest),
+            project_ref=project_ref,
+            run_id=run_id,
+            created_at=now,
+            # R1: the stage claim rides the WORKER key.  This is the only ref
+            # the container's channel carries, and it is not the ref the
+            # source and deployment attestations above are verified under.
+            key_ref=worker_authenticator.key_ref,
+            quote_expires_at=(
+                now_value + timedelta(minutes=5)
+            ).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            maximum_cost_minor_units=authority.config.maximum_cost_minor_units,
+            currency=authority.config.currency,
+            effect_id=effect_id,
+            artifact_slot_ref=_identity("slot", project_ref, ingress.envelope_digest),
+            invocation_nonce=_identity("nonce", project_ref, ingress.envelope_digest),
         )
         resolver = ModalTrainingResolverV1(
             training_input=ingress.training_input,

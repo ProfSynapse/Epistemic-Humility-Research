@@ -12,6 +12,8 @@ import pytest
 from synaptic_tuner.api.v1 import ProjectContext
 import synaptic_host.modal_provider as modal_provider
 from synaptic_host.modal_provider import (
+    HOST_EVIDENCE_KEY_REF,
+    WORKER_EVIDENCE_KEY_REF,
     ExplicitModalHostSession,
     ModalDeploymentJournalV1,
     ModalHostConfigV1,
@@ -24,11 +26,20 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class StubAuthenticator:
-    key_ref = "modal-evidence-v1"
+    # R1 (section 29.3 ruling (1)): `deploy` and `upgrade` admit the WORKER key
+    # only, so the stub carries the worker reference read from production.
+    key_ref = WORKER_EVIDENCE_KEY_REF
     encoded_key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
     def initialize(self) -> None:
         pass
+
+
+class HostRefStubAuthenticator(StubAuthenticator):
+    """The key the two public entry points must refuse (R1)."""
+
+    key_ref = HOST_EVIDENCE_KEY_REF
+    encoded_key = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB="
 
 
 def config_mapping() -> dict[str, object]:
@@ -835,3 +846,74 @@ def test_session_rejects_function_call_callback_replacement_during_restore() -> 
         assert FakeFunctionCall.observed is False
     finally:
         FakeFunctionCall.from_id = original
+
+
+# --- R1 acceptance: K4 and the two entry guards (section 29.3) -----------
+
+
+def test_k4_runtime_secret_carries_the_worker_key_and_not_the_host_key(
+    tmp_path: Path,
+) -> None:
+    """K4: the Secret's MAC key equals the worker key, never the host key.
+
+    Compared in process, object against object.  No value is printed, logged,
+    or written as a literal in this test.
+    """
+
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    worker = StubAuthenticator()
+    host = HostRefStubAuthenticator()
+    assert worker.encoded_key != host.encoded_key
+
+    session.deploy(context=context, authenticator=worker, hf_token="hf-value")
+
+    uploaded = FakeSecret.registry[config().runtime_secret_name]
+    assert uploaded["SYNAPTIC_EVIDENCE_MAC_KEY"] == worker.encoded_key
+    assert uploaded["SYNAPTIC_EVIDENCE_MAC_KEY"] != host.encoded_key
+
+
+def test_r1_deploy_refuses_a_host_ref_authenticator_before_any_resource(
+    tmp_path: Path,
+) -> None:
+    """The guard fires at the entry, before any Modal object is created."""
+
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    with pytest.raises(ValueError, match="worker evidence key reference"):
+        session.deploy(
+            context=context, authenticator=HostRefStubAuthenticator(),
+            hf_token="hf-value",
+        )
+    assert FakeSecret.registry == {}
+    assert FakeVolume.registry == {}
+    assert not (context.state_root / "modal" / "deployment-journal.json").exists()
+    assert not (context.state_root / "modal" / "provider-state.json").exists()
+
+
+def test_r1_upgrade_refuses_a_host_ref_authenticator_before_any_replacement(
+    tmp_path: Path,
+) -> None:
+    """The same guard governs the second public entry point."""
+
+    context = project_context(tmp_path)
+    session = ExplicitModalHostSession.from_credentials(
+        sdk=FakeSdk, config=config(),
+        token_id="token-id", token_secret="token-secret",
+    )
+    prior = session.deploy(
+        context=context, authenticator=StubAuthenticator(), hf_token="hf-value",
+    )
+    with pytest.raises(ValueError, match="worker evidence key reference"):
+        session.upgrade(context=context, authenticator=HostRefStubAuthenticator())
+    assert not (context.state_root / "modal" / "upgrade-journal.json").exists()
+    current = json.loads(
+        (context.state_root / "modal" / "provider-state.json").read_text("utf-8")
+    )
+    assert current["selection"]["deployment_ref"] == prior.selection.deployment_ref
