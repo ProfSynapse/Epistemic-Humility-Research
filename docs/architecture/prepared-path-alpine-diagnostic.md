@@ -7594,3 +7594,463 @@ ACL adoption) are filed with #170 and are untouched here. The engine seam
 `synaptic-publication-destination/v1` is not a Host adapter configuration schema
 and takes no allowlist. Nothing in this section changes the canonical bytes, the
 digest, the record shape or the 22.14 renderer.
+
+## 29. Amendment 2026-09-05 — ARCHITECT ruling for the Modal smoke of the prepared path (scope A)
+
+Inputs: the approved plan `docs/plans/modal-smoke-prepared-path-plan.md`; the
+PREPARE census `docs/preparation/modal-blocker-applicability-census.md`; the
+evidence and leakage study `docs/preparation/modal-smoke-prepared-path.md`; the
+external surface `docs/preparation/modal-smoke-prepared-path-external-surface.md`;
+the Windows failing-set pin from #430. Host at `a6fb9221`, engine pin
+`ce539b70`. This section rules; it writes no code and moves no pin.
+
+### 29.1 Scope, and the one property that makes this lane different
+
+Scope A: submit a training run to the cloud provider through the prepared path,
+below publication. No publication cut, no destination configuration, no adapter
+upload. The destination is the reserved sentinel `provider-staging`, required on
+this arm and forbidden on the local arm (`cli.py:23`, `:87-97`, `:847-857`, and
+refused again at `docker_training.py:693`).
+
+The property that governs every ruling below: **this lane and the closed local
+path share no seam module.** Three independent instruments found it in plan mode
+and the census re-measured it. Nothing that ran fourteen times locally has ever
+run here. Treat each ruling as first exercise, not as regression cover.
+
+A second property governs the ordering: **the money is spent before most of
+these defects can fire.** The paid pull and the dual clone happen inside the
+container, so a defect that trips after them costs a full job. Everything ruled
+as pre-submit below is ruled pre-submit for that reason and no other.
+
+### 29.2 R1 — the measurement
+
+R1 was lifted to a user decision in plan mode as "the container holds the
+evidence-signing key". The dispatch asks for a shape where the Host signs or
+verifies with a key the container never holds. Before ruling I measured what the
+key actually authenticates. The finding is larger than the plan's phrasing.
+
+**One key serves four purposes today.** The Host constructs a single
+`FileHmacAuthenticator` at `modal_training.py:518` (`from_context`, key file
+`state_root/modal/evidence-hmac.key`, `key_ref="modal-evidence-v1"`,
+`security.py:669`). That one object is then used as:
+
+| Purpose | Where the ref is set | Who signs | Who verifies |
+|---|---|---|---|
+| Source attestation | `modal_training.py:544` `source_key_ref` | Host | Host (`resolution.py:538`) |
+| Deployment attestation | `modal_training.py:545` `deployment_key_ref` | Host | Host (`resolution.py:553`) |
+| Stage claim | `modal_training.py:553`, into `stage_target.key_ref` | Host (`staging.py:34` `prepare_modal_stage`) | container (`remote.py:170`) |
+| Run evidence, three purposes | same `stage_target.key_ref` | container (`producer.py:159`, signing at `:199`, `:203`, `:210`) | Host (`logs.py:94`, `control.py:108`, `manifest.py:76`) |
+
+All four refs carry the same string, so `FileHmacAuthenticator._key(key_ref)`
+(`security.py:963-965`, which raises only on a ref that differs from its own)
+resolves all four to the same 32 bytes. Those bytes are then uploaded whole into
+the named provider Secret at `modal_provider.py:902-907` as
+`SYNAPTIC_EVIDENCE_MAC_KEY`, base64 of the raw key (`security.py:1047`), and the
+container reads them back through `EnvironmentHmacAuthenticator`
+(`runtime.py:21-55`), constructed at `modal_provider.py:752-755` with
+`key_ref=authenticator.key_ref`.
+
+**The defect, stated exactly.** The container is given the key that
+authenticates the *source attestation* and the *deployment attestation*. Those
+two are the Host's own admission evidence: they are what proves the run executes
+the pushed commit and the inspected deployment. A container holding that key can
+mint either one for any commit and any deployment, for this run and for every
+other run that uses the same long-lived key. The run-evidence channel is a
+consequence; the admission channel is the exposure.
+
+**What the engine already provides.** `ModalVerificationPolicyV1`
+(`composition.py:19-28`) carries `source_key_ref` and `deployment_key_ref` as
+separate fields. Every engine sign and verify call takes an explicit `key_ref`
+argument. The port contract `EvidenceAuthenticator`
+(`synaptic_tuner/api/v1/host.py:40-42`) is exactly two methods, both key-ref
+parameterised, and is a bare `Protocol` with no isinstance gate. **The engine
+therefore needs no change for key-role separation.** The single-key collapse is
+entirely a Host-side construction at three lines.
+
+**The limit, stated honestly.** The scheme is symmetric HMAC. Verify capability
+and sign capability are the same capability. There is no shape at this pin in
+which the container verifies the Host's stage claim without also being able to
+forge one. Key separation therefore buys *scope confinement*, not
+unforgeability of the shared channel: a container can still forge what its own
+channel carries, and cannot forge anything else. Ruling below is written to that
+truth and does not claim more.
+
+### 29.3 Ruling (1) — R1: two keys, three refs, one facade
+
+**Mint a second key whose only job is the container channel.**
+
+1. **Host key.** `modal-evidence-v1` at `state_root/modal/evidence-hmac.key`,
+   unchanged. It signs and verifies the source and deployment attestations. It
+   **never leaves the Host machine** and is never a Secret value.
+2. **Worker key.** `modal-worker-v1` at
+   `state_root/modal/worker-hmac.key`, minted by `FileHmacAuthenticator`
+   constructed directly (`security.py:654`, which already takes `key_path` and
+   `key_ref`) and `initialize()`d. This is the only key placed in the Secret,
+   and the only ref carried by `stage_target.key_ref`.
+3. **A routing facade on the Host** implementing the two-method port: it holds
+   both authenticators and dispatches on `key_ref`, raising on any ref that is
+   neither. It is passed as `HostPorts.authenticator`. The engine's identity
+   pinning at `training.py:1177` and `:1237-1244` pins object and bound-method
+   identity across the run, which a single long-lived facade satisfies.
+
+**The four Host edits.** `modal_training.py:518` constructs both plus the
+facade; `:544-545` keep the **host** ref; `:553` carries the **worker** ref into
+`ModalTrainingIntentV1`; `modal_provider.py:906` puts the worker key in the
+Secret and `_deploy_journal` (`:745-760`) builds `EnvironmentHmacAuthenticator`
+with the worker ref. `_deploy_journal`'s parameter becomes the worker
+authenticator. No other site changes.
+
+**What the container emits, after the change.** Exactly what it emits today and
+nothing more: the log chunk, the log metadata plus its tag, the terminal
+evidence plus its tag, and on success the completion manifest plus its tag
+(`producer.py:196-212`). Every tag is under `modal-worker-v1`.
+
+**What the Host verifies, after the change.** The three container documents
+under `modal-worker-v1` (`logs.py:94`, `control.py:108`, `manifest.py:76`), and
+the source and deployment attestations under `modal-evidence-v1`
+(`resolution.py:538`, `:553`). The second pair is now unforgeable by the
+container, which is the whole gain.
+
+**Deployment-scoped, not per-run, and why.** A per-run worker key is refused at
+this pin. The Secret is created once, at provider deploy, and redeploy is
+refused outright (`modal_provider.py:842`, `FileExistsError` when the state file
+exists). The container-side `EnvironmentHmacAuthenticator` binds one `key_ref`
+at construction and refuses any other (`runtime.py:32-33`), and that
+construction happens inside the deployed function's serialized closure. A
+per-run ref therefore requires a redeploy per run. Deployment-scoped is the
+correct granularity here; per-run is recorded as a scope B question.
+
+**Key rotation.** Two obligations, and the first is not optional.
+
+- **Before the smoke.** The Secret in the live provider environment was created
+  on 2026-08-26 by this same code path, which uploads the Host key. #429 left
+  the Secret's contents deliberately unmeasured because reading it means reading
+  credential material. The Host key must therefore be treated as **already
+  outside the Host**. Rotate it before the smoke: delete
+  `state_root/modal/evidence-hmac.key` and let `initialize()` mint a fresh one,
+  in the same operator step that creates the isolated object set of 29.9.
+- **At closeout.** Delete the provider Secret and
+  `state_root/modal/worker-hmac.key` together. Deleting one without the other
+  leaves a live channel key with no local counterpart, or the reverse. The Host
+  key is rotated again only if the smoke is followed by a deploy that predates
+  this ruling.
+
+**Acceptance test for R1** (unit, no cloud, no credential):
+
+| Id | Assertion |
+|---|---|
+| **K1** | The facade signs the same purpose and payload to **different** tags under the two refs, proving distinct key material, and raises on a third ref. |
+| **K2** | After composition, `source_key_ref` and `deployment_key_ref` equal the host ref and `stage_target.key_ref` equals the worker ref, read from the constructed objects rather than from literals. |
+| **K3** | **The negative that proves the separation.** A source attestation signed with the *worker* key is refused by `_admit_evidence` (`resolution.py:457`). Red-first: it passes today. |
+| **K4** | The Secret payload for `SYNAPTIC_EVIDENCE_MAC_KEY` equals the worker authenticator's encoded key and does **not** equal the host authenticator's. Compared in-process; no value is printed, logged or asserted by literal. |
+
+K3 is the gate. If K3 cannot be made red on the pre-change tree it means the
+measurement above is wrong, and the ruling is re-opened rather than shipped.
+
+### 29.4 Ruling (2) — B-19: regenerate the lock, then move the pin
+
+B-19 (#431): `modal-runtime-v1.lock.json` at `ce539b70` records a stale sha256
+for two of its seven `locked_files` (`modal_remote` recorded `88d20d1abba8`,
+actual `8574b80084d3`; `sft_runtime` recorded `da1f0f0717a9`, actual
+`d838cc507036`). The container-side check at `runtime.py:189-194` refuses with
+exit 124 `locked_source_mismatch` **after** the paid image pull and the dual
+clone. It is the single most expensive defect on the list: it costs a whole job
+to learn something a hash comparison answers for free.
+
+**Ruling.** Regenerate the lock in the engine and move the Host pin, by the B-5
+procedure already run twice on this feature (B-14 and B-16): engine commit →
+engine push → Host submodule pin move → the regenerated artifact committed with
+the change that invalidated it, never after. The regeneration is the deliverable;
+no other engine edit rides with it.
+
+**Sequencing against R1.** The lead's teachback resolution puts the R1 engine
+question and B-19 under one pin move. That resolution stands, but the R1
+measurement has changed its content: **R1 needs no engine change.** The engine
+work reduces to B-19 alone, and the pin move carries only the regenerated lock.
+This is a reduction in the engine surface, recorded here so the CODE dispatch is
+not written against the larger shape.
+
+**Verification, and its limit.** The offline dry run is provably free and
+provably blocked at the installed SDK 1.5.1 (external surface section 6), and
+**it cannot catch B-19**: the lock check runs container-side, after the pull.
+The pre-submit gate for B-19 is therefore a Host-side or submit-side comparison
+of each locked file's recorded digest against the file at the pinned engine sha,
+run before submit. That comparison is cheap, is the only thing that catches a
+recurrence, and belongs in the gate list of 29.12 as **G3**.
+
+### 29.5 Ruling (3) — the six pre-submit fix shapes, in gating order
+
+The census yields six items that gate the submit as code or ruling. They are
+ordered here by how early they fire, not by size. Every one of them fires before
+or instead of the first billed second.
+
+**(a) B-15 recurrence — engine import root on the modal arm.** `cli.py:1001`
+establishes the engine import root and `:1002` imports the docker training
+module, both inside the docker branch, which returns at `:1011`. The modal arm
+imports `synaptic_host.modal_training` at `:1072` with no establishment call
+anywhere in `:1012-1072`, and `modal_training.py:35` imports top-level `tuner`
+at module scope. With `PYTHONPATH` never exported (rule 21.2 stands), the first
+attempt dies at the import and is swallowed to an opaque failure, exactly as run
+9 did on the local arm.
+
+*Shape.* Call the same establishment helper on the modal arm before the import,
+by the section 24 convention. Do **not** hoist it above the branch: the two arms
+have different engine-root derivations and a shared hoist would couple them.
+Red-first test: the modal arm import fails on a tree where the engine root is
+absent from `sys.path`, and passes after.
+
+**(b) The B-18 class — cause-swallowing on the modal path.** `modal_training.py`
+holds 10 `except BaseException` and 0 `from None`; `modal_provider.py` holds 7
+and 8. The worst wraps roughly ninety lines of `execute_modal_training_run_v2`
+(`:477-566`) and returns an opaque `COMPOSITION_UNAVAILABLE` with the exception
+unbound, unchained and unlogged. The `brief_amendments` on this task add a
+fourth site at `synaptic_host/__main__.py:43-46` on the modal path.
+
+*Shape, and it is deliberately narrower than section 27's.* Section 27 restored
+the cause chain at six named sites on the publish path. Doing the same to
+seventeen handlers here is not a smoke-sized change and would be a large
+untested diff on a lane with no runtime cover. Rule instead: **restore the cause
+at the sites the smoke can actually reach, and no others.** Those are the four
+named — the ninety-line wrapper at `:477-566`, plus the three that stand between
+the operator and a first failure: the two result constructors' callers
+(`_full_failure` `:119-132`, `_operation_result` `:144-165`) and
+`__main__.py:43-46`. Each keeps its diagnostic code and gains the original as
+`__cause__`, by the 27.4 pattern. The remaining thirteen are recorded as a
+follow-up, not silently left as done.
+
+*The reason this is a gate rather than a nicety.* It does not stop a run. It
+destroys the diagnosis of a run that cost money, on a lane with no cause-line
+renderer and no diagnosis guide. That is the largest schedule risk in the plan.
+
+**(c) SEC-F2, with #170 and the cache-hit item.** `modal_provider.py:403-404`
+creates `.synaptic/state/modal/` with a bare
+`path.parent.mkdir(parents=True, exist_ok=True)` at three durable-write call
+sites (`:542`, `:840-841`, `:993`): none of the B-11 private-chain
+construction, none of the B-11-R1 leaf-first repair, no validation. The mode
+`0o600` on the file is real; the directory inherits whatever the parent grants.
+The `.synaptic` tree is where this lane's evidence keys live.
+
+*Ruling on the owed decision (2): the fix covers the whole `.synaptic` subtree
+this lane writes, not only `state/modal`.* The reason is the launcher cache. The
+uv binary cache root is `project_root/.synaptic/cache` (`launcher.py:64-65`), and
+its cache-hit arm at `:325-331` returns the cached binary when the file exists
+and a sibling stamp *contains* the expected hex — **the binary itself is not
+re-hashed** (the digest is verified only on first fetch, at `:345-346`). The
+integrity of that cache is therefore an ACL property of `.synaptic/cache`, not a
+launcher property. Scoping the fix to `state/modal` would leave the cache
+governed by nothing. #170 (durable rows database keeps inherited ACEs after B-11
+repair, section 20.18) rides with this, is the same subtree and the same fix
+surface, and is **named explicitly here** so it does not drop out silently when
+SEC-F2 is marked done.
+
+*Shape.* Route the three `_atomic_json` parent creations through the existing
+B-11 private-chain construction with the B-11-R1 leaf-first repair, and extend
+the same treatment to the launcher cache root. Reuse; introduce no new mechanism.
+
+**(d) Ruling on the owed decision (3): TWO findings on the launcher leakage.**
+The PREPARE recommendation is adopted, on its own reasoning and on one addition.
+
+- **R7 stays the environment copy.** `_uv_environment` at `launcher.py:365-366`
+  opens with `environment = dict(os.environ)` and hands the whole operator
+  environment to the uv subprocesses. The submit host now holds the provider
+  token pair by user decision, so this is the one code path that hands
+  credentials to a third-party process tree. *Shape:* build the uv environment
+  from a closed allowlist, the way `:620-639` already builds the child
+  environment. The closed constructor exists in the same file; use it.
+- **The cache-hit integrity gap is a separate finding, ruled with SEC-F2 and
+  #170**, because its fix surface is the `.synaptic` ACL chain, not the
+  launcher's environment construction. Identifier: **R7-B**. Disposition:
+  discharged by (c) above; no separate code change.
+
+*The addition to the reasoning.* The two triggers are mutually exclusive within
+one run (cache hit and cache miss), so filing them together would let one be
+marked resolved by evidence from the other's path. That is the dangerous
+outcome the PREPARE study names, and it is the deciding argument.
+
+**(e) R4 — redactor gaps.** `redaction.py:7-12` and `:21-24` miss this lane's
+two credential shapes. *Shape:* extend the patterns to cover both, red-first, by
+shape and not by any observed value. The post-run sweep is the compensating
+control, not a substitute, because the sweep runs after the money is spent.
+
+**(f) C1 — the released checkout.** `cli.py:874-884` reads the committed blob
+only on the docker arm; the modal arm falls through to a plain worktree read.
+Executing a cloud job from the worktree would violate the standing ruling that
+execution uses only a released checkout. *Shape:* the modal arm reads the
+committed blob by the same route as the docker arm, and refuses when the
+worktree differs from the released checkout. Red-first: a dirtied worktree must
+make the modal arm refuse, and today it does not. **C1 is the one item on this
+list whose failure is silent** — every other item fails loudly. It is therefore
+gated by an executed test, not by inspection.
+
+### 29.6 Ruling (4) — retry semantics for the write-once durable records
+
+Owed decision (1). `_atomic_json` (`modal_provider.py:403-410`) refuses any path
+that already exists. A failed run leaves its records in place and they refuse
+the next attempt at the same path; the refusal surfaces through the ninety-line
+handler as an opaque failure, which is why (b) above is a gate.
+
+**Ruling: a retry is a new run id, never an operator deletion.** The record is
+the deliverable of a failed smoke (PREPARE 1.3: every Host surface survives, and
+that is good for a smoke). Deleting it to retry destroys the only evidence of
+the attempt that failed, on the lane where evidence is the point.
+
+**The one exception, narrowly drawn.** The operator may delete records from an
+attempt that never reached the provider — that is, one that failed before the
+first billed action. Those carry no cloud-side counterpart and no diagnostic
+value beyond their own refusal code. Every other surface is preserved until
+closeout. Nothing in the Host is changed to implement this; it is an operator
+rule and belongs in the run driver's recipe.
+
+### 29.7 Ruling (5) — the app name, and what isolation is actually available
+
+Owed decision (4). `APP_NAME = "synaptic-training-v1"` is a module constant
+(`deployment_v1.py:17`) and cannot vary from Host configuration. Configuration
+does carry `environment_name`, `control_volume_name`, `artifact_volume_name`,
+`runtime_secret_name` (`modal_provider.py:136-141`) and `function_name`
+(`:292`).
+
+**Ruling: do not vary the app name. Isolate by provider environment.** A
+distinct environment namespaces the app, both volumes and the Secret in one
+move, needs no code change, and leaves the constant alone. Varying the app name
+would mean editing an engine constant for a smoke, which is a worse trade than
+the isolation is worth.
+
+### 29.8 Ruling (6) — the CLOSEOUT bucket
+
+Owed decision (5). **Admitted.** The three items are recorded here so they have
+a home and are not rediscovered: **#339** (publication receipt `recorded_at`
+`2013-11-22T15:29:11Z` on a 2026-09-05 record from run 14), **#274**
+(intermittent publication flake, roughly 1 in 15, pre-existing) and **#340**
+(engine closure debt: an owned tracking module outside the offline closure).
+None gates the submit. All three are publication-side or engine-closure-side and
+belong to the closeout of this feature, not to this smoke.
+
+### 29.9 Ruling (7) — the isolation triple, and what the operator creates
+
+The user ruling is that each cloud job is isolated. Under 29.7 that resolves to a
+**dedicated provider environment** holding a fresh **control volume**, **artifact
+volume** and **Secret** — the isolation triple — plus the app deployed into it.
+
+Three properties the operator step must satisfy:
+
+1. **The Secret carries the worker key, never the Host key** (29.3). This is the
+   step where 29.3's before-the-smoke rotation happens.
+2. **The Secret's key set is exactly `("HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY")`**,
+   fixed and refused otherwise at `modal_provider.py:168`, with the deploy
+   refusing outright when the first is absent (`:845`). No third key is
+   available for anything.
+3. **The standing safety properties are not relaxed**: `retries=0`,
+   `restrict_modal_access=True`, `single_use_containers=True`,
+   `include_source=False`, and the digest-pinned image
+   (`deployment_v1.py:134-145`). Egress is unrestricted at this pin by user
+   ruling — `restrict_modal_access` governs access to provider resources, not
+   network egress, and no `block_network` exists anywhere on this path (R2). The
+   standing network-disabled wording does not transfer to this lane and must not
+   be written as if it does.
+
+The existing objects in the live environment are left untouched and unread. The
+smoke does not adopt them.
+
+### 29.10 Ruling (8) — the submit container
+
+The submit machine runs the Host and calls the provider API. It is not the
+training container: no GPU, no CUDA, not the trainer image. Constraints, each
+tied to the line that imposes it:
+
+1. **The SDK at exactly 1.5.4.** Not a floor, not a range: `deployment_v1.py:95`
+   and `facade.py:71-74` compare the version for equality. Install from the
+   hash-locked authority `synaptic-tuner/requirements/modal-launcher-v1.lock`
+   with `--require-hashes --only-binary :all:`, matching `launcher.py:401-402`.
+   No resolver.
+2. **The engine at the pinned sha on `sys.path`, established in code.** Both
+   top-level packages are imported and both live at the submodule root, so one
+   entry covers both. Never via an exported environment variable; rule 21.2
+   stands. Assert the gitlink alongside it. B-15 was exactly this omission on the
+   other provider.
+3. **Credentials injected at run time, never baked into a layer.** The provider
+   token pair reaches the SDK at run time. The two runtime secrets are not
+   submit-side at all: they are delivered inside the training container by the
+   Secret and read there, with a loud refusal when absent.
+4. **Egress to the provider API is required by design.** The submit side is a
+   client. This is a different question from the training container's egress.
+5. **Base image pinned by digest, layer set minimal.**
+6. **Everything runs through the container.** No new virtual environment and no
+   new conda environment, per the standing user ruling.
+
+It must **not** carry the trainer image or its ML stack, the container-side
+interpreter version (that pin is container-side and does not cross the seam), or
+any project or engine source as a layer — the container materializes source by
+cloning at run time, and the deployment attaches sources with copy disabled.
+
+**The PATH bound (#432), stated as owed.** `launcher.py:628` rejects any
+allowlisted child environment value over 4096 bytes. The operator PATH was
+measured at 5248 bytes in the WSL shell and 3903 on Windows: the first already
+exceeds the bound. **The submit container's PATH must be measured before submit**
+and kept under 4096 bytes. This is a container-recipe constraint, and the gate
+that records it is G2 below.
+
+### 29.11 Rulings (9) and (10) — the two smaller owed decisions
+
+**Owed decision (6), the overlap trap.** The manifest overlap check is empty at
+the checked-in configuration, which is why #153 does not gate (census section 7,
+correcting an earlier reading). **Ruling: prevent it with a configuration test,
+not a comment.** A test that asserts the overlap set is empty at the checked-in
+configuration converts a fact that happens to hold into a fact that stays true,
+and it costs one assertion. A comment records the same fact and enforces nothing.
+
+**Owed decision (7), the artifact-kind divergence.** **Ruling: a deliberate lane
+difference, and the smoke asserts it.** It is not a defect in the local lane: the
+two lanes have different artifact contracts by construction. Recording it as a
+lane difference and pinning it with an assertion means a future convergence is a
+test failure rather than a silent behaviour change. No code changes.
+
+### 29.12 Gates, in order
+
+No submit before every gate below is green. G1 through G4 are pre-submit and
+cost nothing.
+
+| Gate | What it proves | How |
+|---|---|---|
+| **G1** | The six fix shapes of 29.5 are landed, each with its red-first test, on both lanes, against the pinned Windows failing set from #430. | Suite run, failing-set identity by node id. |
+| **G2** | The submit container satisfies 29.10, and its PATH is under 4096 bytes. | Recorded measurement of the PATH length inside the container, plus the SDK version equality and the engine gitlink. |
+| **G3** | B-19 cannot recur: every locked file's recorded digest equals the file at the pinned engine sha. | Digest comparison run before submit, after the pin move of 29.4. |
+| **G4** | R1 is real: K1 through K4 green, K3 red-first on the pre-change tree. | Unit run. No credential, no cloud. |
+| **G5** | The isolation triple exists in a dedicated environment, the Secret carries the worker key, and the Host key was rotated before it. | Operator step of 29.9, recorded. |
+| **G6** | A refusal names its own cause. | Any failure surfaced during G1-G5 shows a chained cause, not an opaque code. |
+
+**The dry run is not a gate.** It is provably free and provably blocked at the
+installed SDK version, and it cannot catch B-19. If it is run at all it is run
+inside the submit container, as an observation, and its passing proves nothing
+about the four items G3 and G4 cover.
+
+### 29.13 Risks, and what this ruling does not settle
+
+1. **The symmetric-MAC limit (29.2).** The worker channel remains forgeable by
+   the container that holds its key. Key separation confines the blast radius to
+   one deployment's run evidence; it does not make the run evidence
+   unforgeable. Any future claim that container-reported evidence is
+   *trustworthy* rather than *scoped* is wrong at this pin.
+2. **The live Secret's contents are unmeasured by choice.** 29.3's
+   before-the-smoke rotation is written to be correct whether or not the Host
+   key is in it. If a later measurement shows it is, nothing in the ruling
+   changes; if it shows it is not, the rotation was cheap.
+3. **The thirteen unfixed swallowing sites** (29.5(b)) remain. The narrow fix is
+   a deliberate scope choice against an untested lane, not a claim that the rest
+   are harmless.
+4. **Per-run worker keys are refused at this pin, not rejected on merit**
+   (29.3). They become available if the deployment ever becomes per-run.
+5. **Scope B inherits #391**: under a real destination configuration the
+   ungoverned text values become live. Under scope A the destination is a
+   literal sentinel and #391 does not gate. This is the one place where a scope
+   A green must not be read as a scope B green.
+
+### 29.14 Out of scope, and one flag
+
+Out of scope: publication and everything behind it (C2, C3, SEC-F1, #380); the
+local Docker lane, untouched; the legacy composition path, which nothing here
+routes through; the GPU training run, which stays blocked until publication
+closure is released, the exact model inventory exists, and execution runs from a
+clean released checkout.
+
+**Flag.** `CLAUDE.md` was not written by any route during this ruling, per the
+dispatch, and no route to it is proposed. Recorded here as required.
