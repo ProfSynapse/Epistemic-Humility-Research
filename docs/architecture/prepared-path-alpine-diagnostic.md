@@ -7778,6 +7778,68 @@ of each locked file's recorded digest against the file at the pinned engine sha,
 run before submit. That comparison is cheap, is the only thing that catches a
 recurrence, and belongs in the gate list of 29.12 as **G3**.
 
+**Correction 2026-09-06 (third): the vehicle for R4, and one citation fix.**
+This Correction governs 29.4 and 29.5(e), and it corrects one line number in
+29.3. It was requested as a ruling of the section author after the CODE phase
+found that 29.5(e) and 29.4 contradict each other. Every `file:line` and every
+count below was re-measured against the tree at Host `919045f5` with the engine
+pinned at `ce539b70`.
+
+**The contradiction.** 29.5(e) requires a change to the redactor. 29.4 says of
+the B-19 engine work that *"the regeneration is the deliverable; no other engine
+edit rides with it"*. Those two hold together only if the redactor is Host code.
+It is not. **`synaptic_host/redaction.py` does not exist.** The only redactor in
+the tree is `tuner/execution/providers/modal/redaction.py`, 92 lines, inside the
+pinned engine. R4 is therefore unavoidably an engine edit, and 29.4's sentence,
+read literally, would rule R4 out of scope A. It was written to keep the
+regeneration commit clean, not to refuse R4, and it is corrected here rather
+than defended.
+
+**Ruling: R4 rides as a SECOND engine commit on the same branch in the nested
+engine cycle, after the lock regeneration and before the pin move.** One pin
+move carries both commits. 29.4's sentence is narrowed to what it was for: no
+other engine edit rides *inside the regeneration commit itself*, so the
+regenerated artifact is still committed with the change that invalidated it and
+nothing else. Host-side verification of R4 moves to TEST, against the moved pin.
+
+**Why a second commit is safe here, measured rather than assumed.** The danger
+with any engine edit that follows a closure regeneration is the B-5 trap that
+bit section 23: the edited module was itself a closure member, so editing it
+invalidated the artifact that had just been regenerated. That trap does not fire
+for R4, on three measurements:
+
+1. `modal-runtime-v1.lock.json` records exactly seven `locked_files` —
+   `dependency_lock`, `deployment_wrapper`, `modal_mounted_io`, `modal_producer`,
+   `modal_remote`, `modal_runtime`, `sft_runtime`. The redactor is not among
+   them, and the string `redaction` does not appear anywhere in that lock.
+2. Widening the sweep past that one lock: **zero** manifest, lock or toml file
+   anywhere in the tree mentions `redaction`. So no *other* closure manifest
+   requires regeneration either. This is the measurement that settles the
+   ordering question, not the first one.
+3. The module has a single importer, `providers/modal/__init__.py:7`
+   (`from .redaction import redact`), so the blast radius of the edit is one
+   package.
+
+**The two alternatives, and why each is refused.** Ruling R4 out of scope A is
+refused by 29.5(e)'s own text: it states that the post-run sweep is the
+compensating control and **not** a substitute, because the sweep runs after the
+money is spent. Dropping R4 would leave the sweep as the only protection, which
+is the thing 29.5(e) already says is insufficient. A Host-side wrapper around
+the engine redactor is refused as new surface that duplicates a redactor the
+engine already owns, on the wrong side of the boundary the run crosses.
+
+**Citation fix in 29.3.** 29.3 reads *"`modal_provider.py:906` puts the worker
+key in the Secret"*. That is the wrong line. The guarded construction measures
+as `:902` `if runtime_secret is None:`, `:903` the `Secret.objects.create` call,
+`:905` the opening brace, `:906` the `HF_TOKEN` entry, `:907` the
+`SYNAPTIC_EVIDENCE_MAC_KEY` entry, `:908` the closing brace. **The worker key
+line is `:907`, and `:906` is the HF token entry.** The `:902-907` span cited in
+29.2 is correct and is left as written: it opens at the guard and closes on the
+worker-key entry, so both credential entries fall inside it and the sentence it
+supports — that the key bytes are uploaded whole into the named Secret — is true
+of that span. The wrong single-line citation is the section author's, recorded
+here rather than attributed to the review that found it.
+
 ### 29.5 Ruling (3) — the six pre-submit fix shapes, in gating order
 
 The census yields six items that gate the submit as code or ruling. They are
@@ -7871,6 +7933,12 @@ outcome the PREPARE study names, and it is the deciding argument.
 two credential shapes. *Shape:* extend the patterns to cover both, red-first, by
 shape and not by any observed value. The post-run sweep is the compensating
 control, not a substitute, because the sweep runs after the money is spent.
+*Vehicle (Correction 2026-09-06, third; see the end of 29.4).* The redactor is
+engine code — there is no `synaptic_host/redaction.py` — so R4 rides as a second
+engine commit on the same branch in the nested engine cycle, after the B-19 lock
+regeneration and before the pin move, under one pin move. It does not re-open
+B-19: the redactor is not a `locked_files` member and no manifest in the tree
+names it.
 
 **(f) C1 — the released checkout.** `cli.py:874-884` reads the committed blob
 only on the docker arm; the modal arm falls through to a plain worktree read.
