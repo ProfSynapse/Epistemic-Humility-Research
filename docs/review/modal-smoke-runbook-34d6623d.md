@@ -6,12 +6,15 @@ provider.** Every command below is prepared for the lead to run; the author ran
 only the local probes listed in section 3, none of which reaches Modal, reads a
 credential, or mutates the account.
 
-Record query issued to the secretary for memories
-`9dfad232b19056be0a93e932204d259b` (TEST push-boundary arc) and
-`aebbc30467abafe72d670ce49b999853` (CODE arc record) plus any standing ruling on
-provisioning or rotation. **The reply had not arrived when this revision was
-committed.** Nothing below depends on it; if it contradicts a step, the record
-governs and the step is amended.
+Record query answered by the secretary on 2026-09-06. Both memory ids are
+current and neither is superseded, so both are cited here:
+`9dfad232b19056be0a93e932204d259b` (TEST push-boundary arc, tasks #475-#483:
+documentation and audit discipline behind the 27-commit push at `34d6623d`,
+nothing in it touching provisioning or rotation) and
+`aebbc30467abafe72d670ce49b999853` (CODE arc record, which carries the
+provisioning and rotation material). The reply was checked against every step.
+**No step changed.** What it confirms, what it corrects, and the one item it
+does not corroborate are in section 1.1.
 
 ---
 
@@ -34,6 +37,83 @@ Governing rulings, all in `docs/architecture/prepared-path-alpine-diagnostic.md`
 Where 29.15 supersedes a body figure, 29.15 governs; its baseline is Host
 `0371d495`, and the Host tree is byte-identical for every symbol cited below at
 the release sha `34d6623d`.
+
+### 1.1 Record confirmations (secretary reply, 2026-09-06)
+
+Five items bear on this runbook. None of them changed a step.
+
+1. **The isolation triple survives; only the application half of the earlier
+   plan-mode framing is superseded.** The secretary first wrote that the
+   environment ruling contradicts the whole triple, then corrected that in a
+   second message. The corrected reading is the one this runbook already
+   follows: the two Volumes and the Secret **are** the triple and they live in
+   the dedicated environment; only the app name stays constant, because it is a
+   module constant (29.7 ruling (5)). Step 4 creates all three. Step 8 addresses
+   the app by name **plus** environment for exactly this reason, and the boxed
+   warning there is the consequence.
+
+2. **This runbook writes no configuration file, and the reason is not the one
+   the record gives.** The instruction is right and is followed: a step that
+   wrote a new configuration file to select the environment would not work. The
+   *mechanism* relayed from blocker #457, that the filename is fixed in code
+   with no path parameter, is **stale at this sha**. Measured in the released
+   checkout:
+
+   ```
+   sed -n '345,350p' synaptic_host/modal_provider.py
+     -> def load(cls, context: ProjectContext, path: Path | None = None) -> "ModalHostConfigV1":
+     ->     selected = path or context.config_root / "providers" / "modal.json"
+     ->     ...must live below the host config root
+
+   sed -n '683,686p' synaptic_host/modal_provider.py
+     -> def load(cls, context: ProjectContext, config_path: Path | None = None,
+     -> ) -> "ModalProviderAuthorityV1":
+     ->     config = ModalHostConfigV1.load(context, config_path)
+
+   rtk proxy grep -rn "ModalProviderAuthorityV1.load" synaptic_host/
+     -> synaptic_host/modal_training.py:596:  authority = ModalProviderAuthorityV1.load(context)
+   ```
+
+   An override parameter **does** exist and is threaded end to end. What makes a
+   new file useless is that the sole submit-path caller passes none, so the
+   committed `training/providers/modal.json` governs. Recorded as a record-premise
+   correction, not a step change.
+
+3. **Two standing user rulings do not transfer to this lane, and neither fails
+   for want of a flag.** Network-disabled: the training container is its own
+   source materializer and clones project and engine from inside itself as its
+   first act, so denying egress breaks the lane rather than hardening it, and a
+   repo-wide search for a network-blocking flag returns zero. Credential-free
+   container: falsified by measurement, the container reads two named Secret
+   keys and injects both into the trainer subprocess. Neither is encoded as a
+   precondition here, neither appears in the DO-NOT-RUN table of section 7, and
+   neither may be added later as one. This agrees with 29.9 ruling (7) above.
+
+4. **Who executes is a standing session ruling, not merely this dispatch's
+   wording.** The team-lead executes every account-mutating or credential-bearing
+   provider step from the released checkout: environment, Volumes, Secret, key
+   rotations, deploy and the single paid submit. Teammates prepare the command
+   lines and verify afterwards, and no teammate is handed a credential. The first
+   paid submit and any object creation are additionally confirmed with the user
+   at the moment of execution. The DIRECT-INVOCATION steps 3 and 4 sit inside
+   this ruling rather than beside it: a few typed lines that change no file,
+   prepared by the author and executed by the lead.
+
+5. **Whether the environment must pre-exist is a measurement, not a ruling.**
+   The record does not carry it and the secretary declined to assert it. It is
+   settled in section 4 question (1) from probe A (the SDK default
+   `create_if_missing: bool = False`) and probe B (the creation command's own
+   help output). A separate creation command is therefore required, and it is
+   step 2, executed by the lead under item 4.
+
+One item is **not** corroborated. The record carries no caller census for the
+rotation module or for the deploy entry, so finding 1 of section 9, that no
+production caller exists for either, is **new** rather than confirmed. Nothing
+in the record contradicts it. The secretary notes a precedent pointing the same
+way: a handoff in this arc claimed five acceptance gates where the commit landed
+four, and the rule the lead adopted from it is to enumerate a deliverable set
+from the commit rather than from the dispatch wording. That is the instrument
+used for finding 1.
 
 ---
 
