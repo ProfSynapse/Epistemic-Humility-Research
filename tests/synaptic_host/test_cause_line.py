@@ -370,17 +370,71 @@ def test_a_raise_inside_a_helper_renders_both_frames_deciding_frame_last(
 _LANE_MODULES = ("modal_provider.py", "modal_training.py")
 
 
+_STREAMS = ("stdout", "stderr")
+_TRACEBACK_PRINTERS = ("print_exc", "print_exception", "print_stack")
+
+
+def _stream_and_traceback_bindings(
+    tree: ast.Module,
+) -> tuple[dict[str, str], set[str], dict[str, str]]:
+    """Collect the names bound to a stream, and to `traceback`, in `tree`.
+
+    Binding-tracked and deliberately NOT flow-sensitive: a name enters a set
+    when it is bound from `sys.stdout`/`sys.stderr` or from the `traceback`
+    module, and never leaves.  Rebinding and cross-function shadowing are not
+    modelled.  That is the right trade for a gate whose job is to fail loudly
+    on a NEW emitter, not to prove one is absent -- and it is why a parameter
+    or an unrelated local merely NAMED `stderr` cannot enter the set and
+    cannot red ordinary code.
+    """
+
+    streams: dict[str, str] = {}
+    traceback_modules: set[str] = set()
+    traceback_functions: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            module = (node.module or "").split(".")[0]
+            for alias in node.names:
+                if module == "sys" and alias.name in _STREAMS:
+                    streams[alias.asname or alias.name] = alias.name
+                if module == "traceback" and alias.name in _TRACEBACK_PRINTERS:
+                    traceback_functions[alias.asname or alias.name] = alias.name
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "traceback":
+                    traceback_modules.add(alias.asname or alias.name)
+        elif isinstance(node, ast.Assign):
+            value = node.value
+            if isinstance(value, ast.Attribute) and value.attr in _STREAMS:
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        streams[target.id] = value.attr
+    return streams, traceback_modules, traceback_functions
+
+
 def _free_text_emitters(source: str) -> list[str]:
     """Report every free-text emission site in `source`, as sorted labels.
 
-    Four shapes, because those are the four ways this package could grow an
-    unredacted operator-visible surface: a bare `print`, a `logging` import,
-    any reference to `sys.stdout`/`sys.stderr`, and a `.write(` onto either.
+    The shapes this gate COVERS, which is not the same as the shapes Python
+    offers: a bare `print`; a `logging` import; any reference to
+    `sys.stdout`/`sys.stderr`; a `.write(` onto either; a `.write(`/`.flush(`
+    on, or a `file=` naming, a bare name BOUND from one of those streams; and
+    `traceback.print_exc`/`print_exception`/`print_stack`, including through
+    an aliased import, which write to stderr AND render the exception message.
+
+    Known UNCOVERED, deliberately, so no reader mistakes a green here for a
+    proof of absence: `warnings.warn`, `os.write(2, ...)` and
+    `builtins.print`, plus any emitter reached through a name this binding
+    pass does not model.  Adding a shape here is cheaper than discovering it
+    in a paid run; the list is a floor, never a ceiling.
+
     Returns labels rather than a bool so a failure names the line.
     """
 
+    tree = ast.parse(source)
+    streams, traceback_modules, traceback_functions = _stream_and_traceback_bindings(tree)
     found: list[str] = []
-    for node in ast.walk(ast.parse(source)):
+    for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             function = node.func
             if isinstance(function, ast.Name) and function.id == "print":
@@ -389,10 +443,38 @@ def _free_text_emitters(source: str) -> list[str]:
                 isinstance(function, ast.Attribute)
                 and function.attr == "write"
                 and isinstance(function.value, ast.Attribute)
-                and function.value.attr in ("stdout", "stderr")
+                and function.value.attr in _STREAMS
             ):
                 found.append(f"{function.value.attr}.write at :{node.lineno}")
-        elif isinstance(node, ast.Attribute) and node.attr in ("stdout", "stderr"):
+            if (
+                isinstance(function, ast.Attribute)
+                and function.attr in ("write", "flush")
+                and isinstance(function.value, ast.Name)
+                and function.value.id in streams
+            ):
+                stream = streams[function.value.id]
+                found.append(f"{stream} name {function.attr} at :{node.lineno}")
+            if (
+                isinstance(function, ast.Attribute)
+                and function.attr in _TRACEBACK_PRINTERS
+                and isinstance(function.value, ast.Name)
+                and function.value.id in traceback_modules
+            ):
+                found.append(f"traceback.{function.attr} at :{node.lineno}")
+            if isinstance(function, ast.Name) and function.id in traceback_functions:
+                found.append(
+                    f"traceback.{traceback_functions[function.id]} at :{node.lineno}"
+                )
+            for keyword in node.keywords:
+                if (
+                    keyword.arg == "file"
+                    and isinstance(keyword.value, ast.Name)
+                    and keyword.value.id in streams
+                ):
+                    found.append(
+                        f"{streams[keyword.value.id]} name file= at :{node.lineno}"
+                    )
+        elif isinstance(node, ast.Attribute) and node.attr in _STREAMS:
             found.append(f"{node.attr} reference at :{node.lineno}")
         elif isinstance(node, ast.Import):
             for alias in node.names:
@@ -415,26 +497,58 @@ def test_the_host_modal_lane_renders_no_free_text() -> None:
 
     # The detector fires.  Each shape is exercised, so a future edit that
     # breaks one arm cannot leave the gate silently half-blind.
+    #
+    # The stream-name and traceback lines below deliberately carry NO
+    # `sys.stdout`/`sys.stderr` attribute access, because the pre-existing
+    # reference arm fires on any such access and would report those lines for
+    # the wrong reason -- a label from one arm standing in for another is how
+    # a half-blind detector goes on reporting green.
     violating = textwrap.dedent(
         """
         import logging
         import sys
         from logging import getLogger
+        from sys import stderr
+        from sys import stdout as bound_out
+        import traceback
+        import traceback as tb
 
         def emit(secret):
             print(secret)
             sys.stderr.write(secret)
             sys.stdout.write(secret)
+            stderr.write(secret)
+            bound_out.flush()
+            tb.print_exc(file=stderr)
+            traceback.print_exception(secret)
+            traceback.print_stack()
         """
     )
+    # Sorted by KIND, not by the full label: the full labels sort by their line
+    # numbers too, so an assertion written against that order silently depends
+    # on where each shape sits in the fixture.
     fired = _free_text_emitters(violating)
-    assert [label.split(" at ")[0] for label in fired] == [
+    assert sorted(label.split(" at ")[0] for label in fired) == [
         "from logging", "import logging", "print",
-        "stderr reference", "stderr.write", "stdout reference", "stdout.write",
+        "stderr name file=", "stderr name write", "stderr reference",
+        "stderr.write", "stdout name flush", "stdout reference", "stdout.write",
+        "traceback.print_exc", "traceback.print_exception",
+        "traceback.print_stack",
     ], fired
 
     # And it reports nothing on a closed module.
     assert _free_text_emitters("def f(x):\n    return (124, 'locked_source_mismatch')\n") == []
+
+    # Nor on names that merely LOOK like streams.  The stream-name arm is
+    # binding-tracked, so a parameter or an unrelated local called `stderr`
+    # must not enter the bound set; if it did, the gate would red on ordinary
+    # code and get switched off.
+    assert _free_text_emitters(
+        "def f(stderr, x):\n    stderr.write(x)\n"
+    ) == []
+    assert _free_text_emitters(
+        "def f(x):\n    out = open('f')\n    out.write(x)\n"
+    ) == []
 
     # The sweep proper.  `synaptic_host` is imported above via `cli`, so the
     # package directory is derived, never guessed.
