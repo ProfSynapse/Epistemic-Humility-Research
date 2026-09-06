@@ -1,6 +1,6 @@
 {
   "schema_version": "synaptic-modal-host/v1",
-  "environment_name": "main",
+  "environment_name": "synaptic-smoke-v1",
   "profile": "modal-a10-v1",
   "training": {
     "schema_version": "synaptic-modal-training-policy/v1",
@@ -14,11 +14,11 @@
     "timeout_seconds": 3600
   },
   "volumes": {
-    "control_name": "synaptic-training-control-v1",
-    "artifact_name": "synaptic-training-artifacts-v1"
+    "control_name": "synaptic-training-control-smoke-v1",
+    "artifact_name": "synaptic-training-artifacts-smoke-v1"
   },
   "runtime_secret": {
-    "name": "synaptic-training-runtime-v1",
+    "name": "synaptic-training-runtime-smoke-v1",
     "required_keys": [
       "HF_TOKEN",
       "SYNAPTIC_EVIDENCE_MAC_KEY"
