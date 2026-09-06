@@ -1327,3 +1327,283 @@ def test_k2_host_refs_sign_the_attestations_and_the_worker_ref_stages(
     assert intent.key_ref != host.key_ref
     router = captured["ports"].authenticator
     assert type(router) is modal_training.EvidenceKeyRouterV1
+
+
+# --- B-18 (section 29.5(b)): the swallowed causes on this lane ---------------
+#
+# Every handler below used to catch `BaseException` unbound and answer with a
+# bare diagnostic code.  A run that had already cost money reached the operator
+# as `COMPOSITION_UNAVAILABLE` with no way to tell which of ninety lines
+# produced it.  These tests pin two things at once, because either alone would
+# pass a broken implementation: that the cause is now NAMED, and that the
+# result envelope the run driver parses is UNCHANGED.
+
+
+class _CauseRecorder:
+    """Stands in for the cause-line renderer and records what reached it."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[type, object]] = []
+
+    def __call__(self, error, code) -> None:
+        self.calls.append((type(error), code))
+
+
+def _record_causes(monkeypatch: pytest.MonkeyPatch) -> _CauseRecorder:
+    """Install the recorder where `_report_swallowed_cause` imports from.
+
+    The helper imports `report_cause_line_v1` inside its own body, so the
+    module attribute is read at call time and this patch is seen.
+    """
+
+    import synaptic_host.cause_line as cause_line
+
+    recorder = _CauseRecorder()
+    monkeypatch.setattr(cause_line, "report_cause_line_v1", recorder)
+    return recorder
+
+
+def test_b1_the_helper_hands_the_exception_and_the_code_to_the_renderer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """B1 — the seam itself, before any handler is driven through it."""
+
+    recorder = _record_causes(monkeypatch)
+    error = RuntimeError("private detail")
+
+    modal_training._report_swallowed_cause(
+        error, TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+    )
+
+    assert recorder.calls == [
+        (RuntimeError, TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE)
+    ]
+
+
+def test_b2_a_failing_renderer_never_reaches_the_path_it_diagnoses(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """B2 — the guard is real, not decorative.
+
+    A diagnostic that can fail the path it is diagnosing is worse than no
+    diagnostic at all.  If the renderer itself raises, the helper still
+    returns and the handler's own return runs unchanged.
+    """
+
+    import synaptic_host.cause_line as cause_line
+
+    def _explode(_error, _code):
+        raise MemoryError("renderer is unusable")
+
+    monkeypatch.setattr(cause_line, "report_cause_line_v1", _explode)
+
+    assert modal_training._report_swallowed_cause(
+        ValueError("x"), TrainingRunCommandCodeV2.START_UNAVAILABLE
+    ) is None
+
+
+@pytest.mark.parametrize(
+    "stage,code",
+    [
+        ("load", TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE),
+        ("resolve", TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE),
+        ("plan", TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE),
+        ("preflight", TrainingRunCommandCodeV2.PREFLIGHT_REJECTED),
+        ("start", TrainingRunCommandCodeV2.START_UNAVAILABLE),
+    ],
+)
+def test_b3_each_reachable_handler_names_its_cause_and_keeps_its_envelope(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage: str,
+    code: TrainingRunCommandCodeV2,
+) -> None:
+    """B3 — the census over the stages the smoke can actually reach.
+
+    This is the same drive as the pre-start closure test above, so the
+    envelope assertions are the identical ones: the result must not widen.
+    The addition is that exactly one cause is now reported, it carries the
+    exception the stage raised, and it carries that handler's own code.
+    """
+
+    recorder = _record_causes(monkeypatch)
+    ingress, project = _ingress(tmp_path)
+    operations, _session, _repository = _install_fakes(monkeypatch, project)
+    operations.fail_at = stage
+    monkeypatch.setattr(modal_training, "_classify_durable", lambda **_kwargs: None)
+
+    result = modal_training.execute_modal_training_run_v2(
+        ingress, project_root=project, engine_root=ENGINE,
+        token_id="token-id", token_secret="token-secret",
+        sdk_loader=lambda: object(), clock=lambda: NOW,
+    )
+
+    assert recorder.calls == [(RuntimeError, code)]
+    # The envelope is unchanged: same code, same absent identity fields.
+    assert result.project_ref is result.run_id is result.plan_fingerprint is None
+    assert result.effect_id is result.provider_job_ref is result.submitted_at is None
+
+
+def test_b4_the_ninety_line_composition_wrapper_names_its_cause(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """B4 — the worst of the four, and the one 29.5(b) names.
+
+    The wrapper spans roughly ninety lines of composition and answers all of
+    it with one `COMPOSITION_UNAVAILABLE`.  Here the finalizer composition
+    raises; before the fix the operator saw the code and nothing else.
+    """
+
+    recorder = _record_causes(monkeypatch)
+    ingress, project = _ingress(tmp_path)
+    _install_fakes(monkeypatch, project)
+
+    def _refuse(*_args, **_kwargs):
+        raise AttributeError("private composition failure")
+
+    monkeypatch.setattr(
+        modal_training, "compose_modal_source_finalizer", _refuse
+    )
+
+    result = modal_training.execute_modal_training_run_v2(
+        ingress, project_root=project, engine_root=ENGINE,
+        token_id="token-id", token_secret="token-secret",
+        sdk_loader=lambda: object(), clock=lambda: NOW,
+    )
+
+    assert result.code is TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+    assert recorder.calls == [
+        (AttributeError, TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE)
+    ]
+    assert result.project_ref is result.run_id is None
+
+
+def test_b5_the_restore_handler_names_its_cause_under_reconcile(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """B5 — the fifth site, on the restore lane rather than the run lane.
+
+    `_restore_durable_found` answers a failed restore with
+    `RECONCILE_REQUIRED`, which is the code an operator acts on by hand.  It
+    is the one arm where knowing WHY the restore failed changes what the
+    operator does next.
+    """
+
+    recorder = _record_causes(monkeypatch)
+    ingress, project = _ingress(tmp_path)
+    _operations, session, _repository = _install_fakes(monkeypatch, project)
+
+    def _refuse(_reference):
+        raise ConnectionError("private restore failure")
+
+    session.restore_function_call = _refuse
+    monkeypatch.setattr(
+        modal_training, "_classify_durable",
+        lambda **arguments: modal_training._DurableFoundV1(
+            project_ref=arguments["project_ref"], run_id=arguments["run_id"],
+            plan_fingerprint="a" * 64, effect_id=arguments["effect_id"],
+            provider_job_ref="fc-durable-1", submitted_at=NOW,
+        ),
+    )
+
+    result = modal_training.execute_modal_training_run_v2(
+        ingress, project_root=project, engine_root=ENGINE,
+        token_id="token-id", token_secret="token-secret",
+        sdk_loader=lambda: object(), clock=lambda: NOW,
+    )
+
+    assert result.code is TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    assert (
+        ConnectionError, TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+    ) in recorder.calls
+
+
+def test_b6_the_real_renderer_emits_the_frame_and_never_the_message(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys,
+) -> None:
+    """B6 — with the real renderer in place, end to end.
+
+    B1 to B5 patch the renderer, so on their own they prove only that the
+    seam is wired.  This one leaves `report_cause_line_v1` alone and reads
+    stderr.  The line must name the code, the exception class and a frame,
+    and must NOT carry the exception's message: the message can hold a path
+    or an operator value, and 20.11 keeps those off this channel.
+    """
+
+    ingress, project = _ingress(tmp_path)
+    operations, _session, _repository = _install_fakes(monkeypatch, project)
+    operations.fail_at = "start"
+    monkeypatch.setattr(modal_training, "_classify_durable", lambda **_kwargs: None)
+    capsys.readouterr()
+
+    result = modal_training.execute_modal_training_run_v2(
+        ingress, project_root=project, engine_root=ENGINE,
+        token_id="token-id", token_secret="token-secret",
+        sdk_loader=lambda: object(), clock=lambda: NOW,
+    )
+
+    reported = capsys.readouterr().err
+    assert result.code is TrainingRunCommandCodeV2.START_UNAVAILABLE
+    assert "synaptic-host: START_UNAVAILABLE RuntimeError at " in reported
+    assert "modal_training.py" in reported
+    assert "private start failure" not in reported
+
+
+def test_b7_only_the_two_ruled_exclusions_still_swallow_their_cause() -> None:
+    """B7 — the boundary of 29.5(b), pinned structurally rather than by prose.
+
+    The ruling's shape is "restore the cause at the sites the smoke can
+    actually reach, and no others".  A behavioural test can show that a wired
+    handler reports; it cannot show that no handler was MISSED.  So this walks
+    the module's own syntax tree and requires every `except BaseException` to
+    either bind its exception and call the helper first, or be one of the
+    three named exemptions.
+
+    The exemptions, and why each is one.  `_report_swallowed_cause` is the
+    helper's own guard, and a diagnostic that calls itself would recurse.
+    `_ingress_is_current` and `_durable_static_matches` answer with a bare
+    boolean; neither stands between the operator and a first failure, and both
+    are re-asked on a path that does report.  The thirteen B-18-class sites
+    outside this module are follow-up #438, not silently treated as done.
+
+    The pin is on AST nodes, never on source text: this module's docstrings
+    quote the ruling, so a text scan would match its own prose.
+    """
+
+    import ast
+    import inspect
+
+    exempt = {
+        "_report_swallowed_cause", "_ingress_is_current", "_durable_static_matches",
+    }
+    tree = ast.parse(inspect.getsource(modal_training))
+
+    unbound: list[tuple[str, int]] = []
+    unreported: list[tuple[str, int]] = []
+    for function in ast.walk(tree):
+        if not isinstance(function, ast.FunctionDef) or function.name in exempt:
+            continue
+        for handler in ast.walk(function):
+            if not isinstance(handler, ast.ExceptHandler):
+                continue
+            if not (
+                isinstance(handler.type, ast.Name)
+                and handler.type.id == "BaseException"
+            ):
+                continue
+            if handler.name is None:
+                unbound.append((function.name, handler.lineno))
+                continue
+            first = handler.body[0]
+            called = (
+                isinstance(first, ast.Expr)
+                and isinstance(first.value, ast.Call)
+                and isinstance(first.value.func, ast.Name)
+                and first.value.func.id == "_report_swallowed_cause"
+                and len(first.value.args) == 2
+                and isinstance(first.value.args[0], ast.Name)
+                and first.value.args[0].id == handler.name
+            )
+            if not called:
+                unreported.append((function.name, handler.lineno))
+
+    assert unbound == [], f"BaseException handlers still swallowing: {unbound}"
+    assert unreported == [], f"bound but unreported handlers: {unreported}"

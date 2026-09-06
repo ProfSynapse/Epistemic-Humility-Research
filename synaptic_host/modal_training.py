@@ -174,6 +174,54 @@ def _timestamp(value: object) -> str:
     return parsed.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _report_swallowed_cause(error: BaseException, code) -> None:
+    """Name the cause of a failure this module answers with a result code.
+
+    B-18 class, section 29.5(b).  Every `except BaseException` below used to
+    leave the exception unbound, unchained and unlogged, so a run that cost
+    money reached the operator as a bare diagnostic code that named nothing.
+    The worst of them wraps roughly ninety lines of
+    `execute_modal_training_run_v2` and answers all of it with one opaque
+    `COMPOSITION_UNAVAILABLE`.
+
+    Section 27.4's pattern re-raises with the original as `__cause__`.  That
+    pattern cannot apply verbatim here: these handlers RETURN a
+    `TrainingRunCommandResultV2` rather than raising, and a dataclass has no
+    `__cause__`.  The operationally equivalent form on this lane is the
+    already-shipped cause-line renderer, which is exactly what the fourth
+    B-18 site does at `synaptic_host/__main__.py` in its `ensure_and_reexec`
+    handler.  This is that same shape, named once and reused.
+
+    The result contract does NOT widen.  The envelope the run driver parses
+    is unchanged: same code, same status, same fields.  The cause goes to
+    stderr on the mechanism 20.11 ruled and 24.4 already uses.
+
+    The import is inside the function and the whole call is guarded, by that
+    same convention: a diagnostic that can fail the path it diagnoses is
+    worse than no diagnostic at all.  `report_cause_line_v1` renders only
+    `code`, the exception's CLASS name and a frame; it never renders the
+    exception's message, and a test pins that
+    (`test_cause_line_carries_no_text_no_path_and_no_traceback`).  So this
+    cannot leak a credential that reached an exception message.
+
+    Scope, and the boundary is deliberate.  This is called from every
+    `except BaseException` in this module whose arm reaches `_full_failure`
+    or `_operation_result`, and from no others.  The two handlers that
+    answer with a bare boolean -- `_ingress_is_current` and the source-lock
+    currency check -- are excluded: neither stands between the operator and a
+    first failure, and both are re-asked on a path that does report.  The
+    thirteen remaining B-18-class sites outside this lane are follow-up
+    #438, recorded rather than silently treated as done.
+    """
+
+    try:
+        from .cause_line import report_cause_line_v1
+
+        report_cause_line_v1(error, code)
+    except BaseException:
+        pass
+
+
 def _full_failure(
     code: TrainingRunCommandCodeV2, baseline: tuple[object, ...],
 ) -> TrainingRunCommandResultV2:
@@ -345,7 +393,10 @@ def _classify_durable(
     try:
         record = repository.load(project_ref, run_id)
         preparation = repository.load_modal_preparation(project_ref, run_id)
-    except BaseException:
+    except BaseException as error:
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+        )
         return _full_failure(TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE, baseline)
     if record is None and preparation is None:
         return None
@@ -395,7 +446,10 @@ def _classify_durable(
             )
         if preparation.operation.effect != effect.identity:
             raise ValueError
-    except BaseException:
+    except BaseException as error:
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+        )
         return _full_failure(
             TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE, baseline
         )
@@ -434,7 +488,10 @@ def _restore_durable_found(
     try:
         restored = session.restore_function_call(found.provider_job_ref)
         restored_id = object.__getattribute__(restored, "object_id")
-    except BaseException:
+    except BaseException as error:
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.RECONCILE_REQUIRED
+        )
         restore_failed = True
     if not _ingress_is_current(ingress, baseline):
         return _internal_failure()
@@ -667,7 +724,14 @@ def execute_modal_training_run_v2(
         )
         if not _ingress_is_current(ingress, baseline):
             raise ValueError
-    except BaseException:
+    except BaseException as error:
+        # The ninety-line wrapper named in 29.5(b).  This is the handler that
+        # turned an AttributeError inside the composition into a bare
+        # COMPOSITION_UNAVAILABLE with no way to tell which of ninety lines
+        # produced it.
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE
+        )
         return _full_failure(
             TrainingRunCommandCodeV2.COMPOSITION_UNAVAILABLE, baseline
         )
@@ -685,7 +749,10 @@ def execute_modal_training_run_v2(
         if not _ingress_is_current(ingress, baseline):
             raise ValueError
         plan_fingerprint = plan.fingerprint
-    except BaseException:
+    except BaseException as error:
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE
+        )
         return _full_failure(
             TrainingRunCommandCodeV2.RESOLUTION_UNAVAILABLE, baseline
         )
@@ -693,7 +760,14 @@ def execute_modal_training_run_v2(
     preflight_rejected = False
     try:
         preflight = operations.preflight(plan)
-    except BaseException:
+    except BaseException as error:
+        # The code named here is this handler's own classification.  The arm
+        # below may still converge to an already durable SUBMITTED, in which
+        # case the cause line records what the preflight raised and the result
+        # records what the run actually is.  Both are true.
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.PREFLIGHT_REJECTED
+        )
         preflight_rejected = True
     if not _ingress_is_current(ingress, baseline):
         return _internal_failure()
@@ -709,7 +783,10 @@ def execute_modal_training_run_v2(
         grant = grants.authorize(preflight.authorization)
         if not _ingress_is_current(ingress, baseline):
             raise ValueError
-    except BaseException:
+    except BaseException as error:
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE
+        )
         return _full_failure(
             TrainingRunCommandCodeV2.AUTHORIZATION_UNAVAILABLE, baseline
         )
@@ -717,7 +794,13 @@ def execute_modal_training_run_v2(
         operations.start(plan, preflight, grant)
         if not _ingress_is_current(ingress, baseline):
             raise ValueError
-    except BaseException:
+    except BaseException as error:
+        # As at the preflight handler: START_UNAVAILABLE is this handler's own
+        # classification, and the durable classification below may still answer
+        # with SUBMITTED or RECONCILE_REQUIRED.
+        _report_swallowed_cause(
+            error, TrainingRunCommandCodeV2.START_UNAVAILABLE
+        )
         durable = _classify_durable(
             repository=repository, authority=authority, ingress=ingress,
             context=context, baseline=baseline, project_ref=project_ref,
