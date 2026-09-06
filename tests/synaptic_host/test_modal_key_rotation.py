@@ -28,11 +28,10 @@ from synaptic_host.modal_key_rotation import (
     rotate_host_evidence_key,
 )
 from synaptic_host.modal_provider import (
-    HOST_EVIDENCE_KEY_REF,
     WORKER_EVIDENCE_KEY_REF,
     build_worker_authenticator,
 )
-from synaptic_host.security import FileHmacAuthenticator
+from synaptic_host.security import HOST_EVIDENCE_KEY_REF, FileHmacAuthenticator
 
 
 def _context(tmp_path: Path) -> ProjectContext:

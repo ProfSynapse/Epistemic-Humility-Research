@@ -41,19 +41,19 @@ from .security import (
 
 # --- R1 (section 29.3 ruling (1)): two keys, three refs -------------------
 #
-# `modal-evidence-v1` is the HOST key.  It signs and verifies the source and
-# deployment attestations.  It never leaves the Host and is never a Secret
-# value.
-#
 # `modal-worker-v1` is the WORKER key.  It is the only key placed in the
 # runtime Secret and the only ref carried by `stage_target.key_ref`, so the
 # container channel is confined to it.
+#
+# The HOST ref is `HOST_EVIDENCE_KEY_REF` and it is defined in security.py,
+# beside the authenticator whose `from_context` default it supplies.  This
+# module no longer names it: nothing here reads it, and re-exporting it would
+# leave the ref with two import paths.  Import it from `.security`.
 #
 # Section 29.13 item 1: the algorithm is a symmetric HMAC, so the ability to
 # verify is the ability to sign.  Separating the keys confines the scope of
 # the container channel.  It does not make evidence produced inside a
 # container unforgeable, and nothing here should be read as claiming that.
-HOST_EVIDENCE_KEY_REF = "modal-evidence-v1"
 WORKER_EVIDENCE_KEY_REF = "modal-worker-v1"
 
 

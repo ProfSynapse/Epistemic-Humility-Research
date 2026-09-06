@@ -48,6 +48,7 @@ from .modal_provider import (
 )
 from .modal_resolver import ModalTrainingIntentV1, ModalTrainingResolverV1
 from .security import (
+    HOST_EVIDENCE_KEY_REF,
     BoundedGrantProvider,
     FileHmacAuthenticator,
     ScopedGitRemoteReader,
@@ -637,7 +638,9 @@ def execute_modal_training_run_v2(
         # stage claim carries.  `key_router` is the single long-lived object
         # both are reached through; see EvidenceKeyRouterV1 for why it must
         # stay one object with real methods.
-        authenticator = FileHmacAuthenticator.from_context(context)
+        authenticator = FileHmacAuthenticator.from_context(
+            context, key_ref=HOST_EVIDENCE_KEY_REF,
+        )
         authenticator.initialize()
         worker_authenticator = build_worker_authenticator(context)
         worker_authenticator.initialize()

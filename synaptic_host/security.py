@@ -668,6 +668,24 @@ if os.name == "nt":
             _win_close(handle)
 
 
+# The HOST evidence key reference.  It signs and verifies the source and the
+# deployment attestations, never leaves the Host, and is never a Secret
+# value.
+#
+# It is defined HERE, beside the authenticator whose `from_context` default
+# it supplies, because the two must not be able to drift apart.  While the
+# default spelled the string independently, moving the host ref meant two
+# edits in two modules and nothing failed if only one was made.  Now the ref
+# has exactly one definition and every reader imports it from here.
+#
+# Section 29.13 item 1: the algorithm is a symmetric HMAC, so the ability to
+# verify is the ability to sign.  Separating this ref from the worker ref
+# (`WORKER_EVIDENCE_KEY_REF` in modal_provider.py) confines the scope of the
+# container channel.  It does not make evidence produced inside a container
+# unforgeable, and nothing here should be read as claiming that.
+HOST_EVIDENCE_KEY_REF = "modal-evidence-v1"
+
+
 class FileHmacAuthenticator:
     """HMAC boundary backed by one private host-state key file."""
 
@@ -682,7 +700,7 @@ class FileHmacAuthenticator:
 
     @classmethod
     def from_context(
-        cls, context: ProjectContext, *, key_ref: str = "modal-evidence-v1"
+        cls, context: ProjectContext, *, key_ref: str = HOST_EVIDENCE_KEY_REF
     ) -> "FileHmacAuthenticator":
         from synaptic_tuner.api.v1 import ProjectContext
 

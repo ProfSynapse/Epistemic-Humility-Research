@@ -27,10 +27,11 @@ from synaptic_tuner.api.v1.modal import (
     ModalSecretProfileV1, modal_function_name,
 )
 from synaptic_host.modal_provider import (
-    HOST_EVIDENCE_KEY_REF, WORKER_EVIDENCE_KEY_REF,
+    WORKER_EVIDENCE_KEY_REF,
     ExplicitModalHostSession, ModalDeploymentJournalV1, ModalHostConfigV1,
     ModalProviderAuthorityV1, ModalTrainingPolicyV1,
 )
+from synaptic_host.security import HOST_EVIDENCE_KEY_REF
 from synaptic_host.security import FileHmacAuthenticator as RealFileHmacAuthenticator
 from tuner.execution.evidence import EvidenceAuthenticator
 from synaptic_host.modal_resolver import ModalProviderStateV1
@@ -195,8 +196,12 @@ class _FakeAuthenticator:
         self.key_path = key_path
 
     @classmethod
-    def from_context(cls, _context):
-        return cls()
+    def from_context(cls, _context, *, key_ref: str = "modal-host-key-v1"):
+        # The production host site now names its ref explicitly, so the fake
+        # must accept one and CARRY it: a fake that swallowed the argument
+        # and returned its own default would make every ref assertion below
+        # measure the fake instead of the caller.
+        return cls(key_ref)
 
     def initialize(self) -> None:
         pass
@@ -1235,6 +1240,93 @@ def test_k1_router_refuses_one_key_under_two_roles(tmp_path: Path) -> None:
         modal_training.EvidenceKeyRouterV1(host=host, worker=same_ref)
 
 
+def test_low2_the_production_host_ref_follows_the_named_constant(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """LOW-2: the production host authenticator reads the named constant.
+
+    security-review's #468 review found the host ref literal spelled twice:
+    once as the named constant and once, independently, as the default
+    parameter of `FileHmacAuthenticator.from_context`.  The production host
+    authenticator was built with NO explicit ref, so it took the default, and
+    the source and deployment attestation refs derive from it.  Editing the
+    named constant would therefore have moved every other site and silently
+    NOT moved production.
+
+    Why this test drives the whole run rather than reading the call site.  A
+    source-level pin would go green against a call that names the constant in
+    a comment, or against a default argument that merely mentions it.  A
+    default is bound once at function-definition time, so pointing the
+    default at the constant would NOT make production follow a later value;
+    only reading the constant at the CALL site does.  This test therefore
+    changes the constant at runtime and requires the ref the production path
+    actually builds to change with it, which is a property no arrangement of
+    frozen defaults can satisfy.
+
+    `raising=False` is deliberate.  Against the unfixed code `modal_training`
+    held no such attribute, and the red had to land on the ref comparison
+    below rather than on a missing name, or the test would have been
+    measuring its own import.  It stays after the fix because it costs
+    nothing: should the import ever be dropped again, the call site loses the
+    name outright and this test still fails.
+    """
+
+    probe_ref = "modal-evidence-probe-v1"
+    ingress, project = _ingress(tmp_path)
+    _install_fakes(monkeypatch, project)
+    # The run must actually REACH the host-authenticator construction.  An
+    # already-durable submission returns before it, which would leave the
+    # recorder empty and red this test for the wrong reason, so drive the
+    # same not-found-then-found shape the start-path tests use.
+    calls = 0
+
+    def classify(**arguments):
+        nonlocal calls
+        calls += 1
+        return None if calls == 1 else _submitted(**arguments)
+
+    monkeypatch.setattr(modal_training, "_classify_durable", classify)
+    monkeypatch.setattr(
+        modal_training, "HOST_EVIDENCE_KEY_REF", probe_ref, raising=False,
+    )
+
+    # Record on the authenticator the production path actually uses.  These
+    # tests install `_FakeAuthenticator` in place of the real class, so a
+    # recorder that delegated to the REAL `from_context` would be handed the
+    # fake project context and refuse it, which is a red for the wrong
+    # reason.  `monkeypatch.setattr` restores the class attribute afterwards.
+    built_refs: list[str] = []
+
+    # The default is a sentinel, not a plausible ref: when the call site
+    # passes nothing the recorder must say so in words, so a failure can
+    # never be misread as "some other real ref was chosen".
+    absent = "<call site passed no key_ref>"
+
+    def recording(_context, *, key_ref: str = absent):
+        built_refs.append(key_ref)
+        return _FakeAuthenticator(
+            key_ref if key_ref != absent else "modal-host-key-v1"
+        )
+
+    monkeypatch.setattr(
+        modal_training.FileHmacAuthenticator, "from_context",
+        staticmethod(recording),
+    )
+
+    modal_training.execute_modal_training_run_v2(
+        ingress, project_root=project, engine_root=ENGINE,
+        token_id="token-id", token_secret="token-secret",
+        sdk_loader=lambda: object(), clock=lambda: NOW,
+    )
+
+    # Reached-the-site control first, so an empty recorder can never be read
+    # as "the ref did not follow": that would be the path not running.
+    assert len(built_refs) == 1, "the run never built a host authenticator"
+    # The discriminating line: the ref the production path built is the one
+    # the constant currently holds.
+    assert built_refs == [probe_ref]
+
+
 def test_k5_router_satisfies_the_engine_port_and_the_identity_pin(
     tmp_path: Path,
 ) -> None:
@@ -1270,8 +1362,10 @@ def test_k2_host_refs_sign_the_attestations_and_the_worker_ref_stages(
     minted: dict[str, object] = {}
     captured: dict[str, object] = {}
 
-    def _mint_host(_cls, _context):
-        minted["host"] = _FakeAuthenticator()
+    def _mint_host(_cls, _context, *, key_ref: str = "modal-host-key-v1"):
+        # Carry the caller's ref rather than the fake's own default, so the
+        # assertions below read the ref the PRODUCTION site chose.
+        minted["host"] = _FakeAuthenticator(key_ref)
         return minted["host"]
 
     def _mint_worker(context):

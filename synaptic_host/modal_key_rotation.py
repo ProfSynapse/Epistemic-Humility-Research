@@ -32,8 +32,8 @@ from pathlib import Path
 
 from synaptic_tuner.api.v1 import ProjectContext
 
-from .modal_provider import HOST_EVIDENCE_KEY_REF, build_worker_authenticator
-from .security import FileHmacAuthenticator
+from .modal_provider import build_worker_authenticator
+from .security import HOST_EVIDENCE_KEY_REF, FileHmacAuthenticator
 
 
 def _remove_key_file(path: Path) -> bool:

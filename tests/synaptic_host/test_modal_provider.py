@@ -17,8 +17,8 @@ import pytest
 from synaptic_tuner.api.v1 import ProjectContext
 import synaptic_host.modal_provider as modal_provider
 import synaptic_host.security as security
+from synaptic_host.security import HOST_EVIDENCE_KEY_REF
 from synaptic_host.modal_provider import (
-    HOST_EVIDENCE_KEY_REF,
     WORKER_EVIDENCE_KEY_REF,
     ExplicitModalHostSession,
     ModalDeploymentJournalV1,
