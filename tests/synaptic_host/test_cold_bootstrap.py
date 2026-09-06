@@ -1180,3 +1180,59 @@ def test_uv_subprocess_environment_is_a_closed_allowlist(
             "the provider credential pair reaches the uv process tree; R7 "
             "recurs"
         )
+
+
+def test_security_imports_cold_without_the_engine_and_leaves_it_unresident() -> None:
+    """`synaptic_host.security` must import with only the project root on the path.
+
+    The launcher runs on the modal arm BEFORE anything puts the engine root on
+    `sys.path`: `_establish_engine_import_root` is called only inside
+    `dispatch_validated_training_run_v1`, and `__main__.main` sends the modal
+    provider straight to `ensure_and_reexec`.  While `security.py` imported
+    `synaptic_tuner.api.v1` at module level, nothing on that path could reach
+    the private-storage chain that lives beside `FileHmacAuthenticator`.
+
+    The second assertion is the one that is easy to lose.  Making the import
+    merely SUCCEED is not enough: if it succeeded by pulling the engine in,
+    `synaptic_tuner` would be resident in `sys.modules`, and the residency
+    refusal in `cli.py` raises whenever any such name is present while the
+    engine contract cache is cold.  So the test demands both halves, and the
+    forbidden set is computed from the module names themselves rather than
+    from a list this test maintains.
+
+    `-I` gives the isolated interpreter the ruled path shape without exporting
+    anything: no `PYTHONPATH`, no user site directory, no implicit cwd entry,
+    so the only non-stdlib entry is the project root inserted below.
+    """
+
+    code = f"""
+import json, sys
+sys.path.insert(0, {str(ROOT)!r})
+import synaptic_host.security
+resident = sorted(
+    name for name in sys.modules
+    if name == 'synaptic_tuner' or name.startswith('synaptic_tuner.')
+)
+print(json.dumps({{'path_tail': sys.path[1:], 'resident': resident}}))
+"""
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", code], cwd=ROOT,
+        check=False, capture_output=True, text=True,
+    )
+    assert completed.returncode == 0, (
+        "synaptic_host.security does not import with only the project root on "
+        "sys.path, so the launcher cannot reach the private-storage chain:\n"
+        + completed.stderr
+    )
+
+    observed = json.loads(completed.stdout)
+    assert str(ENGINE) not in observed["path_tail"], (
+        "the engine root was on sys.path, so this run did not test the cold "
+        "shape the launcher actually sees"
+    )
+    assert observed["resident"] == [], (
+        "importing synaptic_host.security made the engine resident, which "
+        "trips the residency refusal on a later cold contract load: {}".format(
+            observed["resident"]
+        )
+    )

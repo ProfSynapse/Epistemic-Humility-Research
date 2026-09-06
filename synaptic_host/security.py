@@ -14,18 +14,38 @@ import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Callable, Sequence
+from typing import TYPE_CHECKING, Callable, Sequence
 
 if os.name == "nt":
     from ctypes import wintypes
 
-from synaptic_tuner.api.v1 import (
-    AuthorizationRequirement,
-    ExecutionGrant,
-    GrantBinding,
-    ProjectContext,
-)
-from synaptic_tuner.api.v1.sources import RepositoryLocation
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    # SEC-F2 (section 29.5(c)).  These names are the engine's, and importing
+    # them at module level made this module unimportable on the modal launcher
+    # path: `_establish_engine_import_root` runs only inside
+    # `dispatch_validated_training_run_v1`, and `__main__.main` sends the modal
+    # provider straight to `ensure_and_reexec`, so the engine root is not on
+    # `sys.path` when the launcher needs the private-storage chain that lives
+    # beside `FileHmacAuthenticator` below.
+    #
+    # A lazy import would not have been enough on its own: making the engine
+    # importable at that moment would also make `synaptic_tuner` RESIDENT, and
+    # the residency refusal in `cli.py` raises whenever such a name is in
+    # `sys.modules` while the engine contract cache is cold.  The five runtime
+    # users below therefore import what they need INSIDE the method, so the
+    # engine is pulled in only when one of them actually runs, which is always
+    # post-dispatch.  `from __future__ import annotations` above makes every
+    # annotation in this file a string, so nothing here is needed at runtime.
+    #
+    # Only the names an ANNOTATION mentions belong here.  `GrantBinding` and
+    # `RepositoryLocation` are used solely inside method bodies, so the
+    # method-local import is their single binding; listing them here as well
+    # would be an unused import that shadows nothing.
+    from synaptic_tuner.api.v1 import (
+        AuthorizationRequirement,
+        ExecutionGrant,
+        ProjectContext,
+    )
 
 _HEAD_REF = re.compile(r"^refs/heads/[A-Za-z0-9][A-Za-z0-9._/-]{0,254}$")
 _URL_USERINFO = re.compile(r"://[^/\s]*@")
@@ -664,6 +684,8 @@ class FileHmacAuthenticator:
     def from_context(
         cls, context: ProjectContext, *, key_ref: str = "modal-evidence-v1"
     ) -> "FileHmacAuthenticator":
+        from synaptic_tuner.api.v1 import ProjectContext
+
         if not isinstance(context, ProjectContext) or context.mode != "host":
             raise ValueError("host project context is required")
         return cls(context.state_root / "modal" / "evidence-hmac.key", key_ref=key_ref)
@@ -673,6 +695,8 @@ class FileHmacAuthenticator:
         cls, context: ProjectContext, *, durable_rows_exist: bool,
     ) -> "FileHmacAuthenticator":
         """Open or exclusively create the one stable Docker control key."""
+
+        from synaptic_tuner.api.v1 import ProjectContext
 
         if (
             not isinstance(context, ProjectContext)
@@ -1078,6 +1102,8 @@ class BoundedGrantProvider:
     def authorize(
         self, requirements: tuple[AuthorizationRequirement, ...]
     ) -> ExecutionGrant:
+        from synaptic_tuner.api.v1 import ExecutionGrant
+
         if len(requirements) != 1:
             raise ValueError("exactly one execution authorization is required")
         requirement = requirements[0]
@@ -1094,6 +1120,8 @@ class BoundedGrantProvider:
         return grant
 
     def bind(self, grant, *, operation, requirements):
+        from synaptic_tuner.api.v1 import ExecutionGrant, GrantBinding
+
         if not isinstance(grant, ExecutionGrant) or grant.grant_ref not in self._authorized:
             raise ValueError("execution grant was not authorized by this host")
         self._authorized.remove(grant.grant_ref)
@@ -1163,6 +1191,8 @@ class ScopedGitRemoteReader:
         return completed.stdout
 
     def read_ref(self, *, canonical_url: str, exact_ref: str) -> bytes:
+        from synaptic_tuner.api.v1.sources import RepositoryLocation
+
         location = RepositoryLocation.parse(canonical_url)
         if location.canonical_url != canonical_url or _HEAD_REF.fullmatch(exact_ref) is None:
             raise ValueError("canonical repository URL and exact branch ref are required")
