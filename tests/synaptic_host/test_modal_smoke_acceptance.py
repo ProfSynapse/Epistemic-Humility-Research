@@ -677,40 +677,163 @@ def test_e4_every_reachable_refusal_on_this_path_names_its_code(
 def test_x2_the_seam_is_the_only_difference_between_the_two_arms(
     modal_ingress,
 ) -> None:
-    """X2: identical inputs, one knob varied, and the divergence is the seam.
+    """X2 (fake vs real seam control): vary ONLY `sdk_loader`, reach the seam.
 
-    A naive "both arms produce the same failing set" assertion would be wrong
-    HERE and green for the wrong reason: on this lane the arms diverge BY
-    CONSTRUCTION, because the real loader reaches an SDK whose version the
-    facade refuses while the fake arm does not.  So the control asserts the
-    stronger, checkable thing: both arms travel the same refusal ladder up to
-    the seam, and the only observable difference is attributable to the loader.
+    Two phases, because the control needs both halves.
 
-    Falsifier: make the two arms differ on a guard BEFORE the seam -- for
-    instance by having composition read the loader earlier -- and the shared
-    prefix assertions fail.
+    PHASE ONE, every lane: on refusals that happen BEFORE the seam the loader
+    identity must not change the outcome.  That is the shared prefix.
+
+    PHASE TWO, the seam itself: the real arm executes
+    `importlib.import_module("modal")` and is refused at the facade because the
+    installed version is not the pin, while the fake arm carries the pinned
+    version and is constructed.  Everything up to the version comparison is
+    asserted IDENTICAL between the arms, and the divergence is asserted to be
+    exactly the facade refusal.
+
+    Phase one alone is what the first revision of this module shipped, and the
+    lead rejected it: both arms refused before the seam, so the loader was
+    never called and the control could not fail.  A control that cannot fail
+    is not a control.
+
+    Falsifiers.  (a) If the real arm never reaches the seam, the installed
+    module is not the object the loader returned and `sdk_is_sys_modules_entry`
+    is False.  (b) If the facade stops comparing the SDK object's version, the
+    real arm constructs and the divergence assertion fails.  (c) If the arms
+    differ anywhere before the version comparison, the identical-prefix
+    assertion fails and names the key that moved.
     """
 
     ingress, project = modal_ingress
 
-    def fake_loader() -> object:
-        raise AssertionError("the fake loader must not be reached on these arms")
+    # ---- phase one: the shared prefix, before the seam, on every lane ------
+    def unreached_loader() -> object:
+        raise AssertionError("this loader must not be reached on a pre-seam arm")
 
     real_loader = modal_training._default_sdk_loader
 
-    # Every arm below refuses BEFORE the seam, so the loader identity must not
-    # change the outcome.  That is the control: same code, same reason, both.
     for description, overrides in (
         ("missing-credentials", {"token_id": ""}),
         ("non-callable-clock", {"clock": object()}),
     ):
-        fake_result = _code_name(_compose(ingress, project, sdk_loader=fake_loader, **overrides))
-        real_result = _code_name(_compose(ingress, project, sdk_loader=real_loader, **overrides))
+        fake_result = _code_name(
+            _compose(ingress, project, sdk_loader=unreached_loader, **overrides)
+        )
+        real_result = _code_name(
+            _compose(ingress, project, sdk_loader=real_loader, **overrides)
+        )
         assert fake_result == real_result, (
-            f"{description}: the arms diverged before the seam "
+            f"{description}: the arms diverged BEFORE the seam "
             f"(fake={fake_result}, real={real_result})"
         )
         assert fake_result is not None
+
+    # ---- phase two: the seam, where the two loaders genuinely differ -------
+    from tuner.execution.providers.modal.facade import (
+        EXACT_MODAL_SDK_VERSION,
+        ExplicitModal154ReadFacade,
+        ModalFacadeError,
+    )
+
+    try:
+        import modal as installed_sdk
+    except ImportError as error:
+        pytest.skip(
+            "the seam phase is unmeasurable on this lane: the interpreter has "
+            f"no `modal` to import ({error}).  Phase one above was asserted "
+            "and passed on this lane; deploy and submit run inside the Linux "
+            "container, so this interpreter never drives the SDK."
+        )
+
+    installed_version = getattr(installed_sdk, "__version__", None)
+    if installed_version == EXACT_MODAL_SDK_VERSION:
+        pytest.skip(
+            f"this lane has the pinned SDK {installed_version}, so the real "
+            "arm would be ACCEPTED and the two arms would not diverge at the "
+            "facade; the refusing shape needs an off-pin SDK"
+        )
+
+    def _arm(loader) -> tuple[dict[str, object], object]:
+        """Run the seam through ONE loader and record the whole prefix.
+
+        The SDK object is returned BESIDE the record rather than inside it,
+        because module identity is what tells the two arms apart and putting
+        it in the record would make the divergence set trivially non-empty.
+        """
+
+        calls: list[int] = []
+
+        def counted() -> object:
+            calls.append(1)
+            return loader()
+
+        sdk = counted()
+        record: dict[str, object] = {
+            "loader_calls": len(calls),
+            "loader_returned_an_object": sdk is not None,
+            "facade_argument_keys": tuple(sorted(_facade_arguments(sdk))),
+            "binding_version_offered": EXACT_MODAL_SDK_VERSION,
+        }
+        try:
+            ExplicitModal154ReadFacade(
+                _binding(EXACT_MODAL_SDK_VERSION), **_facade_arguments(sdk)
+            )
+        except ModalFacadeError as error:
+            record["outcome"] = "refused"
+            record["refusal"] = str(error)
+        else:
+            record["outcome"] = "constructed"
+            record["refusal"] = None
+        record["sdk_version"] = getattr(sdk, "__version__", None)
+        return record, sdk
+
+    class _PinnedStubSdk:
+        __version__ = EXACT_MODAL_SDK_VERSION
+
+    fake, fake_sdk = _arm(lambda: _PinnedStubSdk())
+    real, real_sdk = _arm(real_loader)
+
+    # The real arm must actually have executed the seam, not been handed a
+    # module by something else: the object it returned IS sys.modules["modal"].
+    assert real_sdk is sys.modules.get("modal") is installed_sdk, (
+        "the real arm did not reach importlib.import_module('modal'); the "
+        "object it returned is not the installed module"
+    )
+    assert fake_sdk is not real_sdk, "the two arms must not share one SDK object"
+    assert real["sdk_version"] == installed_version
+    assert fake["sdk_version"] == EXACT_MODAL_SDK_VERSION
+    assert real["sdk_version"] != EXACT_MODAL_SDK_VERSION
+
+    # Everything up to the version comparison is identical.
+    prefix = (
+        "loader_calls",
+        "loader_returned_an_object",
+        "facade_argument_keys",
+        "binding_version_offered",
+    )
+    for key in prefix:
+        assert fake[key] == real[key], (
+            f"the arms diverged at {key!r} BEFORE the version comparison "
+            f"(fake={fake[key]!r}, real={real[key]!r}); only sdk_loader was varied"
+        )
+    assert real["loader_calls"] == 1 and fake["loader_calls"] == 1
+
+    # And the divergence is EXACTLY the facade refusal.
+    assert fake["outcome"] == "constructed", (
+        "the fake arm carries the pinned version, so it must proceed past the "
+        f"facade; it did not ({fake['refusal']})"
+    )
+    assert real["outcome"] == "refused", (
+        "the real arm carries an off-pin SDK, so the facade must refuse it"
+    )
+    assert "modal_sdk_version_mismatch" in str(real["refusal"])
+    diverged = {
+        key for key in set(fake) | set(real) if fake.get(key) != real.get(key)
+    }
+    assert diverged == {"outcome", "refusal", "sdk_version"}, (
+        f"the arms differ on {sorted(diverged)}; the only admissible "
+        "differences are the version and the facade's verdict on it"
+    )
 
 
 # --------------------------------------------------------------------------
@@ -914,3 +1037,448 @@ def test_x1_the_shape_sweep_carries_no_values() -> None:
     assert shape["prepared_command"] == ["str", "str", "str", "str"]
     # A non-JSON scalar must reduce to its type name, not to its repr.
     assert x1_shape_of({"capability": b"\x01" * 32}) == {"capability": "bytes"}
+
+
+# --------------------------------------------------------------------------
+# E1 / E2 / E3 -- the durable-evidence scenarios, against the REAL repository.
+#
+# These three run entirely in the Host interpreter with no provider, no
+# container and no credential.  The store is the production
+# SqliteTrainingRepository over a scratch database, so the guards under test
+# are the shipped ones rather than a re-implementation in a fixture.
+# --------------------------------------------------------------------------
+
+
+_NOW = "2026-09-06T00:00:00Z"
+
+
+def _repository(tmp_path: Path):
+    """One real repository over a scratch database, schema created by the code."""
+
+    from synaptic_host.sqlite_repository import SqliteTrainingRepository
+
+    return SqliteTrainingRepository(tmp_path / "training.sqlite3", clock=lambda: _NOW)
+
+
+def _seed_lifecycle_row(connection, project_ref: str, run_id: str) -> None:
+    """The FOREIGN KEY on modal_preparations demands a lifecycle parent."""
+
+    connection.execute(
+        """
+        INSERT INTO lifecycle_records(project_ref, run_id, revision, record_json)
+        VALUES (?, ?, ?, ?)
+        """,
+        (project_ref, run_id, 1, b"{}"),
+    )
+
+
+def test_e1_a_duplicate_effect_id_is_rejected_and_the_first_row_survives(
+    tmp_path: Path,
+) -> None:
+    """E1 (P0): a duplicate `effect_id` is REJECTED, not overwritten.
+
+    Two halves, because "rejected" and "not overwritten" are different claims
+    and only the second one is about the data.
+
+    Half one, the DURABLE guard: `modal_preparations.effect_id` is declared
+    UNIQUE, so a second row carrying the same effect id under a DIFFERENT
+    (project_ref, run_id) is refused by the store itself.  Half two, the one
+    that matters: after the refusal the FIRST row's payload is byte-identical.
+    A store that answered the insert with an overwrite would satisfy "no
+    duplicate row exists" and still have destroyed the original admission,
+    which is precisely the shape this scenario exists to forbid.
+
+    Falsifier: drop UNIQUE from the effect_id column and the second insert
+    succeeds; make the write an upsert and the payload comparison fails.
+    """
+
+    import sqlite3
+
+    repository = _repository(tmp_path)
+    connection = repository._connect()
+    try:
+        first_payload = b'{"admission": "first"}'
+        second_payload = b'{"admission": "second"}'
+        shared_effect_id = "effect-shared"
+
+        connection.execute("BEGIN IMMEDIATE")
+        _seed_lifecycle_row(connection, "project-a", "run-a")
+        _seed_lifecycle_row(connection, "project-b", "run-b")
+        connection.execute(
+            """
+            INSERT INTO modal_preparations(
+                project_ref, run_id, effect_id, preparation_json
+            ) VALUES (?, ?, ?, ?)
+            """,
+            ("project-a", "run-a", shared_effect_id, first_payload),
+        )
+        connection.execute("COMMIT")
+
+        with pytest.raises(sqlite3.IntegrityError) as caught:
+            connection.execute(
+                """
+                INSERT INTO modal_preparations(
+                    project_ref, run_id, effect_id, preparation_json
+                ) VALUES (?, ?, ?, ?)
+                """,
+                ("project-b", "run-b", shared_effect_id, second_payload),
+            )
+        assert "effect_id" in str(caught.value)
+
+        surviving = connection.execute(
+            """
+            SELECT project_ref, run_id, preparation_json
+            FROM modal_preparations WHERE effect_id = ?
+            """,
+            (shared_effect_id,),
+        ).fetchall()
+        assert len(surviving) == 1, "the refusal must not have created a second row"
+        assert bytes(surviving[0]["preparation_json"]) == first_payload, (
+            "the first admission was OVERWRITTEN by the duplicate; rejecting "
+            "the duplicate is not enough if the original does not survive"
+        )
+        assert surviving[0]["project_ref"] == "project-a"
+        assert surviving[0]["run_id"] == "run-a"
+    finally:
+        connection.close()
+
+
+def test_e1_the_preparation_table_has_exactly_one_write_path(tmp_path: Path) -> None:
+    """E1 companion: no code path can overwrite a Modal preparation.
+
+    The UNIQUE constraint above forbids a duplicate INSERT.  It says nothing
+    about an UPDATE, a REPLACE, or an `INSERT OR REPLACE`, each of which would
+    overwrite a durable admission WITHOUT violating the constraint and without
+    reddening the test above.  So the second guard is that the shipped module
+    contains exactly one write to the table and that write is a plain INSERT.
+
+    Falsifier: add an upsert or an UPDATE against `modal_preparations` and the
+    counts move.
+    """
+
+    source = (ROOT / "synaptic_host" / "sqlite_repository.py").read_text(
+        encoding="utf-8"
+    )
+    assert source.count("INSERT INTO modal_preparations") == 1
+    for forbidden in (
+        "UPDATE modal_preparations",
+        "DELETE FROM modal_preparations",
+        "INSERT OR REPLACE",
+        "INSERT OR IGNORE",
+        "ON CONFLICT",
+    ):
+        assert forbidden not in source, (
+            f"{forbidden!r} appears in the repository, so a durable Modal "
+            "preparation can be overwritten without tripping the UNIQUE guard"
+        )
+    # The application-level guard that turns the collision into a named
+    # refusal rather than a raw IntegrityError.
+    assert "SELECT 1 FROM modal_preparations" in source
+    assert "EffectCollision" in source
+
+
+def test_e2_a_reused_challenge_nonce_is_refused(tmp_path: Path) -> None:
+    """E2 (P0): reusing a `challenge_nonce` is refused, and replay is not reuse.
+
+    `admit` has three verdicts and all three are asserted, because any two of
+    them alone would let the third go unmeasured:
+
+      ADMITTED   the nonce is new;
+      IDEMPOTENT the SAME evidence arrives twice, which is a retry, not a
+                 forgery, and must not be double-counted;
+      COLLISION  the nonce is reused carrying DIFFERENT evidence.  This is the
+                 refusal the scenario is named for.
+
+    The boundary arm is asserted too: the key is (purpose, challenge_nonce),
+    so the same nonce under a different purpose is a different key and is
+    admitted.  Without that arm a guard keyed on the nonce ALONE would pass
+    the first three assertions.
+
+    Falsifier: compare only the nonce and the boundary arm reddens; return
+    IDEMPOTENT for a changed payload and the collision arm reddens.
+    """
+
+    from synaptic_tuner.api.v1 import ReplayDisposition
+
+    repository = _repository(tmp_path)
+    evidence = {
+        "purpose": "modal-submit",
+        "issuer_ref": "issuer-1",
+        "evidence_ref": "evidence-1",
+        "challenge_nonce": "nonce-1",
+        "audience_ref": "project/run",
+        "payload_digest": "digest-1",
+        "expires_at": "2026-09-07T00:00:00Z",
+    }
+
+    assert repository.admit(**evidence) is ReplayDisposition.ADMITTED
+    assert repository.admit(**evidence) is ReplayDisposition.IDEMPOTENT, (
+        "an exact replay is a retry of one admission, not a second one"
+    )
+
+    for changed in ("issuer_ref", "evidence_ref", "audience_ref", "payload_digest",
+                    "expires_at"):
+        forged = dict(evidence)
+        forged[changed] = forged[changed] + "-altered"
+        assert repository.admit(**forged) is ReplayDisposition.COLLISION, (
+            f"the nonce was reused with a different {changed} and was not refused"
+        )
+
+    other_purpose = dict(evidence, purpose="modal-publish")
+    assert repository.admit(**other_purpose) is ReplayDisposition.ADMITTED, (
+        "the replay key is (purpose, challenge_nonce); the same nonce under a "
+        "different purpose is a different key and must still be admissible"
+    )
+
+
+def test_e3_an_interrupted_submit_restores_and_never_starts_a_second_call(
+    modal_ingress,
+) -> None:
+    """E3 (P1): an interrupted submit converges, it does not resubmit.
+
+    When `operations.start` raises, the composition classifies the durable
+    state and, if the effect is already FOUND, RESTORES that exact call rather
+    than starting a new one.  This drives that decider directly with a session
+    that records every call, and asserts the two things that separate
+    convergence from a retry: the restore happened exactly once, and the
+    outcome carries the SAME provider job reference the durable row already
+    held.  A retry would mint a new reference.
+
+    The second arm is the one a happy-path-only test would miss: when the
+    restore does NOT return the same call, the verdict is RECONCILE_REQUIRED,
+    still not a new submit.
+
+    Falsifier: return a fresh job reference from the restore branch, or start
+    a second call there, and both arms redden.
+    """
+
+    ingress, _project = modal_ingress
+    baseline = modal_training._authenticate_training_run_ingress_v1(ingress)
+    assert baseline is not None, "the fixture ingress must authenticate"
+
+    # `TrainingRunCommandResultV2` validates the fingerprint against
+    # `^[0-9a-f]{64}$`, so the durable row carries real digests; a placeholder
+    # here would fail inside the result contract and not at the claim.
+    fingerprint = "a" * 64
+    effect_id = "b" * 64
+    durable = modal_training._DurableFoundV1(
+        "project-a", "run-a", fingerprint, effect_id,
+        "fc-durable-0001", "2026-09-06T00:00:00Z",
+    )
+
+    class _RestoredCall:
+        def __init__(self, object_id: str) -> None:
+            self.object_id = object_id
+
+    class _RecordingSession:
+        """Records every attribute touched, so a submit cannot hide."""
+
+        def __init__(self, restored_id: str) -> None:
+            self._restored_id = restored_id
+            self.restore_calls: list[str] = []
+            self.other_attributes: list[str] = []
+
+        def restore_function_call(self, provider_job_ref: str):
+            self.restore_calls.append(provider_job_ref)
+            return _RestoredCall(self._restored_id)
+
+        def __getattr__(self, name: str):
+            self.other_attributes.append(name)
+            raise AttributeError(name)
+
+    converged = _RecordingSession(durable.provider_job_ref)
+    result = modal_training._restore_durable_found(
+        durable, converged, ingress, baseline
+    )
+    assert converged.restore_calls == [durable.provider_job_ref], (
+        "the interrupted submit must restore the durable call exactly once"
+    )
+    assert converged.other_attributes == [], (
+        "the restore path touched "
+        f"{converged.other_attributes}; it must reach nothing but the restore"
+    )
+    assert _code_name(result) == "SUBMITTED"
+    assert result.provider_job_ref == durable.provider_job_ref, (
+        "the outcome carries a DIFFERENT job reference, so a second call was "
+        "started rather than the durable one converged to"
+    )
+    assert result.submitted_at == durable.submitted_at, (
+        "a resubmit would carry a new submission time"
+    )
+
+    drifted = _RecordingSession("fc-some-other-call")
+    reconcile = modal_training._restore_durable_found(
+        durable, drifted, ingress, baseline
+    )
+    assert drifted.restore_calls == [durable.provider_job_ref]
+    assert _code_name(reconcile) == "RECONCILE_REQUIRED", (
+        "when the restore does not return the durable call the verdict is "
+        "RECONCILE_REQUIRED; starting a replacement call is never the answer"
+    )
+    assert reconcile.provider_job_ref == durable.provider_job_ref
+
+
+def test_e3_the_composition_starts_at_most_one_call(tmp_path: Path) -> None:
+    """E3 companion: there is exactly ONE start site, and no retry around it.
+
+    The behavioural arm above proves the restore branch does not resubmit.  It
+    cannot prove that no OTHER branch does, because it never runs them.  So
+    this reads the shipped composition and asserts the structural property the
+    scenario names: `operations.start(` appears exactly once in the module, it
+    is not inside a loop, and both post-start durable branches route to
+    `_restore_durable_found`.
+
+    Falsifier: add a second `operations.start(` call, or wrap the existing one
+    in a retry loop, and this reddens.
+    """
+
+    import ast
+
+    path = ROOT / "synaptic_host" / "modal_training.py"
+    source = path.read_text(encoding="utf-8")
+    assert source.count("operations.start(") == 1, (
+        "more than one start site: an interrupted submit could reach a second"
+    )
+
+    tree = ast.parse(source)
+    composition = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "execute_modal_training_run_v2"
+    )
+
+    def _is_start(node: ast.AST) -> bool:
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "start"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "operations"
+        )
+
+    starts = [node for node in ast.walk(composition) if _is_start(node)]
+    assert len(starts) == 1, f"expected one start call, found {len(starts)}"
+
+    loops = [
+        node
+        for node in ast.walk(composition)
+        if isinstance(node, (ast.For, ast.While, ast.AsyncFor))
+        and any(_is_start(inner) for inner in ast.walk(node))
+    ]
+    assert loops == [], "the submit sits inside a loop, so it can be retried"
+
+    # Every branch that recognises an already-durable effect must converge
+    # through the restore.  Asserting a COUNT alone would be satisfied by a
+    # module that added a fourth durable branch doing something else, so the
+    # claim is made over the branches themselves: each `type(durable) is
+    # _DurableFoundV1` test returns the restore and nothing else.  The three
+    # sites are the post-preflight classification, the start handler, and the
+    # normal path after the start returned.
+    def _tests_for_durable_found(node: ast.AST) -> bool:
+        test = getattr(node, "test", None)
+        return (
+            isinstance(test, ast.Compare)
+            and any(
+                isinstance(comparator, ast.Name)
+                and comparator.id == "_DurableFoundV1"
+                for comparator in test.comparators
+            )
+        )
+
+    durable_branches = [
+        node
+        for node in ast.walk(composition)
+        if isinstance(node, ast.If) and _tests_for_durable_found(node)
+    ]
+    assert len(durable_branches) == 3, (
+        "expected the three durable-found branches (post-preflight, start "
+        f"handler, normal path); found {len(durable_branches)}"
+    )
+    for branch in durable_branches:
+        assert len(branch.body) == 1 and isinstance(branch.body[0], ast.Return), (
+            f"the durable-found branch at line {branch.lineno} does more than "
+            "return the convergence"
+        )
+        returned = branch.body[0].value
+        assert (
+            isinstance(returned, ast.Call)
+            and isinstance(returned.func, ast.Name)
+            and returned.func.id == "_restore_durable_found"
+        ), (
+            f"the durable-found branch at line {branch.lineno} does not "
+            "converge through _restore_durable_found, so an already-submitted "
+            "effect could be started a second time"
+        )
+        assert branch.orelse == [], (
+            f"the durable-found branch at line {branch.lineno} has an else arm"
+        )
+
+    restores = [
+        node
+        for node in ast.walk(composition)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "_restore_durable_found"
+    ]
+    assert len(restores) == len(durable_branches), (
+        "the restore is called somewhere other than a durable-found branch"
+    )
+
+
+# --------------------------------------------------------------------------
+# X3 -- NOT DELIVERED as a Modal scenario.  What stands in its place is the
+# guard that keeps the reason from rotting.
+# --------------------------------------------------------------------------
+
+
+def test_x3_the_reverify_drill_reaches_no_modal_path_from_the_host() -> None:
+    """X3 is a DOCKER drill from the Host, and this pins the reason.
+
+    The plan asks for a golden-fixture observe/verify/reverify drill and
+    allows, in advance, that "if it exercises the Docker reverify path rather
+    than a Modal one, that is a recorded finding, not a stop".  It is the
+    Docker path, measured three ways: this tree tracks no golden fixture at
+    all; `synaptic_host` constructs no Modal training operations; and the only
+    construction of the verified-source wrapper is fed the Docker runs API.
+
+    So the drill itself is NOT re-implemented here.  The existing coverage is
+    `tests/synaptic_host/test_verified_artifact_source.py::test_describe_
+    reverifies_unchanged_successful_inventory_and_authenticates` and
+    `::test_describe_rejects_failed_reverification_or_inventory_change`, and
+    the engine's Modal reverify at `providers/modal/training.py` has an
+    unexecuted body under the whole Host suite (measured on #430).
+
+    What IS asserted here is the reason, so that the day a Modal operations
+    class is constructed from the Host this test reddens and X3 has to be
+    reconsidered rather than silently staying a Docker drill.
+    """
+
+    package = ROOT / "synaptic_host"
+    sources = {
+        path: path.read_text(encoding="utf-8", errors="replace")
+        for path in sorted(package.rglob("*.py"))
+    }
+    assert sources, "the Host package must be readable for this census"
+
+    offenders = {
+        path.relative_to(ROOT).as_posix(): name
+        for path, text in sources.items()
+        for name in ("ModalTrainingOperations", "TrainingOperations")
+        if name in text
+    }
+    assert offenders == {}, (
+        f"the Host now constructs Modal training operations ({offenders}); "
+        "X3's Docker-only finding no longer holds and the drill must be "
+        "re-scoped onto the Modal path"
+    )
+
+    constructions = {
+        path.relative_to(ROOT).as_posix()
+        for path, text in sources.items()
+        if "AuthenticatedVerifiedArtifactSourceV1(" in text
+    }
+    assert constructions == {"synaptic_host/publication_composition.py"}, (
+        "the reverify surface gained a second construction site "
+        f"({sorted(constructions)}); X3's reachability was measured against one"
+    )
