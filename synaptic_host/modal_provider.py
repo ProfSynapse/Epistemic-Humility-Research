@@ -974,6 +974,7 @@ class ExplicitModalHostSession:
             sources=GitDualCloneMaterializer(),
             processes=SubprocessSftRunner(
                 secret_keys=self.config.runtime_secret_keys,
+                model_token_key="HF_TOKEN",
                 timeout_seconds=self.config.timeout_seconds,
             ),
             completion=completion,

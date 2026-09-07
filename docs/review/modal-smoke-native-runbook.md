@@ -1,5 +1,39 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Automatic model preparation repair (2026-09-07)
+
+Correction: the proposed fourth job from Host c6ea2885 was held before submit.
+Code inspection showed that the worker created a fresh empty cache and then
+required an existing offline model snapshot. No downloader or model copy ran
+between those steps. This is a pre-submit finding, not a fourth cloud failure.
+
+Engine repair `2c4ef885f03673ebb1308db1fbf67ffc5f029ee9` adds automatic
+preparation inside the Modal worker. The official Hub SDK downloads missing
+members of the exact configured revision into private remote scratch. Ordinary
+repository files in the existing artifact Volume's `model-cache` namespace are
+reused only after fresh upstream metadata and content-hash verification. SDK
+filesystem writes never target the shared Volume. The run receives a verified,
+link-free snapshot; both named runtime secrets remain in the wrapper and are
+absent from the offline trainer child. The artifact Volume is committed before
+trainer launch, preserving the cache if training fails. No new Volume, manual
+laptop download/upload, dependency upgrade, cache index or downloader service
+is introduced. Local prepared training has not yet been wired to this helper.
+
+Measured candidate checks: 280 engine tests passed, with the same two historical
+failures recorded below; all 104 Host Modal provider/training tests passed.
+The official Hub 0.36.0 wheel was downloaded without installation for the
+credential-free signature and ModelInfo contract checks. Those passed. Runtime
+image digest, lock hashes, exact offline closure, budget, retries and source
+admission remain enforced. Independent engine security/correctness review
+accepted the repair. Live success remains unverified.
+
+Private evidence: `/mnt/f/Code/ehr-modal-model-preparation-evidence.Hb8UXe`.
+This section supersedes the lower next-engine pin. The unused request remains
+`project://training/smokes/modal-sft-local-control.json`; it has not consumed
+submission authority. Preserve all three earlier effects and their state.
+Use a fresh clean release with reviewed/pushed source, G2/G3/live G5, and an
+upgrade of only the existing dedicated deployment before its bounded submit.
+
 ## Local worker-control repair (2026-09-07)
 
 Correction: Host 5857620259c045d02fe8aa5e736c15ec891247dd with engine

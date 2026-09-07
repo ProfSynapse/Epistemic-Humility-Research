@@ -55,6 +55,13 @@ through the dedicated runtime Secret, never through the paid-submit argv.
 
 ## Local gates
 
+Model weights are prepared automatically by the remote worker, not by this
+local launcher. The engine uses the Hugging Face SDK in private remote scratch,
+reuses verified files on the existing artifact Volume, commits that cache before
+training, and supplies a link-free snapshot to the offline, credential-free
+trainer subprocess. No manual laptop download or weight upload is required.
+Model identity and revision remain committed configuration, not operator flags.
+
 ```bash
 python3 -B .skills/host-modal-run/scripts/g2_native_host.py --prepare-runtime
 python3 -B .skills/host-modal-run/scripts/g3_engine_lock_digests.py --expect 0
