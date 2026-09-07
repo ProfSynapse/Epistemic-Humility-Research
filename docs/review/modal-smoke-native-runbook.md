@@ -13,6 +13,11 @@ submission before considering another. Stop for meaningful cost escalation,
 destructive action, or unresolved duplicate-submission risk. Publication and
 main merges remain prohibited. This supersedes the per-attempt approval pauses
 below; it does not reopen the first effect's consumed authority.
+For the replacement, this section also supersedes the lower first-attempt
+instructions for further user authorization, the 5db2809d engine pin, Host-key
+rotation, and fresh-resource deployment. Those instructions remain historical
+for the consumed first attempt; the Host must still issue fresh one-use durable
+authority for each newly authorized effect.
 
 Reuse the existing dedicated environment, Volumes, Secret and worker/Host keys.
 Use the existing `ExplicitModalHostSession.upgrade(context=..., authenticator=...)`
