@@ -1,5 +1,45 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Local worker-control repair (2026-09-07)
+
+Correction: Host 5857620259c045d02fe8aa5e736c15ec891247dd with engine
+8bd49875f021b2e1a5f26bff887eaffd050f2fc0 submitted the third actual job
+successfully at 2026-09-07T20:16:52Z. The Host hydration repair is live-proven.
+Run `run-c6938bcbc603e2eab03966fa4dbfc0ed`, effect
+`effect-7183f9a6462638d8cf4361c0fb16511b`, call
+`fc-01M1YR8EBHRFGK532HKHGYPN5E` then reported authenticated FAILED at
+2026-09-07T20:18:27Z with `worker_control_path_noncanonical`, zero verified
+artifacts. The engine canonical-path check passed before the control-path
+check failed. This proves the control path alias; its target was not exposed.
+Private evidence and an integrity-checked terminal ledger backup are at
+`/mnt/f/Code/ehr-modal-staging-evidence-58576202.ZynItK`.
+
+Reviewed and pushed engine repair 4fbb3879f74b8b2c34813345bb0e92337cc9c47b
+moves only the authenticated bootstrap closure copy to local
+`/workspace/worker-control`. Durable claim/MAC/log/evidence paths stay on the
+existing control Volume. All four invocation/verification path bindings agree;
+canonicality, exclusive writes, closure digest, member hashes and exact
+inventory remain enforced. Local checks: 259 passed, the same two historical
+failures below. The alias regression reproduces the old failure and passes
+with local bootstrap storage. Independent security/binding review passed;
+cloud training success is still unverified.
+
+The user's latest instruction reaffirms routine reviewed repair pushes,
+the known scoped Host hook exception for missing unrelated experiment inputs,
+and bounded smoke iterations without further routine prompts. Stop only for
+a genuine safety, material cost or unresolved-submission issue. Main merge,
+publication, destructive teardown and old-environment access remain excluded.
+This section supersedes lower next-attempt request/engine pins. Preserve every
+consumed effect and use a fresh clean release at exact pushed source, existing
+state/keys, provider upgrade and G2/G3/live G5 before the next distinct request:
+
+```bash
+python3 -m synaptic_host training run --provider modal --config project://training/smokes/modal-sft-local-control.json --destination provider-staging
+```
+
+Its training bytes equal the original; USD 1.00 configured budget, one step and
+zero retries are unchanged. No fourth job has run yet.
+
 ## Staging diagnostic iteration (2026-09-07)
 
 Correction: the second actual job, submitted from Host
