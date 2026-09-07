@@ -40,7 +40,28 @@ python3 .skills/host-modal-run/scripts/g5_isolation_triple.py --rotation-recorde
 
 `--no-build` runs G2 against an image already built. `--expect` turns G3's
 reading into an exit code. G5 takes `--check` to add the provider existence
-lookups; without it, it makes no call at all.
+lookups; without it, it makes no call at all. The live form is:
+
+```bash
+python3 .skills/host-modal-run/scripts/g5_isolation_triple.py \
+  --check --submit-image <existing-submit-image-tag> \
+  --rotation-recorded-at <iso8601>
+```
+
+Run from the approved released checkout. G5 performs its Git-dependent offline
+checks on the Host, then starts the named submit image only if those checks
+pass and both provider credentials are nonblank. It forwards only
+`-e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET`, mounts the gate script and selected
+configuration read-only, and enforces Modal 1.5.4 inside the lookup process.
+No parent SDK is used. The image must exist locally (`--pull=never`). The
+optional `--docker` and `--endpoint` select the Docker executable and endpoint;
+the defaults target Docker Desktop from WSL. Confirm the exact live command
+with the operator before running it.
+
+G2 and G5 retain their containers. Do not add `--rm` or run container/image
+cleanup without separate operator authorization. Use `--no-build` with G2 to
+skip the wrapper's build phase. G5 never builds an image; both container-run
+commands refuse automatic image pulls.
 
 ## The submit container
 
@@ -171,8 +192,10 @@ checklist and not a probe.
 - **Existence is a provider property.** Nothing local can decide whether the
   environment, the two Volumes and the Secret exist in the account. That needs
   credentials and a call, so it is off by default. With `--check` the script
-  asks only for existence BY NAME, with `create_if_missing` False on every
-  call, and never reads a Secret's contents.
+  asks only for existence BY NAME. Environment and Volume lookups use
+  `create_if_missing=False`; Secret lookup has no such parameter and uses
+  `required_keys` for the declared pair. Every handle hydrates under the same
+  explicit client. No workspace listing or Secret-content read occurs.
 - **Rotation is an operator act and no probe can see it.** Reading a key to
   prove it changed would defeat the purpose. It is recorded as a dated
   attestation passed in with `--rotation-recorded-at`, and the gate refuses to
@@ -186,15 +209,18 @@ unrelaxed, read from the blob at the pinned engine sha; and that a rotation
 attestation was supplied.
 
 The four object names are configuration identifiers, not credentials, and the
-script prints them. It never prints a credential name, value, or length.
+script prints them. It never prints a credential value or length. Lookup and
+Docker failures render closed stage codes, never raw exception text or child
+output. `--lookup-only` is the internal container stage; its success means
+existence only. Only the parent can report the full G5 pass after all checks.
 
 ### Why the configuration file is edited in place
 
 Blocker B-20: the dedicated environment cannot be selected by adding a NEW
-configuration file. `ModalHostConfigV1.load` hardcodes the filename
-`modal.json` when given no path, the `path` and `config_path` parameters are
-dead because the sole production caller passes none, and a second manifest is
-not selectable either because the loader uses the literal `synaptic.yaml`. The
+configuration file. `ModalHostConfigV1.load` defaults to the filename
+`modal.json`. Its `path` and `config_path` overrides are implemented, but the
+sole production training caller passes neither. A second manifest is not
+selectable either because the loader uses the literal `synaptic.yaml`. The
 ruling was to edit `training/providers/modal.json` in place, with no Host code
 change and no new seam. The loader enforces an exact key set, so the file
 admits no comment key; this section is where that explanation lives instead.
@@ -209,12 +235,31 @@ admits no comment key; this section is where that explanation lives instead.
   them.
 - It never modifies `synaptic_host/` or the `synaptic-tuner` submodule.
 
+## Credential-free regression checks
+
+`tests/skills/host_modal_run/test_g5_isolation_triple.py` runs with stdlib
+unittest inside the submit image; no pytest installation is needed. It covers
+offline refusal before dispatch, missing/blank credentials, wrong SDK version,
+strict fake lookup signatures, each failed hydration, credential-name-only
+Docker argv, closed diagnostics, and retained G2 containers. S3 parses the
+exact pinned `build_modal_deployment` / `run_sft_v1` worker decorator, requiring
+typed literal safety values; strings elsewhere in the module do not count.
+Regressions cover the app-level `include_source=False` decoy, each relaxed
+worker value, ambiguous or dynamic decorator structure, and refusal before
+live dispatch. The installed-SDK test binds the real 1.5.4 signatures without
+calling them. The SDK's client
+constructor is a partial with an implicit class argument; inspect its bound
+arguments along with the wrapped signature rather than mistaking that argument
+for an operator-supplied one.
+
+```bash
+python3 -B -m unittest discover -s tests/skills/host_modal_run -v
+```
+
+Do not equate fake-backed tests or signature checks with live account evidence.
+
 ## Known limitation
 
-The `--check` arm of G5 is UNEXERCISED. It was authored but never run, because
-the task that produced it was forbidden from making any Modal call. Everything
-else in this skill is exercised: the image builds, G2 passes inside it, and G3
-and G5's offline half were run and their checks were each shown to go red under
-the condition they exist to catch. Treat the first live `--check` as the step
-that validates that arm, and read its failures as possibly the script's rather
-than the account's.
+The repaired live `--check` remains unexercised against an account. A successful
+test run does not establish that the named objects exist or that either key was
+rotated. Treat the first operator-confirmed live check as account validation.

@@ -157,7 +157,8 @@ if [[ "${RUN_G2}" -eq 1 ]]; then
   # network, but the submit invocation the container exists for does, and this
   # lane's egress is unrestricted at this pin. Nothing here should be read as a
   # network property of the submit container.
-  "${DOCKER}" "${HOST_ARGS[@]}" run --rm \
+  # Retain the gate container for inspection; cleanup is an operator decision.
+  "${DOCKER}" "${HOST_ARGS[@]}" run --pull=never \
     -v "$(to_daemon_path "${ENGINE_ROOT}")":/engine:ro \
     -v "$(to_daemon_path "${SCRIPTS_DIR}")":/gates:ro \
     -w /workspace \

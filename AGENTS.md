@@ -433,3 +433,15 @@ and the user relationship. Protect it.
 - Final destination publication and receipt/tombstone persistence belong to the
   destination adapter. Host-owned publication state belongs in the main
   project's Host database, not in the engine submodule.
+
+## Host Modal Gate Discipline
+
+- Use `.skills/host-modal-run/` for pre-submit gates. G5 completes its offline
+  Git checks on the Host before starting a provider lookup process in the
+  explicitly named submit image. Missing credentials, an SDK version other
+  than 1.5.4, or any failed lookup must prevent a full G5 pass.
+- Provider lookups use only the dedicated environment and named objects;
+  never enumerate the workspace or read Secret contents. Pass credential names
+  with `-e NAME`, never values. Confirm credential-bearing provider commands
+  with the operator before execution. Retain gate containers; container/image
+  cleanup requires separate authorization.

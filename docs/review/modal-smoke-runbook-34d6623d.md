@@ -18,6 +18,56 @@ The historical probe records are retained as evidence, not authorization to
 repeat their cleanup. No cloud operation, key rotation or paid submit has run
 during this correction.
 
+**Correction 2026-09-07 (gate repair candidate, based on `20f86f93`):** the
+local tooling now fixes U-2, and the active container commands below retain
+containers. The repaired G5 performs offline Git checks on the Host, then runs
+only existence lookups in the explicitly named submit image with SDK 1.5.4.
+Missing or blank credentials, an offline failure, a wrong SDK, a lookup
+failure, or an invalid child result prevents a full pass. The Secret lookup
+uses `required_keys` and no unsupported `create_if_missing` argument.
+
+**Release boundary:** `34d6623d` remains unchanged and cannot execute this
+repair. The command blocks remain templates against that historical checkout.
+After independent audit and an explicitly approved push, cut a clean release
+at the approved repair commit, substitute that release path in every active
+command, and re-run the gates there. Confirm the full SHA and engine gitlink
+before any provider step; never run a mixture of old and repaired tooling.
+The existing `synaptic-modal-submit:34d6623d` image can be reused because its
+SDK closure is unchanged and no Host source is baked into it. Its tag records
+its build provenance, not the Host commit mounted at execution.
+
+**Local verification:** 20 unittest tests passed in that image on 2026-09-07,
+with `--network none`, no credential flags, and read-only mounts of the released
+checkout plus exact candidate-file copies outside both Git trees. These cover
+strict fake SDK calls, credential and version refusal, closed diagnostics,
+Docker argument construction, retained G2 containers, and binding the real
+1.5.4 SDK signatures without invoking them. The client constructor's partial
+binds its implicit class argument; a naive signature bind without that argument
+was rejected by the first test run and the test was corrected after inspecting
+the descriptor. No live G5, provisioning, key rotation or paid submit occurred.
+Windows Host Python312 also passed the 18 applicable gate tests; the Bash
+wrapper test and installed-SDK test skipped on that lane. A separate real
+Host-to-container dispatch with credentials absent reached the mounted lookup
+script and returned only `G5 LOOKUP FAIL credentials`, confirming the failure
+path without a provider request.
+
+**Correction 2026-09-07 (independent audit, S3 scope):** the prior G5 safety
+check searched raw strings across the whole engine module. The released source
+has `include_source=False` in both `sdk.App` and the worker decorator, so changing
+only the worker to `True` falsely passed. The repair parses, without executing,
+the exact `build_modal_deployment` / `run_sft_v1` / `app.function` structure and
+requires the four typed literal keyword values there. Missing, ambiguous or
+expanded decorator arguments fail closed. Regression tests cover decoy strings,
+each relaxed value, wrong scope, ambiguous structure and refusal before live
+dispatch. A separate credential-free, network-disabled probe against the actual
+released module and an in-memory worker-only mutation printed:
+
+```text
+OLD RED: relaxed worker falsely passes S3 (App decoy remains)
+NEW GREEN: relaxed worker fails S3: include_source=False
+NEW GREEN: released pinned worker passes all four scoped checks
+```
+
 Record query answered by the secretary on 2026-09-06. Both memory ids are
 current and neither is superseded, so both are cited here:
 `9dfad232b19056be0a93e932204d259b` (TEST push-boundary arc, tasks #475-#483:
@@ -690,7 +740,7 @@ in it.
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
   --host npipe:////./pipe/dockerDesktopLinuxEngine \
-  run --rm -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
+  run --pull=never -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
   synaptic-modal-submit:34d6623d \
   python3 -m modal environment create synaptic-smoke-v1
 ```
@@ -702,7 +752,7 @@ in it.
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
   --host npipe:////./pipe/dockerDesktopLinuxEngine \
-  run --rm -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
+  run --pull=never -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
   synaptic-modal-submit:34d6623d \
   python3 -c "import os,modal; c=modal.Client.from_credentials(os.environ['MODAL_TOKEN_ID'], os.environ['MODAL_TOKEN_SECRET']); e=modal.Environment.from_name('synaptic-smoke-v1', client=c); e.hydrate(); print(e.name)"
 ```
@@ -806,7 +856,7 @@ also pass before executing this step.
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
   --host npipe:////./pipe/dockerDesktopLinuxEngine \
-  run --rm \
+  run --pull=never \
   -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET -e HF_TOKEN \
   -v F:/Code/ehr-release-34d6623d:/workspace \
   -w /workspace \
@@ -862,15 +912,19 @@ has never executed.
 
 ```
 python3 .skills/host-modal-run/scripts/g5_isolation_triple.py \
-  --check --rotation-recorded-at "<the mtime_utc recorded at step 3>"
+  --check --submit-image synaptic-modal-submit:34d6623d \
+  --rotation-recorded-at "<the mtime_utc recorded at step 3>"
 ```
 
 **Expected** S1 four names distinct; S2 the two required Secret keys; S3 4/4
 standing safety literals; S4 rotation ACCEPTED given the attestation. Exit 0.
 
-The `--check` arm looks objects up with `create_if_missing=False`
-(`modal_provider.py:785-821` is the same shape), so it can **confirm** the
-triple and can never create it.
+The repaired `--check` arm runs offline checks on the Host before starting a
+retained lookup container. It looks up the environment directly and both
+Volumes with `create_if_missing=False`, then the Secret with `required_keys`
+and no creation parameter. All four handles hydrate under one explicit client.
+Only a successful container result after the offline checks can report G5 PASS.
+The pre-repair behavior at `34d6623d` is recorded in U-2 and must not be used.
 
 **Recovery** A red S1 means the four names are not distinct, which would mean
 the smoke is pointed at the existing deployment: stop immediately. A red S4
@@ -903,7 +957,7 @@ mints, and a direct dispatch from the Windows driver returns
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
   --host npipe:////./pipe/dockerDesktopLinuxEngine \
-  run --rm \
+  run --pull=never \
   -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
   -v F:/Code/ehr-release-34d6623d:/workspace \
   -w /workspace \
@@ -949,7 +1003,7 @@ run id by design (29.6), and this smoke is authorised for **one** job.
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
   --host npipe:////./pipe/dockerDesktopLinuxEngine \
-  run --rm -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
+  run --pull=never -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
   synaptic-modal-submit:34d6623d \
   python3 -m modal app logs synaptic-training-v1 -e synaptic-smoke-v1
 ```
@@ -1150,6 +1204,15 @@ Step 5 also invokes bare WSL `python3`, not the pinned submit image. A local
 package-metadata probe on 2026-09-07 reports CPython 3.12.9 and Modal 1.5.1.
 The gate only prints the SDK version at `:329`; it does not enforce 1.5.4.
 The corrected live-check workflow must use the pinned interpreter lane too.
+
+**Correction 2026-09-07 (local repair):** the defects above remain true of
+`34d6623d`. The candidate gate replaces that implementation with a Host
+offline stage followed by a retained container lookup stage. Both stages
+refuse missing credentials; the container enforces SDK 1.5.4 before client
+construction and checks all four names directly. Fake-backed regressions and
+real-SDK signature binds pass, as recorded at the top of this runbook.
+U-2's local defects are repaired in the candidate, but account validation
+remains UNVERIFIED. Use the repaired workflow only from its approved release.
 
 **U-3 — where the operator's Modal token pair lives.** The mechanism is settled
 from code (section 5). The operator-side half is not: the lead measured no
