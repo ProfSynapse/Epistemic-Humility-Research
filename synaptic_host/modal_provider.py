@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import functools
 import hashlib
+import inspect
 import json
 import os
 import secrets
@@ -692,6 +694,28 @@ class ModalProviderAuthorityV1:
 
 
 
+def _restore_callable_binding(callback):
+    """Snapshot binding components without trusting ephemeral wrapper identity."""
+    if type(callback) is functools.partial:
+        keywords = callback.keywords or {}
+        if any(type(key) is not str for key in keywords):
+            raise ValueError("Modal restoration keyword binding is invalid")
+        names = tuple(sorted(keywords))
+        return ("partial", names, (callback.func, *callback.args),
+                tuple(keywords[name] for name in names))
+    owner = getattr(callback, "__self__", None)
+    function = getattr(callback, "__func__", callback)
+    return ("callable", (), (owner, function), ())
+
+
+def _same_restore_callable_binding(left, right):
+    return (
+        left[:2] == right[:2]
+        and all(len(a) == len(b) and all(x is y for x, y in zip(a, b))
+                for a, b in zip(left[2:], right[2:]))
+    )
+
+
 class ExplicitModalHostSession:
     """One explicit Modal 1.5.4 client bound to host state and environment."""
 
@@ -707,8 +731,8 @@ class ExplicitModalHostSession:
         if function_call is None or not callable(from_id):
             raise ValueError("Modal FunctionCall restoration is unavailable")
         self._function_call_type = function_call
-        self._function_call_from_id_owner = getattr(from_id, "__self__", None)
-        self._function_call_from_id_function = getattr(from_id, "__func__", from_id)
+        self._function_call_from_id_descriptor = inspect.getattr_static(function_call, "from_id")
+        self._function_call_from_id_binding = _restore_callable_binding(from_id)
 
     def _restore_callback_is_current(self) -> bool:
         try:
@@ -716,10 +740,12 @@ class ExplicitModalHostSession:
             callback = getattr(function_call, "from_id")
             return (
                 function_call is self._function_call_type
-                and getattr(callback, "__self__", None)
-                is self._function_call_from_id_owner
-                and getattr(callback, "__func__", callback)
-                is self._function_call_from_id_function
+                and callable(callback)
+                and inspect.getattr_static(function_call, "from_id")
+                is self._function_call_from_id_descriptor
+                and _same_restore_callable_binding(
+                    _restore_callable_binding(callback), self._function_call_from_id_binding
+                )
             )
         except BaseException:
             return False
