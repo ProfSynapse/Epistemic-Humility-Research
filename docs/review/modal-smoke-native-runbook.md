@@ -24,6 +24,22 @@ Use the existing `ExplicitModalHostSession.upgrade(context=..., authenticator=..
 workflow to update provider code and retain prior deployment records. Do not
 delete provider-state.json or redeploy through the fresh-resource path.
 
+The identical original CLI request returns its consumed first effect even after
+the source/deployment upgrade; the config reference is part of the durable
+ingress identity. For this replacement, use the separately committed
+`project://training/smokes/modal-sft-prepared-replacement.json` request, whose
+bytes and training settings equal the original. Do not clear the ledger or
+change runtime idempotency. The replacement command is:
+
+```bash
+python3 -m synaptic_host training run --provider modal --config project://training/smokes/modal-sft-prepared-replacement.json --destination provider-staging
+```
+
+The original-request invocation at Host 50966021 returned the first job's
+RECONCILE_REQUIRED envelope without submitting a new paid job. The dedicated
+provider upgrade and G2/G3/G5 checks at that release passed; retain its state
+for the new config-only release rather than upgrading the provider again.
+
 ## Terminal correction (2026-09-07)
 
 The authorized single paid attempt has been consumed. Do not run the submit
