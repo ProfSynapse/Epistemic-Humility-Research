@@ -907,6 +907,15 @@ class ExplicitModalHostSession:
                 self.sdk is not sdk
                 or self.client is not client
                 or not self._restore_callback_is_current()
+            ):
+                raise ValueError
+            # SDK 1.5.4 returns a lazy handle. Hydrate with the same explicit
+            # client before reading object_id; never observe the job result.
+            restored.hydrate(client)
+            if (
+                self.sdk is not sdk
+                or self.client is not client
+                or not self._restore_callback_is_current()
                 or object.__getattribute__(restored, "object_id") != reference
             ):
                 raise ValueError

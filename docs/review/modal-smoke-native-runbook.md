@@ -1,5 +1,43 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Staging diagnostic iteration (2026-09-07)
+
+Correction: the second actual job, submitted from Host
+27ec52c54b9133781d31161103a5a9687d87a081 and engine
+8b9b121b35abe96e5dc982f64e0126b02ed31f68, is terminal FAILED with
+`locked_source_mismatch`, zero verified artifacts, at 2026-09-07T18:35:52Z.
+Its run is `run-ab1e858b06f3374625b47263063b1d3c`, effect
+`effect-8cfe95e0d1577bbd1fa804fb88e39134`, call
+`fc-01M1YJCSRCS2W5BJE5JYKVM4PQ`. Its replacement request below is consumed;
+do not submit it again. Provider wrapper SUCCESS does not mean training success.
+Private evidence is retained at
+`/mnt/f/Code/ehr-modal-replacement-evidence-8b64eac9.fwLeZx`.
+
+The downloaded closure manifest matches committed bytes. Staging a canonical
+full clone passes locally; aliased engine/control paths reproduce rejection,
+but the remote cause is not yet proven. Reviewed engine commit
+8bd49875f021b2e1a5f26bff887eaffd050f2fc0 adds closed staging diagnostics
+without relaxing canonical-path, member-hash or exact-inventory checks.
+Local engine checks: 257 passed, the same two historical failures recorded
+below. The Host hydration repair separately passed 9 targeted and 104 existing
+tests and independent review. It hydrates the lazy Modal call handle with the
+captured explicit client, then revalidates authority and exact job identity;
+it does not submit or read results.
+
+For the next bounded diagnostic attempt, use the new committed request below,
+byte-identical to the original training config. This section supersedes lower
+next-attempt engine and request pins; previous commands remain historical.
+The user's routine bounded-smoke authorization remains as recorded below.
+Push approval is separate. Require exact reviewed/pushed source, a fresh clean
+release, existing gates and provider upgrade before submission. Preserve both
+consumed effects and all keys/state; do not reset the ledger or redeploy fresh
+resources. The user reported stopping the app after the terminal failure;
+verify only the dedicated deployment when upgrading. No third job has run yet.
+
+```bash
+python3 -m synaptic_host training run --provider modal --config project://training/smokes/modal-sft-staging-diagnostic.json --destination provider-staging
+```
+
 ## Replacement authorization (2026-09-07)
 
 After reviewing the failed attempt, the user authorized proceeding with the

@@ -32,7 +32,7 @@ class ModalRestoreDescriptorTests(unittest.TestCase):
         calls = []
         def restore(owner, reference, *, client):
             calls.append((owner, reference, client))
-            return SimpleNamespace(object_id=reference)
+            return SimpleNamespace(object_id=reference, hydrate=lambda client: None)
         session, sdk, client = self.make_session(restore)
         self.assertIsNot(sdk.FunctionCall.from_id, sdk.FunctionCall.from_id)
         self.assertTrue(session._restore_callback_is_current())
@@ -55,7 +55,7 @@ class ModalRestoreDescriptorTests(unittest.TestCase):
         def restore(owner, reference, *, client):
             calls.append(True)
             owner.from_id = FreshPartialDescriptor(restore)
-            return SimpleNamespace(object_id=reference)
+            return SimpleNamespace(object_id=reference, hydrate=lambda client: None)
         session, _, _ = self.make_session(restore)
         with self.assertRaises(ValueError):
             session.restore_function_call("fc-test")
@@ -81,7 +81,7 @@ class ModalRestoreDescriptorTests(unittest.TestCase):
         def restore(owner, reference, *, client):
             calls.append(True)
             inspect.getattr_static(owner, "from_id").function = lambda *_args, **_kwargs: None
-            return SimpleNamespace(object_id=reference)
+            return SimpleNamespace(object_id=reference, hydrate=lambda client: None)
         session, _, _ = self.make_session(restore)
         with self.assertRaises(ValueError):
             session.restore_function_call("fc-test")
@@ -100,6 +100,33 @@ class ModalRestoreDescriptorTests(unittest.TestCase):
                       inspect.getattr_static(modal.FunctionCall, "from_id"))
         session = ExplicitModalHostSession(sdk=modal, client=object(), config=object(), binding=object())
         self.assertTrue(session._restore_callback_is_current())
+
+    def test_hydration_mutation_is_rejected(self):
+        def restore(owner, reference, *, client):
+            def hydrate(explicit_client):
+                self.assertIs(explicit_client, client)
+                owner.from_id = FreshPartialDescriptor(restore)
+            return SimpleNamespace(object_id=reference, hydrate=hydrate)
+        session, _, _ = self.make_session(restore)
+        with self.assertRaises(ValueError):
+            session.restore_function_call("fc-test")
+
+    def test_real_sdk_lazy_handle_hydrates_without_network_or_result_read(self):
+        with patch.dict(os.environ, {"MODAL_IS_REMOTE": "1"}):
+            try:
+                import modal
+            except ImportError:
+                self.skipTest("Modal SDK is not installed")
+        if modal.__version__ != "1.5.4":
+            self.skipTest("Exact pinned Modal SDK is required")
+        client = modal.Client("https://api.modal.com", 1, ("ak-fixture", "as-fixture"))
+        with patch("socket.socket.connect", side_effect=AssertionError("network forbidden")):
+            lazy = modal.FunctionCall.from_id("fc-test-fixture", client=client)
+            with self.assertRaises(AttributeError):
+                object.__getattribute__(lazy, "object_id")
+            session = ExplicitModalHostSession(sdk=modal, client=client, config=object(), binding=object())
+            restored = session.restore_function_call("fc-test-fixture")
+            self.assertEqual(restored.object_id, "fc-test-fixture")
 
 
 if __name__ == "__main__":
