@@ -436,12 +436,18 @@ and the user relationship. Protect it.
 
 ## Host Modal Gate Discipline
 
-- Use `.skills/host-modal-run/` for pre-submit gates. G5 completes its offline
-  Git checks on the Host before starting a provider lookup process in the
-  explicitly named submit image. Missing credentials, an SDK version other
-  than 1.5.4, or any failed lookup must prevent a full G5 pass.
+- Use `.skills/host-modal-run/` for native Host-to-Modal submission. The user
+  removed the local Docker requirement on 2026-09-07. Keep the existing locked
+  Linux launcher and one-use authority; do not bypass the Host paid-submit CLI.
+- Resolve saved Modal login only inside the verified isolated child, and only
+  when neither explicit credential environment variable was supplied. A partial
+  explicit pair must not silently select a saved account. Never pass credentials
+  or profile selectors into uv bootstrap processes.
+- G5 completes its offline Git checks before native provider lookups. Missing
+  credentials, an SDK version other than 1.5.4, or any failed lookup prevents
+  a full pass. Validate forwarded environment values and emit closed failures.
 - Provider lookups use only the dedicated environment and named objects;
-  never enumerate the workspace or read Secret contents. Pass credential names
-  with `-e NAME`, never values. Confirm credential-bearing provider commands
-  with the operator before execution. Retain gate containers; container/image
-  cleanup requires separate authorization.
+  never enumerate the workspace or read Secret contents. Credentials stay out
+  of argv, logs and new credential files. Confirm credential-bearing provider
+  commands with the operator before execution. Historical container/image
+  cleanup still requires separate authorization.

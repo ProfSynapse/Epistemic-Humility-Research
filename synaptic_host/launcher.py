@@ -23,6 +23,8 @@ _MARKER = "SYNAPTIC_MODAL_LAUNCHER_V1"
 _INGRESS_DIGEST = "SYNAPTIC_TRAINING_INGRESS_DIGEST_V1"
 _CONTRACT_IDENTITY_DIGEST = "SYNAPTIC_TRAINING_CONTRACT_IDENTITY_DIGEST_V1"
 _RUNTIME_PROOF_DIGEST = "SYNAPTIC_MODAL_RUNTIME_PROOF_DIGEST_V1"
+_SAVED_PROFILE = "SYNAPTIC_MODAL_SAVED_PROFILE_V1"
+_PROFILE_ENV = ("MODAL_PROFILE", "MODAL_CONFIG_PATH")
 _PROOF_SCHEMA = "synaptic-modal-launcher-runtime-proof/v1"
 _PYTHON_VERSION = "3.11.15"
 _UV_VERSION = "0.12.0"
@@ -32,7 +34,7 @@ _UV_URL = f"https://github.com/astral-sh/uv/releases/download/{_UV_VERSION}/{_UV
 _MAX_UV_ARCHIVE_BYTES = 64 * 1024 * 1024
 _PROOF_FILE = ".synaptic-runtime-proof.json"
 _ALLOWED_CHILD_ENV = (
-    "HOME", "LANG", "LC_ALL", "PATH", "TMPDIR", "SSL_CERT_FILE", "SSL_CERT_DIR",
+    "HOME", "LANG", "LC_ALL", "TMPDIR", "SSL_CERT_FILE", "SSL_CERT_DIR",
 )
 _MODAL_CREDENTIAL_ENV = ("MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET")
 _FIXED_BOOTSTRAP = """import os,runpy,sys
@@ -177,6 +179,13 @@ def _closed_child_environment(names: tuple[str, ...]) -> dict[str, str]:
         if snapshot is None:
             raise RuntimeError("child environment value is invalid")
         environment[name] = snapshot
+    return environment
+
+
+def _launcher_environment() -> dict[str, str]:
+    """Use the Linux system tools, not the operator's unbounded search path."""
+    environment = _closed_child_environment(_ALLOWED_CHILD_ENV)
+    environment["PATH"] = "/usr/bin:/bin"
     return environment
 
 
@@ -439,7 +448,7 @@ def _uv_environment(project_root: Path) -> dict[str, str]:
     additions.
     """
 
-    environment = _closed_child_environment(_ALLOWED_CHILD_ENV)
+    environment = _launcher_environment()
     cache = _cache_root(project_root)
     uv_cache = cache / "uv-cache-v1"
     uv_python = cache / "uv-python-v1"
@@ -693,6 +702,16 @@ def ensure_and_reexec(
             raise RuntimeError("isolated launcher runtime proof mismatch")
         if Path(sys.executable).resolve(strict=True) != python.resolve(strict=True):
             raise RuntimeError("isolated Modal launcher interpreter mismatch") from None
+        if os.environ.get(_SAVED_PROFILE) == "1":
+            from .modal_credentials import select_modal_credentials
+
+            # Only the verified isolated child reads the saved login. The uv
+            # bootstrap receives neither credentials nor profile selectors.
+            pair = select_modal_credentials(os.environ, allow_saved=True)
+            for name in _MODAL_CREDENTIAL_ENV:
+                os.environ.pop(name, None)
+            if pair is not None:
+                os.environ.update(zip(_MODAL_CREDENTIAL_ENV, pair))
         return _issue_isolated_child_authority_v1(
             project_root=project_root, engine_root=engine_root,
             ingress_digest=ingress_digest,
@@ -707,17 +726,15 @@ def ensure_and_reexec(
             expected=_runtime_stamp(requirements),
         )
         _body, proof_digest = _runtime_proof(project_root, engine_root)
-    environment = _closed_child_environment(_ALLOWED_CHILD_ENV)
-    modal_credentials: dict[str, str] = {}
-    for name in _MODAL_CREDENTIAL_ENV:
-        value = os.environ.get(name)
-        snapshot = _validated_child_environment_value(value)
-        if snapshot is None:
-            modal_credentials.clear()
-            break
-        modal_credentials[name] = snapshot
-    if len(modal_credentials) == len(_MODAL_CREDENTIAL_ENV):
-        environment.update(modal_credentials)
+    environment = _launcher_environment()
+    from .modal_credentials import select_modal_credentials
+
+    pair = select_modal_credentials(os.environ, allow_saved=False)
+    if pair is not None:
+        environment.update(zip(_MODAL_CREDENTIAL_ENV, pair))
+    elif not any(name in os.environ for name in _MODAL_CREDENTIAL_ENV):
+        environment.update(_closed_child_environment(_PROFILE_ENV))
+        environment[_SAVED_PROFILE] = "1"
     environment[_MARKER] = "1"
     environment[_INGRESS_DIGEST] = ingress_digest
     environment[_CONTRACT_IDENTITY_DIGEST] = contract_identity_digest

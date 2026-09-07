@@ -45,13 +45,13 @@ S4  A rotation attestation was supplied.
 Usage
 -----
     python3 g5_isolation_triple.py --rotation-recorded-at 2026-09-06T00:00:00Z
-    python3 g5_isolation_triple.py --rotation-recorded-at ... --check --submit-image <tag>
+    python3 g5_isolation_triple.py --rotation-recorded-at ... --check
 
 `--check` performs the existence-by-name lookups and needs credentials in the
-environment. Without it the script makes no Modal call whatsoever.
+environment or the selected saved Modal profile. Without --check no Modal call occurs.
 
 The Host performs the Git-dependent offline checks first. Only if they pass,
---check starts a retained submit container for SDK-1.5.4 existence lookups.
+--check starts a native Python process for SDK-1.5.4 existence lookups.
 The lookup-only subprocess reports existence, never overall gate satisfaction.
 Live account behavior still requires operator-confirmed validation.
 """
@@ -63,9 +63,9 @@ import ast
 import importlib
 import json
 import os
-import shutil
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 # Ruling (7): the Secret's key set is fixed. modal_provider.py refuses any other
@@ -96,7 +96,6 @@ EXISTING_DEPLOYMENT_NAMES = frozenset(
 )
 
 WINDOWS_GIT = Path("/mnt/c/Program Files/Git/cmd/git.exe")
-WINDOWS_DOCKER = Path("/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe")
 EXACT_MODAL_SDK_VERSION = "1.5.4"
 LOOKUP_PASS = "G5 LOOKUP PASS"
 LOOKUP_FAILURES = frozenset({
@@ -129,7 +128,7 @@ def lookup_only(config: dict) -> int:
             return fail("configuration")
     except (KeyError, TypeError):
         return fail("configuration")
-    if not credentials_present():
+    if not credentials_present() and any(name in os.environ for name in ("MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET")):
         return fail("credentials")
     try:
         sdk = importlib.import_module("modal")
@@ -138,9 +137,12 @@ def lookup_only(config: dict) -> int:
     if getattr(sdk, "__version__", None) != EXACT_MODAL_SDK_VERSION:
         return fail("sdk-version")
     try:
-        client = sdk.Client.from_credentials(
-            os.environ["MODAL_TOKEN_ID"], os.environ["MODAL_TOKEN_SECRET"]
-        )
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+        from synaptic_host.modal_credentials import select_modal_credentials
+        pair = select_modal_credentials(os.environ, allow_saved=True)
+        if pair is None:
+            return fail("credentials")
+        client = sdk.Client.from_credentials(*pair)
     except Exception:
         return fail("client")
     # Secret.from_name has no create_if_missing parameter. required_keys
@@ -164,41 +166,39 @@ def lookup_only(config: dict) -> int:
     return 0
 
 
-def run_lookup_container(config_path: Path, image: str, docker: str, endpoint: str) -> bool:
-    """Keep Git on the Host and pass only credential names into Docker argv."""
-    def daemon_path(path: Path) -> str:
-        path = path.resolve()
-        if docker.lower().endswith(".exe") and os.name != "nt":
-            return subprocess.check_output(
-                ["wslpath", "-w", str(path)], stdin=subprocess.DEVNULL, text=True
-            ).strip()
-        return str(path)
-
+def run_lookup_process(config_path: Path) -> bool:
+    """Run the native SDK lookup with a closed environment and closed output."""
+    names = ("HOME", "LANG", "LC_ALL", "TMPDIR", "SSL_CERT_FILE", "SSL_CERT_DIR",
+             "MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET", "MODAL_PROFILE", "MODAL_CONFIG_PATH")
     try:
-        # Preserve the skill-relative layout so argparse defaults resolve in
-        # the worker too. Only this script and the selected config are mounted.
-        script = "/workspace/.skills/host-modal-run/scripts/g5_isolation_triple.py"
-        command = [docker, "--host", endpoint, "run", "--pull=never",
-                   "-e", "MODAL_TOKEN_ID", "-e", "MODAL_TOKEN_SECRET",
-                   "-v", f"{daemon_path(Path(__file__))}:{script}:ro",
-                   "-v", f"{daemon_path(config_path)}:/workspace/modal.json:ro",
-                   "-w", "/workspace", image, "python3", "-B", script,
-                   "--lookup-only", "--config", "/workspace/modal.json"]
-        completed = subprocess.run(command, stdin=subprocess.DEVNULL,
-                                   capture_output=True, text=True, check=False)
-    except (OSError, subprocess.SubprocessError):
-        emit("FAIL existence-container: could not launch lookup process")
+        environment = {}
+        for name in names:
+            if name not in os.environ:
+                continue
+            value = os.environ[name]
+            if (type(value) is not str or not value.strip()
+                    or len(value.encode("utf-8")) > 4096
+                    or any(unicodedata.category(char).startswith("C") for char in value)):
+                raise ValueError("invalid environment")
+            environment[name] = value
+        environment["PATH"] = "/usr/bin:/bin"
+        completed = subprocess.run(
+            [sys.executable, "-B", str(Path(__file__).resolve()), "--lookup-only",
+             "--config", str(config_path.resolve())],
+            env=environment, stdin=subprocess.DEVNULL,
+            capture_output=True, text=True, check=False,
+        )
+    except (OSError, ValueError, UnicodeError, subprocess.SubprocessError):
+        emit("FAIL existence-process: could not launch lookup process")
         return False
     output = completed.stdout.strip()
     if completed.returncode == 0 and output == LOOKUP_PASS:
-        emit("PASS existence-container: all four named lookups resolved with SDK 1.5.4")
+        emit("PASS existence-process: all four named lookups resolved with SDK 1.5.4")
         return True
-    # SDK/Docker output is untrusted and may contain credentials. Render only
-    # the closed stage tokens, never raw stdout, stderr or exception messages.
     if output in {f"G5 LOOKUP FAIL {stage}" for stage in LOOKUP_FAILURES}:
         emit(output)
     else:
-        emit("FAIL existence-container: lookup process failed or returned an invalid result")
+        emit("FAIL existence-process: lookup process failed or returned an invalid result")
     return False
 
 
@@ -332,10 +332,6 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="perform existence-by-name lookups against the provider (needs credentials)",
     )
-    parser.add_argument("--submit-image", help="locally available pinned submit image; required by --check")
-    parser.add_argument("--docker", default=(str(WINDOWS_DOCKER) if WINDOWS_DOCKER.is_file()
-                                           else shutil.which("docker.exe") or "docker"))
-    parser.add_argument("--endpoint", default="npipe:////./pipe/dockerDesktopLinuxEngine")
     parser.add_argument("--lookup-only", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if args.lookup_only:
@@ -347,8 +343,6 @@ def main(argv: list[str] | None = None) -> int:
             emit("G5 LOOKUP FAIL configuration")
             return 1
         return lookup_only(config)
-    if args.check and (not args.submit_image or args.submit_image.startswith("-")):
-        parser.error("--check requires --submit-image naming an existing local image")
 
     report = Report()
     config_path: Path = args.config
@@ -463,11 +457,8 @@ def main(argv: list[str] | None = None) -> int:
             emit(f"  does the {kind} {name!r} exist?")
         emit("It would read no contents, and would print only a yes or no per name.")
     elif report.failures:
-        emit("EXISTENCE lookups refused: offline checks failed; no container started.")
-    elif not credentials_present():
-        report.check("existence-credentials", False,
-                     "explicit provider credentials are missing or blank; no container started")
-    elif not run_lookup_container(config_path, args.submit_image, args.docker, args.endpoint):
+        emit("EXISTENCE lookups refused: offline checks failed; no lookup process started.")
+    elif not run_lookup_process(config_path):
         report.failures.append("existence-lookup")
 
     emit("")

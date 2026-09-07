@@ -8683,3 +8683,30 @@ counted by instrument, not by hand: 94 Host, 63 engine, 3 neither (one
 self-reference into this document, one into the roadmap plan that is not in this
 worktree, one into the checked-in inventory script under `.skills/` and its three
 generated mirrors).
+
+### 29.16 Correction 2026-09-07: native Host-to-Modal submission
+
+The user removed the local submit-container requirement. This supersedes
+29.10's local Docker ruling and the corresponding G2 execution mechanism.
+It does not remove the remote Modal training container, its digest pin or
+standing safety properties. G1, G3, G4, G6, the isolation/rotation obligations,
+the one-job limit and stop-before-publication boundary remain.
+
+The native entry point is the existing Host CLI, not a raw Modal function
+submit. Its locked Linux runtime, one-use authority, committed-source reads,
+two-key evidence, durable lifecycle and budget authorization remain. Native
+G2 prepares/verifies that existing runtime; native G5 uses named SDK lookups
+without a local container. The saved Modal profile is read inside the proven
+isolated child when neither explicit credential environment name is present;
+an incomplete explicit pair must not fall back to a different account.
+
+Measured before this candidate against release `9c77d492`: the native
+committed-blob reader succeeded; private-directory creation/validation
+succeeded in an empty credential-free probe directory on F:; the inherited
+launcher environment refused the long operator PATH. The candidate replaces
+inherited PATH with a fixed system-tool path rather than widening the bound.
+Only the probe's temporary directory was removed; no keys were created.
+
+The native runbook records what remains unverified. A passing fake-backed
+test does not establish a successful native runtime bootstrap, deployment,
+or paid run. The historical local containers/images remain untouched.

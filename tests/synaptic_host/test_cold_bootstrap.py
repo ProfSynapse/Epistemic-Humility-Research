@@ -1164,14 +1164,16 @@ def test_uv_subprocess_environment_is_a_closed_allowlist(
     environment = launcher._uv_environment(tmp_path)
     observed = set(environment)
 
-    allowed = set(launcher._ALLOWED_CHILD_ENV) | uv_keys
+    allowed = set(launcher._ALLOWED_CHILD_ENV) | uv_keys | {"PATH"}
     assert observed <= allowed, (
         "the uv subprocesses receive names outside the allowlist: {}".format(
             sorted(observed - allowed)
         )
     )
     assert uv_keys <= observed, "the uv settings must still be applied"
-    assert "PATH" in environment, "uv needs the allowlisted PATH"
+    assert environment["PATH"] == "/usr/bin:/bin", "native uv receives the fixed system PATH"
+    assert "MODAL_PROFILE" not in environment
+    assert "MODAL_CONFIG_PATH" not in environment
 
     # The two findings the ruling names, stated separately so a failure says
     # which one recurred.

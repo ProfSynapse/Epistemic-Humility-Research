@@ -1,5 +1,13 @@
 # Modal smoke execution runbook — released checkout `34d6623d`
 
+**Correction 2026-09-07: HISTORICAL CONTAINER WORKFLOW, DO NOT EXECUTE.**
+The user selected direct native Host-to-Modal submission. Use
+`docs/review/modal-smoke-native-runbook.md` and its release/preflight
+requirements. All local Docker command blocks below are historical evidence,
+including those repaired at `9c77d492`. The remote training container and
+its isolation rules are unchanged. No real credentials were forwarded to a
+local Docker container and no account operation occurred in this session.
+
 Prepared by devops-modal on task #494 (TEST #424 of feature #420, team
 session-832e1b8a). **Nothing in this document was executed against the
 provider.** Every command below is prepared for the lead to run; the author ran

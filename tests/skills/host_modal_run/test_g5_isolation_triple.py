@@ -18,6 +18,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from synaptic_host import modal_credentials
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -143,24 +144,22 @@ class GateTests(unittest.TestCase):
         with contextlib.redirect_stdout(self.output):
             return gate.lookup_only(self.config)
 
-    def test_missing_and_blank_credentials_never_start_container(self):
-        with patch.object(gate, "run_lookup_container") as launch:
-            for value in (None, "", " "):
-                with self.subTest(value=value):
-                    self.credentials()
-                    if value is None:
-                        del os.environ["MODAL_TOKEN_SECRET"]
-                    else:
-                        os.environ["MODAL_TOKEN_SECRET"] = value
-                    self.assertEqual(self.main("--check", "--submit-image", "local:test",
-                                               "--rotation-recorded-at", "2026-09-07T00:00:00Z"), 1)
-            launch.assert_not_called()
-        self.assertNotIn("G5 PASS", self.output.getvalue())
+    def test_partial_or_blank_credentials_never_construct_client(self):
+        for value in (None, "", " "):
+            with self.subTest(value=value):
+                self.credentials()
+                if value is None:
+                    del os.environ["MODAL_TOKEN_SECRET"]
+                else:
+                    os.environ["MODAL_TOKEN_SECRET"] = value
+                self.assertEqual(self.lookup(), 1)
+        self.import_sdk.assert_not_called()
+        self.assertEqual(self.calls, [])
 
     def test_offline_failure_prevents_container_even_with_credentials(self):
         self.credentials()
-        with patch.object(gate, "run_lookup_container") as launch:
-            self.assertEqual(self.main("--check", "--submit-image", "local:test"), 1)
+        with patch.object(gate, "run_lookup_process") as launch:
+            self.assertEqual(self.main("--check"), 1)
             launch.assert_not_called()
 
     def test_relaxed_worker_prevents_live_container(self):
@@ -168,8 +167,8 @@ class GateTests(unittest.TestCase):
         source = WORKER_SOURCE.replace("single_use_containers=True, include_source=False",
                                        "single_use_containers=True, include_source=True")
         with patch.object(gate, "read_worker_blob", return_value=source), \
-                patch.object(gate, "run_lookup_container") as launch:
-            self.assertEqual(self.main("--check", "--submit-image", "local:test",
+                patch.object(gate, "run_lookup_process") as launch:
+            self.assertEqual(self.main("--check",
                                        "--rotation-recorded-at", "2026-09-07T00:00:00Z"), 1)
             launch.assert_not_called()
         self.assertIn("FAIL S3 standing-safety", self.output.getvalue())
@@ -180,9 +179,10 @@ class GateTests(unittest.TestCase):
         self.assertEqual(self.lookup(), 1)
         self.import_sdk.assert_not_called()
 
-    def test_lookup_missing_credentials_prevents_sdk_import(self):
-        self.assertEqual(self.lookup(), 1)
-        self.import_sdk.assert_not_called()
+    def test_lookup_missing_credentials_without_saved_login_refuses(self):
+        with patch.object(modal_credentials, "saved_modal_credentials", return_value=None):
+            self.assertEqual(self.lookup(), 1)
+        self.assertEqual(self.calls, [])
 
     def test_wrong_sdk_prevents_client_and_lookups(self):
         self.credentials()
@@ -232,21 +232,50 @@ class GateTests(unittest.TestCase):
                 self.assertEqual(sum(s == "hydrate" for s, _, _ in self.calls), index + 1)
                 self.assertEqual(self.output.getvalue(), f"G5 LOOKUP FAIL {stage}\n")
 
-    def test_container_argv_contains_only_credential_names_and_readonly_mounts(self):
+    def test_native_lookup_argv_and_environment(self):
         self.credentials()
+        os.environ["HF_TOKEN"] = "must-not-forward"
+        os.environ["PYTHONPATH"] = "must-not-forward"
         result = subprocess.CompletedProcess([], 0, "G5 LOOKUP PASS\n", "")
         with patch.object(gate.subprocess, "run", return_value=result) as run:
             with contextlib.redirect_stdout(self.output):
-                self.assertTrue(gate.run_lookup_container(self.config_path, "local:test", "docker", "unix:///test"))
+                self.assertTrue(gate.run_lookup_process(self.config_path))
         command = run.call_args.args[0]
-        self.assertNotIn("--rm", command)
-        self.assertIn("--pull=never", command)
-        self.assertEqual([command[i + 1] for i, arg in enumerate(command) if arg == "-e"],
-                         ["MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET"])
-        self.assertTrue(all(command[i + 1].endswith(":ro") for i, arg in enumerate(command) if arg == "-v"))
+        self.assertEqual(command[0], gate.sys.executable)
         self.assertIn("--lookup-only", command)
+        self.assertNotIn("docker", command)
+        environment = run.call_args.kwargs["env"]
+        self.assertEqual(environment["MODAL_TOKEN_ID"], "sentinel-id")
+        self.assertEqual(environment["MODAL_TOKEN_SECRET"], "sentinel-secret")
+        self.assertEqual(environment["PATH"], "/usr/bin:/bin")
+        self.assertNotIn("HF_TOKEN", environment)
+        self.assertNotIn("PYTHONPATH", environment)
         for value in ("sentinel-id", "sentinel-secret"):
             self.assertNotIn(value, " ".join(command))
+
+    def test_saved_login_constructs_one_explicit_client(self):
+        with patch.object(modal_credentials, "saved_modal_credentials",
+                   return_value=("sentinel-id", "sentinel-secret")) as saved:
+            self.assertEqual(self.lookup(), 0)
+        saved.assert_called_once()
+        self.assertEqual(sum(stage == "client" for stage, _, _ in self.calls), 1)
+
+    def test_invalid_native_environment_refuses_before_spawn(self):
+        for name in ("HOME", "LANG", "LC_ALL", "TMPDIR", "SSL_CERT_FILE", "SSL_CERT_DIR",
+                     "MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET", "MODAL_PROFILE", "MODAL_CONFIG_PATH"):
+            for value in ("", " ", "synthetic\x00private", "synthetic\nprivate", "x" * 4097):
+                with self.subTest(name=name), patch.object(gate.os, "environ", {name: value}), \
+                        patch.object(gate.subprocess, "run") as run, \
+                        contextlib.redirect_stdout(self.output):
+                    self.assertFalse(gate.run_lookup_process(self.config_path))
+                    run.assert_not_called()
+        self.assertNotIn("synthetic", self.output.getvalue())
+
+    def test_native_spawn_value_error_is_closed(self):
+        with patch.object(gate.subprocess, "run", side_effect=ValueError("synthetic-private-text")), \
+                contextlib.redirect_stdout(self.output):
+            self.assertFalse(gate.run_lookup_process(self.config_path))
+        self.assertNotIn("synthetic-private-text", self.output.getvalue())
 
     def test_failed_or_malformed_container_output_never_passes_or_leaks(self):
         for code, out in ((1, "G5 LOOKUP PASS\n"), (0, ""),
@@ -255,11 +284,11 @@ class GateTests(unittest.TestCase):
                 result = subprocess.CompletedProcess([], code, out, "synthetic-private-error-text")
                 with patch.object(gate.subprocess, "run", return_value=result):
                     with contextlib.redirect_stdout(self.output):
-                        self.assertFalse(gate.run_lookup_container(self.config_path, "local:test", "docker", "unix:///test"))
+                        self.assertFalse(gate.run_lookup_process(self.config_path))
         self.assertNotIn("synthetic-private-error-text", self.output.getvalue())
 
     def test_offline_success_does_not_start_lookup_or_claim_full_pass(self):
-        with patch.object(gate, "run_lookup_container") as launch:
+        with patch.object(gate, "run_lookup_process") as launch:
             self.assertEqual(self.main("--rotation-recorded-at", "2026-09-07T00:00:00Z"), 0)
             launch.assert_not_called()
         self.import_sdk.assert_not_called()
@@ -268,8 +297,8 @@ class GateTests(unittest.TestCase):
     def test_live_gate_requires_positive_container_evidence(self):
         self.credentials()
         for outcome in (False, True):
-            with self.subTest(outcome=outcome), patch.object(gate, "run_lookup_container", return_value=outcome) as launch:
-                self.assertEqual(self.main("--check", "--submit-image", "local:test",
+            with self.subTest(outcome=outcome), patch.object(gate, "run_lookup_process", return_value=outcome) as launch:
+                self.assertEqual(self.main("--check",
                                            "--rotation-recorded-at", "2026-09-07T00:00:00Z"), 0 if outcome else 1)
                 launch.assert_called_once()
 
@@ -277,7 +306,8 @@ class GateTests(unittest.TestCase):
 class InstalledSdkSignatures(unittest.TestCase):
     def test_pinned_sdk_accepts_lookup_shapes_without_calls(self):
         try:
-            import modal
+            with patch.dict(os.environ, {"MODAL_IS_REMOTE": "1"}):
+                import modal
         except ImportError:
             self.skipTest("Modal not installed; run in the submit image for the pin check")
         if modal.__version__ != "1.5.4":
