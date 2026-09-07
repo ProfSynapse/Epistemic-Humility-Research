@@ -6,6 +6,18 @@ provider.** Every command below is prepared for the lead to run; the author ran
 only the local probes listed in section 3, none of which reaches Modal, reads a
 credential, or mutates the account.
 
+**Correction 2026-09-07: NOT READY FOR CLOUD EXECUTION.** The requested
+signature repairs and probes are recorded below. A further local probe found
+that the released G5 live check passes an unsupported keyword to the Secret
+factory; its no-credentials branch can also report a false pass (U-2).
+Resolve that gate workflow before provisioning. The current operator ruling
+also forbids deleting containers: the older `run --rm` commands below must not
+be executed as written. Omit `--rm` from direct container invocations;
+step 1's `build.sh` embeds it and needs a compliant gate invocation before use.
+The historical probe records are retained as evidence, not authorization to
+repeat their cleanup. No cloud operation, key rotation or paid submit has run
+during this correction.
+
 Record query answered by the secretary on 2026-09-06. Both memory ids are
 current and neither is superseded, so both are cited here:
 `9dfad232b19056be0a93e932204d259b` (TEST push-boundary arc, tasks #475-#483:
@@ -70,11 +82,11 @@ Five items bear on this runbook. None of them changed a step.
      -> ) -> "ModalProviderAuthorityV1":
      ->     config = ModalHostConfigV1.load(context, config_path)
 
-   rtk proxy grep -rn "ModalProviderAuthorityV1.load|ModalHostConfigV1.load" \
-       --include=*.py .
+   /usr/bin/grep -rnE 'ModalProviderAuthorityV1\.load|ModalHostConfigV1\.load' \
+       synaptic_host tests --include='*.py'
      -> synaptic_host/modal_provider.py:686   (the internal thread-through)
      -> synaptic_host/modal_training.py:596   (the only production entry)
-     -> seven further call sites, all under tests/
+     -> seven further textual hits under tests/: six calls and one docstring hit
    ```
 
    An override parameter **does** exist and is threaded end to end. Three facts
@@ -262,11 +274,166 @@ question (2).
 
 ---
 
+### Correction 2026-09-07 — mandatory DIRECT-INVOCATION signature probes
+
+Measured against released Host `34d6623d`, engine `5db2809d`. Run both
+probes before steps 3 and 4, and repeat after changing either snippet. They
+import the exact production names used by those snippets, but never call a
+manifest loader, context constructor, key procedure, session constructor or
+deploy. Unbound methods receive a sentinel `self`; all other arguments are
+sentinels too. `inspect.Signature.bind()` checks the complete call, not
+`bind_partial()`. Each entry must accept the supplied arguments, reject an
+unexpected keyword and every omitted required argument, and expose no
+`**kwargs`.
+
+Step 4 probe, run from `/mnt/f/Code/ehr-release-34d6623d`. No credential
+flags; credential-name absence is asserted. The mount is read-only, networking
+is disabled, and `-B` suppresses bytecode writes. Containers are retained
+(no `--rm`), consistent with the operator's no-container-deletion rule.
+
+```bash
+'/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe' \
+  --host npipe:////./pipe/dockerDesktopLinuxEngine \
+  run --network none -i \
+  -v F:/Code/ehr-release-34d6623d:/workspace:ro -w /workspace \
+  synaptic-modal-submit:34d6623d python3 -B - <<'PY'
+import os, sys, pathlib, inspect
+root = pathlib.Path("/workspace")
+sys.path.append(str(root))
+sys.path.append(str(root / "synaptic-tuner"))
+from tuner.project.manifest import load_project_manifest
+from synaptic_host.modal_provider import ExplicitModalHostSession, ModalHostConfigV1, build_worker_authenticator
+import modal
+from tuner.project.manifest import ProjectManifest
+assert modal.__version__ == "1.5.4"
+assert not any(name in os.environ for name in (
+    "MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET", "HF_TOKEN", "SYNAPTIC_EVIDENCE_MAC_KEY"
+))
+S = object()
+def check(name, fn, args, kwargs):
+    sig = inspect.signature(fn)
+    assert not any(p.kind == inspect.Parameter.VAR_KEYWORD
+                   for p in sig.parameters.values()), name
+    bound = sig.bind(*args, **kwargs)
+    def refused(a, k):
+        try:
+            sig.bind(*a, **k)
+        except TypeError:
+            return
+        raise AssertionError(name + " accepted invalid arguments")
+    refused(args, dict(kwargs, unexpected_probe_keyword=S))
+    for parameter in sig.parameters.values():
+        if parameter.default is inspect.Parameter.empty and parameter.kind not in (
+            inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD
+        ):
+            altered = sig.bind(*args, **kwargs)
+            del altered.arguments[parameter.name]
+            refused(altered.args, altered.kwargs)
+    print("PASS", name, "valid / unexpected / missing / no **kwargs")
+
+check("load_project_manifest", load_project_manifest, (S,), {})
+check("manifest.create_context", ProjectManifest.create_context, (S,),
+      {"engine_root": S, "invocation_cwd": S})
+check("ModalHostConfigV1.load", ModalHostConfigV1.load, (S,), {})
+check("from_credentials", ExplicitModalHostSession.from_credentials, (),
+      {"sdk": S, "config": S, "token_id": S, "token_secret": S})
+check("build_worker_authenticator", build_worker_authenticator, (S,), {})
+check("session.deploy", ExplicitModalHostSession.deploy, (S,),
+      {"context": S, "authenticator": S, "hf_token": S})
+try:
+    inspect.signature(ExplicitModalHostSession.from_credentials).bind(
+        sdk=S, client=S, config=S)
+except TypeError:
+    print("RED CONTROL: old step 4 keyword set REJECTED")
+else:
+    raise AssertionError("old step 4 unexpectedly accepted")
+print("GREEN: corrected step 4; no entry invoked")
+PY
+```
+
+Measured output (exit 0):
+
+```text
+PASS load_project_manifest valid / unexpected / missing / no **kwargs
+PASS manifest.create_context valid / unexpected / missing / no **kwargs
+PASS ModalHostConfigV1.load valid / unexpected / missing / no **kwargs
+PASS from_credentials valid / unexpected / missing / no **kwargs
+PASS build_worker_authenticator valid / unexpected / missing / no **kwargs
+PASS session.deploy valid / unexpected / missing / no **kwargs
+RED CONTROL: old step 4 keyword set REJECTED
+GREEN: corrected step 4; no entry invoked
+```
+
+This probe catches RED-1 without credentials or a provider request: the old
+`sdk, client, config` call shape is rejected and the corrected
+`sdk, config, token_id, token_secret` shape binds. Binding proves the call
+shape only, not successful provider execution.
+
+Step 3 equivalent, under Windows Host Python312, invoked from WSL with cwd
+`/mnt/f/Code/ehr-release-34d6623d`:
+
+```bash
+'/mnt/c/Users/Joseph/AppData/Local/Programs/Python/Python312/python.exe' -B - <<'PY'
+import sys, pathlib, inspect, importlib.util
+root = pathlib.Path("F:/Code/ehr-release-34d6623d")
+sys.path.append(str(root))
+sys.path.append(str(root / "synaptic-tuner"))
+from tuner.project.manifest import load_project_manifest
+from synaptic_host.modal_key_rotation import rotate_host_evidence_key
+from tuner.project.manifest import ProjectManifest
+print("Python", sys.version.split()[0])
+print("modal absent", importlib.util.find_spec("modal") is None)
+S = object()
+def check(name, fn, args, kwargs):
+    sig = inspect.signature(fn)
+    assert not any(p.kind == inspect.Parameter.VAR_KEYWORD
+                   for p in sig.parameters.values()), name
+    bound = sig.bind(*args, **kwargs)
+    def refused(a, k):
+        try:
+            sig.bind(*a, **k)
+        except TypeError:
+            return
+        raise AssertionError(name + " accepted invalid arguments")
+    refused(args, dict(kwargs, unexpected_probe_keyword=S))
+    for parameter in sig.parameters.values():
+        if parameter.default is inspect.Parameter.empty and parameter.kind not in (
+            inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD
+        ):
+            altered = sig.bind(*args, **kwargs)
+            del altered.arguments[parameter.name]
+            refused(altered.args, altered.kwargs)
+    print("PASS", name, "valid / unexpected / missing / no **kwargs")
+
+check("load_project_manifest", load_project_manifest, (S,), {})
+check("manifest.create_context", ProjectManifest.create_context, (S,),
+      {"engine_root": S, "invocation_cwd": S})
+check("rotate_host_evidence_key", rotate_host_evidence_key, (S,), {})
+print("GREEN: step 3; no entry invoked")
+PY
+```
+
+Measured output (exit 0):
+
+```text
+Python 3.12.7
+modal absent True
+PASS load_project_manifest valid / unexpected / missing / no **kwargs
+PASS manifest.create_context valid / unexpected / missing / no **kwargs
+PASS rotate_host_evidence_key valid / unexpected / missing / no **kwargs
+GREEN: step 3; no entry invoked
+```
+
+The step 3 import chain succeeded despite the absent SDK. No key was read,
+created, removed or rotated. Both signature preconditions are met.
+
+---
+
 ## 4. The eight questions, settled from code
 
 ### (1) Must the environment `synaptic-smoke-v1` pre-exist? **YES.**
 
-`ExplicitModalHostSession.from_credentials` calls
+`ExplicitModalHostSession.from_credentials` delegates to `from_client`, which calls
 
 ```python
 environment = sdk.Environment.from_name(config.environment_name, client=client)
@@ -291,15 +458,15 @@ Creation command, from probe B, run inside the submit container (step 2).
 `ModalHostSession.deploy` (`modal_provider.py:1010`) creates the triple itself
 at `:1083-1097`: `Volume.objects.create` twice and `Secret.objects.create`
 carrying `HF_TOKEN` and `SYNAPTIC_EVIDENCE_MAC_KEY = authenticator.encoded_key`
-(`:1101`). It then writes `provider-state.json` (`:1109`). It is a complete,
+(`:1101`). It then writes `provider-state.json` (`:1110`). It is a complete,
 separable step.
 
 It is also **uncalled in production.** Measured:
 
 ```
-rtk proxy grep -rn "\.deploy(" --include=*.py synaptic_host tests
+/usr/bin/grep -rnF '.deploy(' synaptic_host tests --include='*.py'
   -> synaptic_host/modal_provider.py:962         (the SDK's own objects.app.deploy)
-  -> tests/synaptic_host/test_modal_provider.py  (17 call sites)
+  -> tests/synaptic_host/test_modal_provider.py  (16 lines, 16 call sites)
 ```
 
 `modal_training.py` builds the session with
@@ -319,10 +486,9 @@ Python. `deploy` needs the SDK. So the deploy step runs **inside the submit
 container**, which carries modal 1.5.4, with the released checkout bind-mounted.
 The rotation step (question 3) needs no SDK and runs under the Windows Host
 Python. The two steps therefore use different interpreters against the same
-`state_root`. See the UNVERIFIED register, item U-1: whether the container's
-uid 1000 can create and write `F:/Code/ehr-release-34d6623d/.synaptic` over the
-DrvFs bind is **not settled**, and it is the one thing most likely to stop the
-smoke at step 4.
+`state_root`. **Correction 2026-09-07, measured against `34d6623d`:** the
+census is 16 test calls, not 17. U-1 is settled by the lead's 2026-09-06
+uid-1000 write/read/cleanup probe; see section 8 for its evidence and limit.
 
 ### (3) The Host evidence-key rotation
 
@@ -350,7 +516,7 @@ which is this host. See question (4).
 
 `build_worker_authenticator(context)` (`modal_provider.py:60-76`) opens
 `state_root/modal/worker-hmac.key`. `deploy` calls `authenticator.initialize()`
-at `modal_provider.py:1071` and then puts `authenticator.encoded_key` into the
+at `modal_provider.py:1072` and then puts `authenticator.encoded_key` into the
 Secret at `:1101`.
 
 `initialize()` is `O_EXCL` and therefore a **read** on an existing file. So if a
@@ -516,7 +682,7 @@ directly with `--no-cache` under a sha-carrying tag (recorded as follow-up
 
 ### Step 2 — create the dedicated environment
 
-**cwd** any. **Credentials** `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET`, passed by
+**cwd** `/mnt/f/Code/ehr-release-34d6623d`. **Credentials** `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET`, passed by
 name only. **Account effect** CREATES the provider environment
 `synaptic-smoke-v1`. **Must not touch** the existing environment or any object
 in it.
@@ -538,10 +704,13 @@ in it.
   --host npipe:////./pipe/dockerDesktopLinuxEngine \
   run --rm -e MODAL_TOKEN_ID -e MODAL_TOKEN_SECRET \
   synaptic-modal-submit:34d6623d \
-  python3 -m modal environment list
+  python3 -c "import os,modal; c=modal.Client.from_credentials(os.environ['MODAL_TOKEN_ID'], os.environ['MODAL_TOKEN_SECRET']); e=modal.Environment.from_name('synaptic-smoke-v1', client=c); e.hydrate(); print(e.name)"
 ```
 
-`synaptic-smoke-v1` present. Do not inspect the existing environment's contents.
+Expected `synaptic-smoke-v1`. **Correction 2026-09-07:** this lookup targets
+only the named environment; it replaces the workspace-wide environment list.
+`create_if_missing` defaults to `False` (probe A). Confirm this credential-bearing
+lookup with the user at execution, separately from environment creation.
 
 **Recovery** If it already exists, the create will refuse; that is acceptable
 only if the lead created it in a previous attempt of this same runbook. An
@@ -630,8 +799,9 @@ Windows Host Python. **Credentials** `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET`,
 Secret in `synaptic-smoke-v1`, and deploys the app into it. **Must not touch**
 the existing environment or its 2026-08-26 objects.
 
-**This step is UNVERIFIED (U-1).** See the register. Run it only after reading
-U-1 and its probe.
+**The bind-writability precondition U-1 is satisfied.** This does not establish
+that deploy succeeds. The credential-free signature probe in section 3 must
+also pass before executing this step.
 
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
@@ -641,17 +811,21 @@ U-1 and its probe.
   -v F:/Code/ehr-release-34d6623d:/workspace \
   -w /workspace \
   synaptic-modal-submit:34d6623d \
-  python3 -c "import os,sys,pathlib; root=pathlib.Path('/workspace'); sys.path.append(str(root)); sys.path.append(str(root/'synaptic-tuner')); from tuner.project.manifest import load_project_manifest; from synaptic_host.modal_provider import ExplicitModalHostSession, ModalHostConfigV1, build_worker_authenticator; import modal; m=load_project_manifest(root/'synaptic.yaml'); ctx=m.create_context(engine_root=root/'synaptic-tuner', invocation_cwd=root); cfg=ModalHostConfigV1.load(ctx); client=modal.Client.from_credentials(os.environ['MODAL_TOKEN_ID'], os.environ['MODAL_TOKEN_SECRET']); s=ExplicitModalHostSession.from_credentials(sdk=modal, client=client, config=cfg); w=build_worker_authenticator(ctx); st=s.deploy(context=ctx, authenticator=w, hf_token=os.environ['HF_TOKEN']); print('deployed'); print('worker_key_ref', w.key_ref); print('state_written', (ctx.state_root/'modal'/'provider-state.json').exists())"
+  python3 -c "import os,sys,pathlib; root=pathlib.Path('/workspace'); sys.path.append(str(root)); sys.path.append(str(root/'synaptic-tuner')); from tuner.project.manifest import load_project_manifest; from synaptic_host.modal_provider import ExplicitModalHostSession, ModalHostConfigV1, build_worker_authenticator; import modal; m=load_project_manifest(root/'synaptic.yaml'); ctx=m.create_context(engine_root=root/'synaptic-tuner', invocation_cwd=root); cfg=ModalHostConfigV1.load(ctx); s=ExplicitModalHostSession.from_credentials(sdk=modal, config=cfg, token_id=os.environ['MODAL_TOKEN_ID'], token_secret=os.environ['MODAL_TOKEN_SECRET']); w=build_worker_authenticator(ctx); st=s.deploy(context=ctx, authenticator=w, hf_token=os.environ['HF_TOKEN']); print('deployed'); print('worker_key_ref', w.key_ref); print('state_written', (ctx.state_root/'modal'/'provider-state.json').exists())"
 ```
 
 **Derived from:** `deploy` signature at `modal_provider.py:1010-1017`
 (keyword-only `context`, `authenticator`, `hf_token`); the worker-authenticator
-entry refusal at `:1019` (`_require_worker_authenticator`, so the Host key is
+entry refusal at `:1020` (`_require_worker_authenticator`, so the Host key is
 refused here by construction); triple creation at `:1083-1097`; the worker key
-into the Secret at `:1101`; `provider-state.json` written at `:1109`. The
-session constructor is `from_credentials` as used at `modal_training.py:620`.
-`ModalClientBinding` construction and the SDK-version equality live at
-`:740-762`.
+into the Secret at `:1101`; `provider-state.json` written at `:1110`.
+**Correction 2026-09-07, measured against `34d6623d`:** the constructor is
+`from_credentials(cls, *, sdk, config, token_id, token_secret)`
+(`modal_provider.py:728-731`), matching `modal_training.py:620-623`. It creates
+the client at `:734` and delegates to `from_client` at `:735`; it accepts no
+`client` keyword. The old snippet was an authoring error, caught by section 3's
+red control. In `from_client`, SDK-version equality is at `:742-743` and
+`ModalClientBinding` construction is at `:758-761`.
 
 **Expected output shape** `deployed`; `worker_key_ref modal-worker-v1`;
 `state_written True`.
@@ -661,16 +835,16 @@ session constructor is `from_credentials` as used at `modal_training.py:620`.
 | Message | Meaning | Action |
 |---|---|---|
 | `Modal SDK must be exactly 1.5.4` (`:743`) | wrong image | stop; rebuild the pinned image |
-| `Modal provider is already deployed for this host` (`:1027`) | `provider-state.json` exists | **do not delete it**; read it. 29.6 write-once. |
+| `Modal provider is already deployed for this host` (`:1033`) | `provider-state.json` exists | **do not delete it**; read it. 29.6 write-once. |
 | `HF_TOKEN is required to bind the named Modal Secret` (`:1037`) | env not set | set it and re-run |
-| `Modal deployment resource collision` (`:1062`) | a named object or the app already exists in the environment | stop and report; do not adopt |
+| `Modal deployment resource collision` (`:1064`) | a named object or the app already exists in the environment | stop and report; do not adopt |
 
 **Verify immediately** with step 5.
 
 **Recovery, part-way** The deploy writes the journal before creating objects
-(`:1067-1069`) and the state file last (`:1109`). If it dies between, the
+(`:1068-1070`) and the state file last (`:1110`). If it dies between, the
 journal exists and the state file does not; a re-run reads the journal and
-continues, refusing if the config digest changed (`:1046`). **Never delete the
+continues, refusing if the config digest changed (`:1048`). **Never delete the
 journal or the state file to force a retry** — 29.6 names them write-once and
 the refusal text says to read rather than remove.
 
@@ -874,7 +1048,7 @@ action.
 |---|---|
 | `retire_worker_channel` | 29.3: **closeout only**. It deletes the Secret. Running it before or during the smoke destroys the channel the run needs. |
 | Any teardown: deleting Volumes, the Secret, the environment, or the app | Out of scope. The old app `synaptic-training-v1` is decided at closeout, not here. |
-| Any command addressed to the existing environment or any 2026-08-26 object | User decision: untouched **and unread**. Every command carries `-e synaptic-smoke-v1`. |
+| Any command addressed to the existing environment or any 2026-08-26 object | User decision: untouched **and unread**. Scope every provider command to `synaptic-smoke-v1` by `-e`, positional environment name, or the committed configuration. Never enumerate the workspace's environments. |
 | `modal app stop` without `-e synaptic-smoke-v1` | It may address the existing deployment. |
 | Deleting `provider-state.json`, `deployment-journal.json`, or any key file to force a retry | 29.6 write-once. The refusal text names what to read, not what to remove. |
 | Reading the contents of any key file or Secret | Credential material. Paths, refs, existence and mtime only. |
@@ -886,19 +1060,43 @@ action.
 
 ## 8. UNVERIFIED register
 
-Each item states what is unsettled, why the author could not settle it, and the
-**one read-only probe** that would settle it for the lead.
+Each item records its current status and the evidence or probe that supports it.
+U-1 is settled; its historical probe writes locally. U-2 now has a measured
+execution blocker, recorded below.
 
-**U-1 — can the submit container write `.synaptic` in the released checkout?**
+**U-1 — SETTLED: the submit container can write `.synaptic` in this released checkout.**
 Step 4 runs under the container's uid 1000 against a DrvFs bind of
 `F:/Code/ehr-release-34d6623d`, and `deploy` creates the private-storage chain
 there (`_ensure_private_chain` call sites at `modal_provider.py:532`, `:565`,
 `:1286`). The docker lane needed B-9 (`--user`) and B-11 (chain repair) for
 exactly this class of problem; the modal submit container carries none of that
-machinery. The author could not settle it because settling it means **writing
-into the released checkout**, which this task forbids.
+machinery.
 
-*Probe for the lead, read-only, no credentials:*
+**Correction 2026-09-07:** the lead already settled this on 2026-09-06,
+recorded at task #424 `.metadata.u1_probe`. The retained timestamp is only
+`2026-09-06T17:4xZ (after the 17:35:12Z clock read)`; no more precise time is
+claimed. The retained command is abbreviated, so it is evidence of what was
+recorded, not a runnable reconstruction:
+
+```text
+docker.exe run --rm -v F:/Code/ehr-release-34d6623d:/workspace
+synaptic-modal-submit:34d6623d sh -c
+'id -u; mkdir -p /workspace/.synaptic/_probe && printf ok > .../w
+ && cat ... && ls -ld /workspace/.synaptic && rm -rf /workspace/.synaptic'
+```
+
+Recorded result: **WRITABLE**, uid 1000 created `/workspace/.synaptic`
+(`drwxr-xr-x 1 1000 1000`), wrote and read back a file, and removed the
+probe directory. The record reports empty checkout status afterwards.
+Rechecked on 2026-09-07: `ls -ld .synaptic` reports no such directory and
+`/usr/bin/git status --short` is empty at `34d6623d`.
+
+**Limit:** that probe used Docker's default host, not the explicit npipe
+endpoint used by the execution steps. It proves the recorded bind write, not
+the full deploy or its private-directory checks. Do not rerun the historical
+cleanup command; it would remove state if used after provisioning.
+
+*Historical probe retained for a future checkout; writes locally, no credentials:*
 
 ```
 "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe" \
@@ -922,6 +1120,36 @@ issues real `modal.Volume.from_name` / `modal.Secret.from_name` lookups with
 `create_if_missing=False` and `.hydrate()`. Settled only by running it, which
 requires credentials. If it errors on its own plumbing rather than on a real
 mismatch, treat that as a script defect, not a gate failure, and report it.
+
+**Correction 2026-09-07, released Host `34d6623d`, SDK 1.5.4: step 5 is
+BLOCKED by a local signature defect.** The script passes
+`create_if_missing=False` to both factories at
+`.skills/host-modal-run/scripts/g5_isolation_triple.py:340-347`.
+`Secret.from_name` accepts `name`, `environment_name`, `required_keys` and
+`client`, but no `create_if_missing`. Measured with no credentials, no network
+and no SDK factory invocation, cwd `/mnt/f/Code/ehr-release-34d6623d`:
+
+```bash
+'/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe' \
+  --host npipe:////./pipe/dockerDesktopLinuxEngine \
+  run --network none synaptic-modal-submit:34d6623d \
+  python3 -B -c 'import inspect,modal; s=inspect.signature(modal.Secret.from_name); print(s); s.bind("synaptic-training-runtime-smoke-v1", environment_name="synaptic-smoke-v1", create_if_missing=False)'
+```
+
+Output includes `TypeError: got an unexpected keyword argument
+'create_if_missing'`; exit 1. No provider request occurred. This supersedes
+the earlier claim that only a live call can discover this defect. Also, the
+missing-credential branch at `:314-321` skips lookups without adding a failure;
+if the offline checks pass and a rotation attestation is present, `:373-374`
+can report `G5 PASS` without existence evidence. That second finding is from
+source inspection, not a credential-bearing run. Neither behavior establishes
+G5. Resolve the gate workflow before creating cloud objects; do not spend a
+deployment to rediscover this local defect.
+
+Step 5 also invokes bare WSL `python3`, not the pinned submit image. A local
+package-metadata probe on 2026-09-07 reports CPython 3.12.9 and Modal 1.5.1.
+The gate only prints the SDK version at `:329`; it does not enforce 1.5.4.
+The corrected live-check workflow must use the pinned interpreter lane too.
 
 **U-3 — where the operator's Modal token pair lives.** The mechanism is settled
 from code (section 5). The operator-side half is not: the lead measured no
@@ -957,8 +1185,9 @@ If Modal requires the `ap-` app id instead, take it from
    all today. That is the structural reason step 3 and step 4 use different
    interpreters, and it deserves an architecture decision rather than a
    permanent runbook workaround.
-3. **U-1 may be a blocker.** If the container cannot write the private-storage
-   chain in the released checkout, the smoke cannot proceed as designed.
+3. **U-1 is settled for this checkout.** The lead's uid-1000 probe wrote, read
+   and removed its probe directory. The endpoint caveat and cleanup evidence
+   are retained in section 8; this is not a claim of a successful deploy.
 4. The dispatch describes budget, timeout and retries as parts of the submit
    command. They are configuration values, not flags; the runbook says so at
    question (6) rather than inventing arguments that `_parse` would reject.
