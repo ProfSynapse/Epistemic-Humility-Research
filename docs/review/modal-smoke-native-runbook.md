@@ -2,9 +2,26 @@
 
 ## Status and ruling (2026-09-07)
 
+Correction after live deployment: the user authorized routine provisioning and
+one bounded smoke without repeated approval pauses. Stop for collisions,
+duplicate-spend risk or material decisions. Preserve the USD 1.00 job limit,
+old-environment isolation and stop-before-publication boundary. For this smoke,
+this authorization supersedes every per-step approval pause below for routine
+preparation, provisioning, rotation, deployment, observation and the single
+bounded submit. Older per-step approval wording below is historical for this
+run, not an additional gate. Pushes, merges, publication and material recovery
+remain separately controlled; no permission to retry an ambiguous job is implied.
+
+Source verification requires a named Host branch whose exact remote ref equals
+the release commit; detached Host HEAD is insufficient. The engine remains
+pinned to 5db2809d0160b166a0d2b133b97368ddcfe426ce. Its dedicated upstream is
+release/modal-smoke-5db2809d because feat/submodule-cloud-api-v1 advanced.
+This changes the branch reference only, not engine code or the gitlink.
+
 The user selected direct native submission, without local Docker. This replaces
 the execution commands in modal-smoke-runbook-34d6623d.md, which remains historical
-evidence. It does not authorize cloud operations, key rotations, pushes or merges.
+evidence. This document records the user's scoped authorization above; it does
+not grant general authority over other cloud objects, pushes or merges.
 
 Candidate based on Host 9c77d492, engine 5db2809d. Do not execute candidate
 provider commands from the edit worktree or mix candidate and released modules.
@@ -33,9 +50,10 @@ may appear in commands, logs or new files. Do not print configuration objects.
 HF_TOKEN remains separately required for deployment, supplied through the
 approved process-environment mechanism. The saved Modal login does not supply it.
 
-Every credential-bearing/provider/key operation below needs a fresh approval
-of the exact command. Commands are templates until the new release and all
-preconditions are verified. No permission is implied by this document.
+Commands remain templates until the new release and all preconditions are
+verified. Routine credential-bearing/provider/key operations for this one smoke
+are covered by the user's authorization above. Stop for a material scope change,
+collision, ambiguous submission or unsafe recovery.
 
 ## Step 0: release admission
 
