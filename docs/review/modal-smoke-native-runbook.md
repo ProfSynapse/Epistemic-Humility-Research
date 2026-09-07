@@ -1,5 +1,24 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Replacement authorization (2026-09-07)
+
+After reviewing the failed attempt, the user authorized proceeding with the
+replacement and routine bounded smoke iterations without repeated permission
+prompts. The next attempt uses the reviewed engine repair
+8b9b121b35abe96e5dc982f64e0126b02ed31f68 on
+`fix/modal-prepared-worker-closure`. The historical 5db2809d release ref stays
+unchanged. Keep each attempt separately durable, preserve its evidence, retain
+the configured USD 1.00 budget and retries=0, and reconcile every uncertain
+submission before considering another. Stop for meaningful cost escalation,
+destructive action, or unresolved duplicate-submission risk. Publication and
+main merges remain prohibited. This supersedes the per-attempt approval pauses
+below; it does not reopen the first effect's consumed authority.
+
+Reuse the existing dedicated environment, Volumes, Secret and worker/Host keys.
+Use the existing `ExplicitModalHostSession.upgrade(context=..., authenticator=...)`
+workflow to update provider code and retain prior deployment records. Do not
+delete provider-state.json or redeploy through the fresh-resource path.
+
 ## Terminal correction (2026-09-07)
 
 The authorized single paid attempt has been consumed. Do not run the submit
