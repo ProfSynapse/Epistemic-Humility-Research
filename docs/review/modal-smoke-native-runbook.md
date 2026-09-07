@@ -1,5 +1,60 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Terminal correction (2026-09-07)
+
+The authorized single paid attempt has been consumed. Do not run the submit
+template below again under that authority. The job failed before training;
+no model artifact was produced or published. Exact execution source was Host
+6557b9b7be0bb8e7080787e98743c9b1b5425b86 and engine
+5db2809d0160b166a0d2b133b97368ddcfe426ce, from the clean native Linux release
+`/home/profsynapse/code/ehr-release-6557b9b7`. G2, G3, live G5, both exact
+remote source refs and native signature probes passed before that submission.
+The historical UNMET signature banner below does not describe that attempt.
+
+Run `run-e6a70f05a9fbd736b6f2a0e39bf3e29d`, effect
+`effect-477d9870083b78ab1d37707a77e07d22`, Modal call
+`fc-01M1YEJM7CZRFXDKBXZSCYM4DH`: authenticated outcome FAILED with closed code
+`runtime_workload_engine_rejected`. The CLI initially reported
+RECONCILE_REQUIRED after submission; public outcome reconciliation recovered
+the terminal result. No second job was submitted.
+
+Two independently reviewed repairs are local, not cloud-proven: Host commit
+8d8e9612 pins the stable Modal 1.5.4 descriptor and callable bindings instead of
+fresh partial-wrapper identity; engine commit
+8b9b121b35abe96e5dc982f64e0126b02ed31f68 retains the verified full checkout and
+stages the exact authenticated worker closure before invocation. The released
+full checkout had extra files beyond the required 66 members. The engine repair
+updates the packaged Modal runtime lock without changing the offline closure.
+Neither repair relaxes source, identity, credential or exact-file validation.
+
+Operator-observed post-restart Host candidate tests: 7 new and 104 existing PASS. Engine candidate focused
+checks: 45 PASS, one unchanged symlink-error wording failure. Broad Modal provider
+checks: 236 PASS, two failures, both reproduced individually at released engine
+5db2809d: `test_mounted_reads_and_writes_reject_symlinked_ancestors` and
+`test_finalizer_rejects_symlink_or_reparse_roots`. These failures remain open;
+they are not represented as passing gates. Skill mirrors and runtime-lock
+digest tests pass. Candidate tests used the released working directory with
+explicit candidate imports, not provider calls from the editing checkout.
+The retained Host test transcript predates the two additional regression tests;
+the current totals and baseline reproductions above were observed in terminal
+tool results, not independently reconstructed from retained test transcripts.
+
+Private records are retained at
+`/mnt/f/Code/ehr-native-smoke-evidence-5355d32f.EFevfy`, including authenticated
+terminal/log files and a terminal SQLite backup whose integrity check was
+operator-observed PASS. A shape
+sweep of the saved console logs found zero Modal/HF token-prefix matches;
+generic matches were hexadecimal digests and file paths. Synthetic positive
+controls passed. This is not a claim about uncaptured output or arbitrary
+secret formats. Existing keys, deployment records and cloud objects remain
+intact; the old environment remains unread and untouched.
+
+A further paid attempt needs new submission authority, exact reviewed/pushed
+Host and engine refs, a fresh release, updated deployment/runtime proof and
+the existing gates. Do not move the historical engine release ref, reuse the
+consumed effect, or substitute a manual Modal launch. Publication remains out
+of scope.
+
 ## Status and ruling (2026-09-07)
 
 Correction after live deployment: the user authorized routine provisioning and
