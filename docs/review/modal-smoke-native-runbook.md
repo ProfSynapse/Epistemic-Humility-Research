@@ -1,5 +1,49 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Verified successful smoke (2026-09-08)
+
+Correction: the fifth actual job succeeded from clean, reviewed and pushed
+Host `eb2f2e0206b46eb0d932e06fbe999633f0cf023f` and engine
+`a5460845c435c9e44847dbc1dd5d0f67d0fdff80`. Native G2, G3 (zero committed
+blob mismatches), offline and live G5, native signature controls and the
+existing dedicated deployment upgrade passed. No local Docker was used.
+The bytecode-safe request below is now consumed; do not submit it again.
+
+Submission was acknowledged at 2026-09-08T15:24:07Z for run
+`run-a8c39c783c752f7c255d5dc210f5ca44`, effect
+`effect-e2a82de01a17bc929131476d7151429c`, call
+`fc-01M20SX3C2PMJ77DBH6541WFK2`. Authenticated Host outcome reached
+SUCCEEDED at 2026-09-08T15:28:46Z with exactly five verified artifacts.
+Acceptance lineage reports trainer exit 0 and execution completed/exit 0.
+The Host validated completion/terminal/log cross-plane bindings, exact
+artifact inventory and bytes, and workload/closure semantics. Independent
+review of the saved acceptance evidence passed.
+
+The five roles are final_model, tokenizer, training_lineage, training_metrics
+and workload_record. The model archive contains adapter_config.json,
+adapter_model.safetensors and README.md. All five remain on the dedicated
+artifact Volume under
+`operations/effect-e2a82de01a17bc929131476d7151429c/output/`.
+Their exact local copies were downloaded through the existing Modal CLI and
+all five sizes and SHA-256 values matched the authenticated manifest.
+Artifact-set digest:
+`b5e1e115750d06df57a0e0f28c6b659f3e03da9f049ab8f21dcbbe5d9daaddba`.
+
+Private evidence and copied artifacts are retained at
+`/mnt/f/Code/ehr-modal-model-preparation-evidence.Hb8UXe`, with artifacts in
+`artifacts-eb2f2e02/`. Both exact-run trainer logs were saved locally after
+remote credential-shape scans found zero matches. All 20 retained local logs,
+including both downloaded trainer streams, had zero matches for HF/Modal token-prefix,
+private-key-header and Bearer-token shapes; this is not a proof against every
+possible secret representation. The original five-attempt ledger and keys
+remain in clean release `/home/profsynapse/code/ehr-release-eb2f2e02`.
+
+This establishes the bounded cloud training smoke and automatic remote model
+preparation, not model quality, cache-hit reuse, local automatic preparation
+or broad production readiness. No model publication, main merge, key rotation,
+old-environment access or teardown was performed. No further smoke is needed
+for this repair. Existing cloud objects are retained pending separate closeout.
+
 ## Immutable closure bytecode repair (2026-09-08)
 
 Correction: the fourth actual job consumed the `modal-sft-local-control.json`
