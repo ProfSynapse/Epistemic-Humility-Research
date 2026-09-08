@@ -1,5 +1,44 @@
 # Modal prepared-path smoke: native Host runbook
 
+## Immutable closure bytecode repair (2026-09-08)
+
+Correction: the fourth actual job consumed the `modal-sft-local-control.json`
+request from Host `61a602ee9bd35162b82afa736e9cbc71cd0582e9`, engine
+`2c4ef885f03673ebb1308db1fbf67ffc5f029ee9`. Submission was acknowledged at
+2026-09-08T14:53:37Z. Run `run-1a11f5f853b1c23c3ebc147a84536369`, effect
+`effect-e959f7f2c6808fcfb6f429f455fb7c85`, call
+`fc-01M20R58YCH55FCJP5XF10EAZ1` reached authenticated FAILED at
+2026-09-08T14:57:11Z: `runtime_trainer_failed`, zero verified artifacts.
+The saved trainer stderr contained only `OFFLINE_SFT_WORKER_REJECTED`;
+stdout was empty. Required execution order establishes that automatic model
+preparation and its Volume commit completed before trainer-child invocation.
+This is not evidence that ML training began or that cache reuse has been proven.
+
+A real two-generation local regression reproduced the closure mutation:
+ordinary owned-module imports wrote bytecode into the exact 66-file source
+tree, which the isolated worker then rejected. Engine repair
+`a5460845c435c9e44847dbc1dd5d0f67d0fdff80` uses a source-only owned-module
+loader that neither reads nor writes bytecode. Inventory, origin, path and
+hash checks remain strict; an extra bytecode member is still rejected. The
+same 66-member manifest was regenerated; the eight-member runtime lock is
+unchanged. Independent implementation and committed-range audits passed.
+
+The real regression failed before the fix and passed afterward. The broader
+candidate run had 352 passes and 11 failures: two known Modal failures plus
+nine SFT runtime failures reproduced on unchanged engine 2c4ef885 (70 passes,
+nine failures in that baseline). No new failing node was found in that set.
+Logs remain in `/mnt/f/Code/ehr-modal-model-preparation-evidence.Hb8UXe`.
+The reconciled original ledger remains in the clean 61a602ee release; an
+optional separate full-ledger evidence backup was blocked and was not made.
+
+This correction supersedes lower claims that the fourth request is unused.
+Preserve all four consumed effects. The next distinct request is
+`project://training/smokes/modal-sft-bytecode-safe.json`, byte-identical to
+the previous one (one step, USD 1.00 configured budget, zero retries). It has
+not been submitted. Use reviewed/pushed source in a fresh clean release,
+preserved state and keys, G2/G3/live G5 and an upgrade of only the existing
+dedicated deployment. Cloud training success remains unverified.
+
 ## Automatic model preparation repair (2026-09-07)
 
 Correction: the proposed fourth job from Host c6ea2885 was held before submit.
