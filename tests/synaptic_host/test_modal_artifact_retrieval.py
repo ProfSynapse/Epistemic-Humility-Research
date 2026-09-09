@@ -400,3 +400,43 @@ def test_post_link_fsync_failure_never_returns_success_but_marker_is_complete(
     receipt = target(root) / "receipt.json"
     assert receipt.is_file()
     assert json.loads(receipt.read_text("ascii"))["artifact_count"] == 5
+
+
+@pytest.mark.parametrize("attack", ("replacement", "symlink", "hardlink", "extra"))
+def test_post_publication_receipt_namespace_attacks_refuse_success(
+    tmp_path: Path, monkeypatch, attack: str,
+) -> None:
+    root = project(tmp_path)
+    real_fsync = os.fsync
+    attacked = False
+
+    def fsync(fd):
+        nonlocal attacked
+        receipt = target(root) / "receipt.json"
+        if not attacked and receipt.exists() and stat.S_ISDIR(os.fstat(fd).st_mode):
+            attacked = True
+            if attack == "replacement":
+                receipt.unlink()
+                receipt.write_bytes(b"{}\n")
+                receipt.chmod(0o600)
+            elif attack == "symlink":
+                outside = tmp_path / "outside-receipt"
+                outside.write_bytes(b"{}\n")
+                outside.chmod(0o600)
+                receipt.unlink()
+                receipt.symlink_to(outside)
+            elif attack == "hardlink":
+                os.link(receipt, tmp_path / "receipt-hardlink")
+            else:
+                extra = target(root) / "extra-after-receipt"
+                extra.write_bytes(b"x")
+                extra.chmod(0o600)
+        return real_fsync(fd)
+
+    monkeypatch.setattr(modal_artifact_retrieval.os, "fsync", fsync)
+    with pytest.raises((OSError, ValueError)):
+        retrieve_verified_artifacts(
+            project_root=root, runs=RunsAPI(Operations()), run=RUN,
+            plan_fingerprint=PLAN,
+        )
+    assert attacked is True

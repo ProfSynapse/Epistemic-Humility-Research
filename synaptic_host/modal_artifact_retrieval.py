@@ -266,7 +266,7 @@ def _open_receipt_temp(run_fd: int) -> int:
     return fd
 
 
-def _write_receipt(run_fd: int, fd: int, receipt: dict[str, object]) -> None:
+def _write_receipt(run_fd: int, fd: int, receipt: dict[str, object]) -> bytes:
     payload = _canonical(receipt) + b"\n"
     view = memoryview(payload)
     while view:
@@ -290,6 +290,58 @@ def _write_receipt(run_fd: int, fd: int, receipt: dict[str, object]) -> None:
     # A failure here can leave a complete receipt. The caller still raises and
     # therefore never reports success for an un-synced directory entry.
     os.fsync(run_fd)
+    return payload
+
+
+def _validate_published_receipt(run_fd: int, retained_fd: int, payload: bytes) -> None:
+    expected_names = set(_FILENAMES.values()) | {"receipt.json"}
+    if set(os.listdir(run_fd)) != expected_names:
+        raise ValueError("completed retrieval inventory changed")
+    try:
+        fd = os.open(
+            "receipt.json", os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            dir_fd=run_fd,
+        )
+    except OSError:
+        raise ValueError("receipt publication identity changed") from None
+    try:
+        retained = os.fstat(retained_fd)
+        before = os.fstat(fd)
+        linked = os.stat("receipt.json", dir_fd=run_fd, follow_symlinks=False)
+        identity = (retained.st_dev, retained.st_ino)
+        if (
+            not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+            or before.st_uid != os.geteuid() or stat.S_IMODE(before.st_mode) != 0o600
+            or before.st_size != len(payload)
+            or (before.st_dev, before.st_ino) != identity
+            or (linked.st_dev, linked.st_ino) != identity
+        ):
+            raise ValueError("receipt publication identity changed")
+        remaining = len(payload)
+        chunks: list[bytes] = []
+        digest = hashlib.sha256()
+        while remaining:
+            chunk = os.read(fd, min(_CHUNK_LIMIT, remaining))
+            if not chunk:
+                raise ValueError("published receipt is truncated")
+            chunks.append(chunk)
+            digest.update(chunk)
+            remaining -= len(chunk)
+        if os.read(fd, 1):
+            raise ValueError("published receipt exceeds its canonical size")
+        after = os.fstat(fd)
+        relinked = os.stat("receipt.json", dir_fd=run_fd, follow_symlinks=False)
+        if (
+            b"".join(chunks) != payload
+            or digest.hexdigest() != hashlib.sha256(payload).hexdigest()
+            or (after.st_dev, after.st_ino) != identity or after.st_nlink != 1
+            or after.st_uid != os.geteuid() or stat.S_IMODE(after.st_mode) != 0o600
+            or after.st_size != len(payload)
+            or (relinked.st_dev, relinked.st_ino) != identity
+        ):
+            raise ValueError("published receipt verification failed")
+    finally:
+        os.close(fd)
 
 
 def retrieve_verified_artifacts(
@@ -347,11 +399,15 @@ def retrieve_verified_artifacts(
         _require_namespace(
             root, root_fd, synaptic_fd, retrievals_fd, run.run_id, run_fd,
         )
-        _write_receipt(run_fd, receipt_fd, receipt)
+        receipt_payload = _write_receipt(run_fd, receipt_fd, receipt)
         _require_namespace(
             root, root_fd, synaptic_fd, retrievals_fd, run.run_id, run_fd,
         )
         os.fsync(run_fd); os.fsync(retrievals_fd); os.fsync(synaptic_fd)
+        _require_namespace(
+            root, root_fd, synaptic_fd, retrievals_fd, run.run_id, run_fd,
+        )
+        _validate_published_receipt(run_fd, receipt_fd, receipt_payload)
         return summary
     finally:
         for fd in (receipt_fd, run_fd, retrievals_fd, synaptic_fd, root_fd):
