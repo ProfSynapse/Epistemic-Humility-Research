@@ -19,6 +19,14 @@ def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     project_root = Path(__file__).resolve().parents[1]
     engine_root = project_root / "synaptic-tuner"
+    if len(arguments) >= 2 and arguments[:2] in (
+        ["training", "status"], ["training", "reconcile"]
+    ):
+        from .training_operator import main as operator_main
+
+        return operator_main(
+            arguments, project_root=project_root, engine_root=engine_root
+        )
     prepared = prepare_training_run_ingress_v1(
         arguments, project_root=project_root, engine_root=engine_root
     )
