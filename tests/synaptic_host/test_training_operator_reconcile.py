@@ -1,6 +1,7 @@
 import ast
 import inspect
 import os
+import pytest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -203,7 +204,7 @@ def test_reconcile_behavior_calls_outcome_without_mutation_entrypoints(tmp_path:
         config=SimpleNamespace(maximum_cost_minor_units=1, currency="USD"),
         state=SimpleNamespace(profile=object()),
     )
-    auth = SimpleNamespace(initialize=lambda: None)
+    auth = SimpleNamespace(private_storage_verified=True)
     session = SimpleNamespace(facade=lambda _state: object())
     operations = ForbiddenOperations()
     with patch("synaptic_host.launcher._consume_isolated_child_authority_v1",
@@ -233,3 +234,43 @@ def test_reconcile_behavior_calls_outcome_without_mutation_entrypoints(tmp_path:
         )
     assert value["code"] == "OK"
     assert value["state"] == "running"
+
+
+@pytest.mark.parametrize("missing", ["host", "worker", "both"])
+def test_missing_run_keys_refuse_before_provider_or_repository(tmp_path: Path, missing: str) -> None:
+    from synaptic_host.security import FileHmacAuthenticator
+
+    context = SimpleNamespace(project_root=tmp_path, engine_root=tmp_path)
+    keys = tmp_path / "private-keys"
+    host = FileHmacAuthenticator(keys / "host.key", key_ref="host-test")
+    worker = FileHmacAuthenticator(keys / "worker.key", key_ref="worker-test")
+    if missing == "host":
+        worker.initialize()
+    elif missing == "worker":
+        host.initialize()
+    before = {path.name: path.read_bytes() for path in keys.iterdir()} if keys.exists() else None
+    with patch("synaptic_host.launcher._consume_isolated_child_authority_v1",
+               return_value=(tmp_path, tmp_path, "id", "secret")), \
+         patch.object(training_operator, "_read_existing_pair",
+                      return_value=(object(), object(), object())), \
+         patch.object(training_operator, "_validate_released_source"), \
+         patch("synaptic_host.modal_provider.ModalProviderAuthorityV1.load",
+               return_value=object()), \
+         patch("synaptic_host.security.FileHmacAuthenticator.from_context", return_value=host), \
+         patch("synaptic_host.modal_provider.build_worker_authenticator", return_value=worker), \
+         patch.object(FileHmacAuthenticator, "initialize", side_effect=AssertionError("key creation")), \
+         patch.object(FileHmacAuthenticator, "_create_private_directory",
+                      side_effect=AssertionError("directory creation")), \
+         patch("synaptic_host.modal_provider.ExplicitModalHostSession.from_credentials") as session, \
+         patch("synaptic_host.sqlite_repository.SqliteTrainingRepository.from_context") as repository:
+        with pytest.raises(ValueError):
+            training_operator._reconcile(
+                context, "project-one", RUN_A, object(), token_id="id",
+                token_secret="secret", sdk_loader=lambda: (_ for _ in ()).throw(
+                    AssertionError("SDK loaded")
+                ), clock=lambda: "2026-09-09T00:00:00Z",
+            )
+    session.assert_not_called()
+    repository.assert_not_called()
+    after = {path.name: path.read_bytes() for path in keys.iterdir()} if keys.exists() else None
+    assert after == before

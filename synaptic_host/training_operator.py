@@ -19,7 +19,7 @@ from . import modal_sdk
 _SCHEMA = "synaptic-training-operator-result/v1"
 _REQUEST_SCHEMA = "synaptic-training-operator-request/v1"
 _CONTRACT_DIGEST = hashlib.sha256(
-    b"synaptic-training-operator-contract/v1\0status,reconcile"
+    b"synaptic-training-operator-contract/v1\0status,reconcile,retrieve"
 ).hexdigest()
 _RUN_ID = re.compile(r"^run-[0-9a-f]{32}$")
 
@@ -28,6 +28,50 @@ _RUN_ID = re.compile(r"^run-[0-9a-f]{32}$")
 class _DurableEffectView:
     identity: object
     provider_job_ref: str | None
+
+
+class _ReadOnlyModalRunRepository:
+    """Narrow repository that rechecks one validated ledger pair on every read."""
+
+    __slots__ = (
+        "_context", "_project_ref", "_run_id", "_effect_id",
+        "_record_bytes", "_preparation_bytes",
+    )
+
+    def __init__(self, context, project_ref: str, run_id: str, record, preparation):
+        self._context = context
+        self._project_ref = project_ref
+        self._run_id = run_id
+        self._effect_id = preparation.operation.effect.effect_id
+        self._record_bytes = bytes(record.canonical_bytes)
+        self._preparation_bytes = bytes(preparation.canonical_bytes)
+
+    def _pair(self):
+        pair = _read_existing_pair(self._context, self._project_ref, self._run_id)
+        if pair is None:
+            raise ValueError("durable Modal run is unavailable")
+        record, preparation, _effect = pair
+        if (
+            record.canonical_bytes != self._record_bytes
+            or preparation.canonical_bytes != self._preparation_bytes
+        ):
+            raise ValueError("durable Modal run changed during retrieval")
+        return record, preparation
+
+    def load(self, project_ref: str, run_id: str):
+        if (project_ref, run_id) != (self._project_ref, self._run_id):
+            raise ValueError("durable Modal run was misrouted")
+        return self._pair()[0]
+
+    def load_modal_preparation(self, project_ref: str, run_id: str):
+        if (project_ref, run_id) != (self._project_ref, self._run_id):
+            raise ValueError("durable Modal preparation was misrouted")
+        return self._pair()[1]
+
+    def load_modal_preparation_by_effect(self, effect_id: str):
+        if effect_id != self._effect_id:
+            raise ValueError("durable Modal effect was misrouted")
+        return self._pair()[1]
 
 
 def _result(code: str, *, run_id: str | None = None, **fields: object) -> dict[str, object]:
@@ -44,7 +88,7 @@ def _emit(value: dict[str, object]) -> int:
 def _parse(argv: list[str]) -> tuple[str, str] | None:
     if (
         type(argv) is not list or len(argv) != 4
-        or argv[0] != "training" or argv[1] not in {"status", "reconcile"}
+        or argv[0] != "training" or argv[1] not in {"status", "reconcile", "retrieve"}
         or argv[2] != "--run-id" or type(argv[3]) is not str
         or _RUN_ID.fullmatch(argv[3]) is None
     ):
@@ -281,14 +325,16 @@ def _validate_released_source(context, prepared) -> None:
         raise ValueError("released source differs from the durable Modal run")
 
 
-def _reconcile(
-    context, project_ref: str, run_id: str, authority_token: object, *, token_id: str,
+def _authorized_run(
+    context, project_ref: str, run_id: str, authority_token: object, *, verb: str, token_id: str,
     token_secret: str, sdk_loader: Callable[[], object], clock: Callable[[], str],
-) -> dict[str, object]:
+):
     from . import launcher
 
+    if verb not in {"reconcile", "retrieve"}:
+        return _result("COMMAND_INVALID", run_id=run_id)
     consumed = launcher._consume_isolated_child_authority_v1(
-        authority_token, ingress_digest=_request_digest("reconcile", run_id),
+        authority_token, ingress_digest=_request_digest(verb, run_id),
         contract_identity_digest=_CONTRACT_DIGEST,
     )
     if consumed is None:
@@ -306,6 +352,13 @@ def _reconcile(
         return _result("RUN_MISSING", run_id=run_id)
     record, prepared, _effect = pair
     _validate_released_source(context, prepared)
+    if verb == "retrieve":
+        api = importlib.import_module("synaptic_tuner.api.v1")
+        if (
+            record.phase is not api.LifecyclePhase.SUCCEEDED
+            or record.verification is not api.VerificationStatus.VERIFIED
+        ):
+            return _result("RUN_NOT_VERIFIED", run_id=run_id)
     from .modal_provider import (
         ExplicitModalHostSession, ModalProviderAuthorityV1, build_worker_authenticator,
     )
@@ -319,17 +372,30 @@ def _reconcile(
     from .sqlite_repository import SqliteTrainingRepository
 
     authority = ModalProviderAuthorityV1.load(context)
-    repository = SqliteTrainingRepository.from_context(context, clock=clock)
+    host_auth = FileHmacAuthenticator.from_context(
+        context, key_ref=HOST_EVIDENCE_KEY_REF
+    )
+    worker_auth = build_worker_authenticator(context)
+    if (
+        host_auth.private_storage_verified is not True
+        or worker_auth.private_storage_verified is not True
+    ):
+        raise ValueError("existing run evidence keys are unavailable")
     session = ExplicitModalHostSession.from_credentials(
         sdk=sdk_loader(), config=authority.config,
         token_id=token_id, token_secret=token_secret,
     )
-    host_auth = FileHmacAuthenticator.from_context(
-        context, key_ref=HOST_EVIDENCE_KEY_REF
-    )
-    host_auth.initialize()
-    worker_auth = build_worker_authenticator(context)
-    worker_auth.initialize()
+    authenticator = EvidenceKeyRouterV1(host=host_auth, worker=worker_auth)
+    facade = session.facade(authority.state)
+    if verb == "retrieve":
+        return (
+            record, prepared, authority,
+            _ReadOnlyModalRunRepository(
+                context, project_ref, run_id, record, prepared
+            ),
+            authenticator, facade,
+        )
+    repository = SqliteTrainingRepository.from_context(context, clock=clock)
     ports = importlib.import_module("synaptic_tuner.api.v1").HostPorts(
         lifecycle=repository, runs=repository,
         grants=BoundedGrantProvider(
@@ -337,11 +403,25 @@ def _reconcile(
             currency=authority.config.currency, clock=clock,
         ),
         secrets=_RejectingSecretProvider(), evidence_replay=repository,
-        authenticator=EvidenceKeyRouterV1(host=host_auth, worker=worker_auth),
+        authenticator=authenticator,
         clock=clock, git_remote=ScopedGitRemoteReader(),
-        modal_reads=session.facade(authority.state),
+        modal_reads=facade,
         training_resolver=_RejectingTrainingResolver(),
     )
+    return record, prepared, authority, ports
+
+
+def _reconcile(
+    context, project_ref: str, run_id: str, authority_token: object, *, token_id: str,
+    token_secret: str, sdk_loader: Callable[[], object], clock: Callable[[], str],
+) -> dict[str, object]:
+    admitted = _authorized_run(
+        context, project_ref, run_id, authority_token, verb="reconcile",
+        token_id=token_id, token_secret=token_secret, sdk_loader=sdk_loader, clock=clock,
+    )
+    if type(admitted) is dict:
+        return admitted
+    record, prepared, authority, ports = admitted
     modal_api = importlib.import_module("synaptic_tuner.api.v1.modal")
     operations = modal_api.compose_modal_training_operations(
         context=context, host_ports=ports, provider_config=authority.state.profile,
@@ -355,6 +435,36 @@ def _reconcile(
         state=outcome.status.state.value, updated_at=outcome.status.updated_at,
         plan_fingerprint=prepared.public_plan_fingerprint,
         artifacts=tuple(item.artifact_id for item in outcome.artifacts),
+    )
+
+
+def _retrieve(
+    context, project_ref: str, run_id: str, authority_token: object, *, token_id: str,
+    token_secret: str, sdk_loader: Callable[[], object], clock: Callable[[], str],
+) -> dict[str, object]:
+    admitted = _authorized_run(
+        context, project_ref, run_id, authority_token, verb="retrieve",
+        token_id=token_id, token_secret=token_secret, sdk_loader=sdk_loader, clock=clock,
+    )
+    if type(admitted) is dict:
+        return admitted
+    _record, prepared, authority, repository, authenticator, facade = admitted
+    api = importlib.import_module("synaptic_tuner.api.v1")
+    modal_api = importlib.import_module("synaptic_tuner.api.v1.modal")
+    from .modal_artifact_retrieval import retrieve_verified_artifacts
+
+    reads = modal_api.compose_modal_verified_run_reads(
+        context=context, repository=repository, authenticator=authenticator,
+        modal_reads=facade, clock=clock,
+    )
+    receipt = retrieve_verified_artifacts(
+        project_root=context.project_root,
+        runs=api.RunsAPI(reads), run=api.TrainingRunRef(run_id, project_ref),
+        plan_fingerprint=prepared.public_plan_fingerprint,
+    )
+    return _result(
+        "OK", run_id=run_id, project_ref=project_ref,
+        observation="verified_artifact_retrieval", **receipt,
     )
 
 
@@ -392,7 +502,8 @@ def main(
         credentials = tuple(os.environ.get(name, "") for name in (
             "MODAL_TOKEN_ID", "MODAL_TOKEN_SECRET"
         ))
-        return _emit(_reconcile(
+        operation = _reconcile if verb == "reconcile" else _retrieve
+        return _emit(operation(
             context, project_ref, run_id, child, token_id=credentials[0],
             token_secret=credentials[1], sdk_loader=sdk_loader, clock=selected_clock,
         ))

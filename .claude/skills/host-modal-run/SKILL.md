@@ -133,6 +133,13 @@ effect identity and duplicate-submit protection. Stop before publication.
 
 ## Tests and historical artifacts
 
+For operator handoff, retain the original clean release and its whole private
+state. Record its absolute location, Host/engine commits, project ID, and
+run/effect/job references. Reconnect uses that release's own supported commands;
+it must not create replacement evidence keys. Do not migrate state into a newer
+checkout. Older releases may lack status/reconcile commands; do not inject new
+code into them. See the operator guide's reconnect section for this distinction.
+
 The gate tests live in tests/skills/host_modal_run/. Native saved-login and
 launcher routing tests live in tests/synaptic_host/test_modal_native_login.py.
 Use fake credentials and fake clients for regressions. Real-SDK checks bind
@@ -141,3 +148,34 @@ signatures only; they are not account evidence.
 The old container recipe and G2 container instrument remain historical files,
 not an alternate native workflow. Do not execute them for this cloud smoke.
 Do not delete retained containers or images without separate user approval.
+
+## Retrieve verified training outputs
+
+Use the released Host command for an existing, successfully verified run:
+
+```bash
+python3 -m synaptic_host training retrieve --run-id run-0123456789abcdef0123456789abcdef
+```
+
+The command enters the same pinned launcher with authority bound to `retrieve`
+and the exact run ID. It retains the run's original release and evidence keys.
+It does not submit, publish, rotate keys, migrate state, or download base-model
+weights. The engine exposes authenticated artifact metadata and bounded byte
+streams through `RunsAPI`; the Host owns the local files and receipt.
+
+The initial scope is the five verified SFT output roles, capped at 64 MiB per
+file and 256 MiB total. Save only in `.synaptic/retrievals/<run-id>/`, with
+exclusive creation and a completion receipt written last. Existing directories
+refuse without overwriting or deleting anything. A failed transfer can leave
+partial files; absence of the completion receipt means they are not accepted.
+Do not clear the directory automatically or treat a partial copy as a model.
+An error after atomic receipt publication can leave a complete receipt without
+a successful command result. Recheck inventory and bytes before model loading;
+receipt presence alone is not acceptance. Unsupported atomic-receipt storage
+refuses before copying artifact streams and can leave the reserved directory.
+
+Retrieval proves inventory and byte integrity, not model loading or quality.
+It retains the produced archives without extracting them. Interactive model
+serving is a separate, bounded session capability; it must not be implied by a
+successful retrieval. A live retrieval reads only the run's dedicated provider
+objects and requires the normal credential-bearing command authorization.

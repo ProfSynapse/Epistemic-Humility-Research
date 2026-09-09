@@ -1077,7 +1077,7 @@ def test_ensure_private_storage_requires_an_explicit_repair_intent() -> None:
     Two properties in one place.  The parameter is keyword-only and has NO
     default, so a future call site cannot inherit the permissive branch by
     accident; and `_key`, which is what `private_storage_verified` calls,
-    passes False, which is what keeps verification a pure predicate.
+    does not call the creating helper at all.
     """
     import inspect
 
@@ -1089,5 +1089,13 @@ def test_ensure_private_storage_requires_an_explicit_repair_intent() -> None:
     assert parameter.default is inspect.Parameter.empty
 
     source = inspect.getsource(FileHmacAuthenticator._key)
-    assert "_ensure_private_storage_directories(repair=False)" in source
+    assert "_ensure_private_storage_directories" not in source
     assert "repair=True" not in source
+
+
+def test_verifying_missing_key_storage_creates_nothing(tmp_path: Path) -> None:
+    missing = tmp_path / "absent" / "keys"
+    value = FileHmacAuthenticator(missing / "evidence.key", key_ref="unit-test")
+    with pytest.raises(ValueError):
+        _ = value.private_storage_verified
+    assert not (tmp_path / "absent").exists()
