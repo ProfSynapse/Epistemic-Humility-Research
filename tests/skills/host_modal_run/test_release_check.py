@@ -87,7 +87,7 @@ def test_default_composes_exact_isolated_lanes_without_bootstrap(tmp_path, capsy
     ]
     assert "--prepare-runtime" not in child_calls[6][0]
     engine_command = child_calls[4][0]
-    assert len(release_check.ENGINE_TESTS) == 18
+    assert len(release_check.ENGINE_TESTS) == 19
     assert all(str(root / "synaptic-tuner" / path) in engine_command for path in release_check.ENGINE_TESTS)
     assert all(str(root / path) in child_calls[0][0] for path in release_check.HOST_TESTS)
     assert all(

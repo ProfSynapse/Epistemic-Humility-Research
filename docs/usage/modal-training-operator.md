@@ -109,12 +109,25 @@ For reconnect, return to the same clean released source and preserved private
 state, then use status and reconcile with the recorded run ID. Do not resubmit
 merely because a shell, WSL session, or client process restarted.
 
-State is local to the checkout that created the run. A newly cloned release
-does not contain an earlier checkout's ledger or evidence keys, and there is no
-supported state-handoff or ledger-migration command. Do not copy, reconstruct,
-or partially restore private state as an operator workaround. Keep the original
-released checkout and its whole state intact; treat cross-checkout reconnect as
-an explicit release-readiness gap until a reviewed handoff exists.
+State is local to the checkout that created the run. The supported handoff
+between operators is the original release location and run identity, not a
+copy of its ledger or keys. Record the absolute release directory, Host SHA,
+engine SHA, project ID, run ID, effect ID, and provider job reference. Keep
+that release and its whole private state intact through reconciliation and
+artifact retrieval. A new release does not adopt previous runs.
+
+For a run created by a release that includes these operator commands, change
+to its recorded release directory, verify its Host SHA and engine gitlink,
+then run the status/reconcile commands above. Invoke that release's own code;
+do not inject a newer Host module or redirect its state root. Reconcile refuses
+changed source and missing evidence keys. It must not create replacement keys.
+
+Older releases can lack these commands. Retaining such a release does not add
+new CLI capabilities to it. Use only the separately reviewed procedure for
+that exact historical release; never copy newer operator code into it. There
+is no supported ledger migration or retroactive cross-release adoption. Those
+are separate capabilities, not prerequisites for handing off a supported run
+while retaining its original release.
 
 ## Intentional new runs
 
@@ -141,20 +154,43 @@ retained streams for the declared credential shapes, but describe a clean scan
 only as evidence for those shapes and captured streams, not proof that every
 possible secret representation is absent.
 
-## Artifact retrieval limitation
+## Retrieve the trained outputs
 
-The current Host CLI has no supported Modal artifact-download command. The
-successful historical smoke used an existing Modal CLI to retrieve the exact
-five already accepted paths, then matched every local size and SHA-256 value to
-the authenticated manifest. That historical procedure is evidence, not a
-checked-in release interface.
+For a run created by a release with retrieval support:
 
-Do not compensate by reading provider Volumes or private control planes
-directly, broad-syncing a Volume, guessing paths, accepting extra files, or
-placing credentials in argv. Until a bounded checked-in retrieval command or
-an independently reviewed exact Modal CLI procedure is documented, artifact
-retrieval remains a release-readiness gap. Status and reconcile expose state
-and verified artifact references, not artifact byte streams.
+```bash
+python3 -m synaptic_host training retrieve --run-id run-0123456789abcdef0123456789abcdef
+```
+
+Return to the original release with its preserved state before running this
+command. The run must already be successfully verified. Retrieval authenticates
+its existing completion evidence through the public engine `RunsAPI`, saves
+only the five accepted output roles, and checks every saved size and SHA-256.
+It writes under `.synaptic/retrievals/<run-id>/`. A canonical completion receipt
+is written last; the closed result identifies the relative output directory and
+inventory digest. Limits are 64 MiB per artifact and 256 MiB total for this
+initial Modal SFT path.
+
+Existing directories refuse. The command never overwrites or deletes prior
+files, and it never accepts a failed partial transfer as complete. If it fails,
+retain the partial directory for diagnosis; do not remove it merely to retry.
+No submission, publication, key rotation, or base-model download occurs.
+
+Receipt publication is atomic, but a later filesystem-sync failure can leave a
+complete receipt while the command reports failure. Receipt presence alone is
+not permission to use the files: verify the recorded inventory against the
+current bytes before model loading. Filesystems without unnamed temporary-file
+support refuse before artifact streams are copied; the exclusive directory can
+remain for diagnosis.
+
+These files include the produced model and tokenizer archives. The command
+does not extract archives, load a model, or claim inference quality. A separate
+model-loading check and bounded chat session are needed to talk to the model.
+The [bounded chat plan](../plans/bounded-model-chat.md) covers local and Modal
+sessions, evaluation-client reuse, and shutdown guarantees. It is a design,
+not an available deployment command.
+Older releases, including historical smokes without this command, do not gain
+retrieval support merely by cloning a newer release or copying its code.
 
 ## Stop conditions
 

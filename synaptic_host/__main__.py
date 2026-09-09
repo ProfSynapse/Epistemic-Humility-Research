@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     project_root = Path(__file__).resolve().parents[1]
     engine_root = project_root / "synaptic-tuner"
     if len(arguments) >= 2 and arguments[:2] in (
-        ["training", "status"], ["training", "reconcile"]
+        ["training", "status"], ["training", "reconcile"], ["training", "retrieve"]
     ):
         from .training_operator import main as operator_main
 

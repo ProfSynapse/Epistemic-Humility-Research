@@ -1005,13 +1005,21 @@ class FileHmacAuthenticator:
     def _key(self, key_ref: str | None = None) -> bytes:
         if key_ref is not None and key_ref != self.key_ref:
             raise ValueError("evidence key reference mismatch")
-        # B-11: repair=False, and this is the call site that keeps the
-        # boundary honest.  `private_storage_verified` is exactly `self._key()`,
-        # so repairing here would mean a verification call could change the
-        # world, and a permissive parent would be silently narrowed instead of
-        # refused.  Architecture section 20.5 does not enumerate this site;
-        # False is the value its own argument requires.
-        self._ensure_private_storage_directories(repair=False)
+        # Verification reads existing storage only. Creating or repairing a
+        # directory here would make private_storage_verified change state.
+        root = self._private_storage_root
+        try:
+            relative = self.key_path.parent.relative_to(root)
+        except ValueError:
+            raise _private_storage_error() from None
+        chain = (root,) + tuple(
+            root.joinpath(*relative.parts[:index])
+            for index in range(1, len(relative.parts) + 1)
+        )
+        # Opening existing evidence must not create even a directory. Only
+        # explicit initialization may create a missing storage topology.
+        for directory in chain:
+            self._validate_private_directory(directory)
         if os.name == "nt":
             try:
                 value, identity = _win_read_private_key(self.key_path)

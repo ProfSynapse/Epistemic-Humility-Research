@@ -13,6 +13,8 @@ HOST_TESTS = (
     "tests/synaptic_host/test_training_operator_status.py",
     "tests/synaptic_host/test_training_operator_reconcile.py",
     "tests/synaptic_host/test_training_operator_cli.py",
+    "tests/synaptic_host/test_training_operator_retrieve.py",
+    "tests/synaptic_host/test_modal_artifact_retrieval.py",
     "tests/synaptic_host/test_sqlite_repository.py",
     "tests/synaptic_host/test_modal_training.py",
 )
@@ -44,6 +46,7 @@ ENGINE_TESTS = (
     "tests/execution/providers/test_modal_sdk154_adapter.py",
     "tests/execution/providers/test_modal_source_resolution.py",
     "tests/execution/providers/test_modal_training_operations.py",
+    "tests/execution/providers/test_modal_run_reads.py",
     "tests/execution/providers/test_modal_verification.py",
     "tests/execution/providers/test_modal_worker_staging.py",
     "tests/contract/test_modal_runtime_lock.py",
