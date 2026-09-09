@@ -8,6 +8,8 @@ import io
 import unicodedata
 from collections.abc import Mapping
 
+from . import modal_sdk
+
 
 def _valid_pair(pair: tuple[object, object]) -> bool:
     try:
@@ -45,7 +47,7 @@ def saved_modal_credentials() -> tuple[str, str] | None:
     """
     try:
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            sdk = importlib.import_module("modal")
+            sdk = modal_sdk.load_modal_sdk()
             if sdk.__version__ != "1.5.4":
                 return None
             config = importlib.import_module("modal.config").config

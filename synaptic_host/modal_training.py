@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import importlib
 import secrets
 import unicodedata
 from dataclasses import dataclass
@@ -34,6 +33,7 @@ from synaptic_tuner.api.v1.modal import (
 )
 from tuner.project.manifest import load_project_manifest
 
+from . import modal_sdk
 from .cli import (
     TrainingRunCommandCodeV2,
     TrainingRunCommandResultV2,
@@ -472,10 +472,6 @@ def _classify_durable(
     )
 
 
-def _default_sdk_loader() -> object:
-    return importlib.import_module("modal")
-
-
 def _restore_durable_found(
     found: _DurableFoundV1,
     session: ExplicitModalHostSession,
@@ -562,7 +558,7 @@ def execute_modal_training_run_v2(
     engine_root: Path,
     token_id: str,
     token_secret: str,
-    sdk_loader: Callable[[], object] = _default_sdk_loader,
+    sdk_loader: Callable[[], object] = modal_sdk.load_modal_sdk,
     clock: Callable[[], str] = utc_now,
     capability_factory: Callable[[int], bytes] = secrets.token_bytes,
 ) -> TrainingRunCommandResultV2:

@@ -231,11 +231,21 @@ and `registered: false` rows are rendered with a `teaching artifact:` marker, so
 the registry stays a complete inventory without presenting teaching artifacts as
 claims.
 
-The `.githooks/pre-commit` hook enforces this. When `experiments/` exists it runs
-`exp validate` and `exp regen --check`; a stale registry fails the commit with an
+The Host's `.githooks/pre-commit` hook enforces this. When `experiments/` exists
+it runs `exp validate --source-only` and `exp regen --check`; a stale registry fails the commit with an
 instruction to run `bin/exp regen` and stage the output. Install the hooks once
 with `git config core.hooksPath .githooks`, or run a single commit through them
 with `git -c core.hooksPath=.githooks commit`.
+
+Source-only validation checks all manifests, pins, and tracked Host inputs
+without requiring historical local datasets or checkpoints. Missing inputs may
+warn only when they are untracked in both the index and HEAD and are in a
+recognized runtime-data location or ignored by Git. Missing tracked source,
+unknown missing paths, and Git classification failures still refuse. This is
+Host commit policy, not an engine requirement or evidence that an experiment
+can run. The normal `bin/exp validate` behavior is unchanged, including its
+existing experiment-local data warnings; actual runs still need their staging
+and input-verification gates.
 
 ## Promotion rule for shared inputs
 
@@ -295,6 +305,7 @@ executes the mirror under `.agents/skills/experiments/scripts/exp.py`.
 | `bin/exp show <slug>` | pretty-print the manifest and resolved instrument paths |
 | `bin/exp resolve <slug> --verdict "..." [--status null-result\|falsified]` | stamp verdict, flip to a terminal status, print the kg-ingest checklist |
 | `bin/exp validate` | validate every manifest (schema, status, pins, inputs, kg ids, slug match); passes on an empty experiments/ |
+| `bin/exp validate --source-only` | Host commit-source integrity; tolerate absent untracked runtime/ignored data, never claim run readiness |
 | `bin/exp regen [--check]` | regenerate REGISTRY.md + registry.json; `--check` fails if the committed registry is stale |
 
 `type` is one of `steer-cell`, `training-run`, `eval`, `probe-fit`,

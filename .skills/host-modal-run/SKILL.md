@@ -82,6 +82,19 @@ required Secret key names; S3 parses the exact worker decorator; S4 requires
 the recorded rotation attestation. Before rotation, S4 refusal is expected,
 and must not be called a complete G5 pass.
 
+For the complete credential-free release check, use a clean released checkout:
+
+```bash
+python3 -B .skills/host-modal-run/scripts/release_check.py
+```
+
+`--project-root /absolute/release` selects another clean release. The command
+checks Host and engine cleanliness and the exact gitlink before running isolated
+Host, cold-bootstrap, engine, mirror, G2, G3, and offline G5 lanes. It never
+performs provider calls and labels offline G5 as S1-S3 only, not full G5.
+Runtime creation is disabled by default; pass `--prepare-runtime` explicitly
+only when writing the release's ignored pinned runtime cache is intended.
+
 After operator-approved deployment and rotation, use the locked interpreter:
 
 ```bash
