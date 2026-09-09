@@ -9,11 +9,127 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+import subprocess
+from types import SimpleNamespace
 
 import pytest
 import yaml
 
 import exp  # noqa: E402  (sys.path set by conftest)
+
+
+def test_source_paths_include_index_and_head_and_use_closed_stdin(monkeypatch, tmp_path):
+    calls = []
+
+    def git(command, **kwargs):
+        calls.append((command, kwargs))
+        return SimpleNamespace(stdout=b"new.yaml\0" if "ls-files" in command else b"deleted.yaml\0")
+
+    monkeypatch.setattr(exp.subprocess, "run", git)
+    assert exp._tracked_source_paths(tmp_path) == frozenset({"new.yaml", "deleted.yaml"})
+    assert all(kwargs["stdin"] == subprocess.DEVNULL and kwargs["check"] for _, kwargs in calls)
+
+
+@pytest.mark.parametrize("failure", ["git-error", "malformed-output"])
+def test_source_paths_fail_closed(monkeypatch, tmp_path, failure):
+    def git(*args, **kwargs):
+        if failure == "git-error":
+            raise subprocess.CalledProcessError(128, "git")
+        return SimpleNamespace(stdout=b"unterminated-path")
+
+    monkeypatch.setattr(exp.subprocess, "run", git)
+    assert exp.main(["--root", str(tmp_path), "validate", "--source-only"]) == 2
+
+
+@pytest.mark.parametrize("source_only,ignored,expected", [
+    (False, True, 1), (True, True, 0), (True, False, 1),
+])
+def test_source_only_distinguishes_local_data_from_unknown_source(
+    repo, monkeypatch, capsys, source_only, ignored, expected,
+):
+    _run(repo, "new", "cell", "--type", "eval")
+    data = _manifest(repo, "cell")
+    data["inputs"] = ["archive/missing-input.jsonl"]
+    data["question"] = "Does this source-only fixture validate?"
+    _write_manifest(repo, "cell", data)
+    monkeypatch.setattr(exp, "_tracked_source_paths", lambda _: frozenset())
+    monkeypatch.setattr(exp, "_ignored_input", lambda *_: ignored)
+    arguments = ["validate", *(["--source-only"] if source_only else [])]
+    assert _run(repo, *arguments) == expected
+    if expected == 0:
+        assert "SOURCE-ONLY OK" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("tracked", [
+    frozenset({"archive/missing.jsonl"}),
+    frozenset({"archive/missing.jsonl/part-0"}),
+])
+def test_source_only_never_waives_missing_tracked_inputs(repo, monkeypatch, tracked):
+    _run(repo, "new", "cell", "--type", "eval")
+    data = _manifest(repo, "cell")
+    data["inputs"] = ["archive/missing.jsonl"]
+    data["question"] = "Does this tracked-input fixture refuse?"
+    _write_manifest(repo, "cell", data)
+    monkeypatch.setattr(exp, "_tracked_source_paths", lambda _: tracked)
+
+    def ignored(*_):
+        raise AssertionError("tracked source must not reach ignore classification")
+
+    monkeypatch.setattr(exp, "_ignored_input", ignored)
+    assert _run(repo, "validate", "--source-only") == 1
+
+
+def test_source_only_keeps_pin_and_schema_validation(repo, monkeypatch):
+    directory = _sign_ready(repo, "cell")
+    assert _run(repo, "sign", "cell") == 0
+    monkeypatch.setattr(exp, "_tracked_source_paths", lambda _: frozenset())
+    assert _run(repo, "validate", "--source-only") == 0
+    (directory / "cell.yaml").write_text("changed: true\n", encoding="utf-8")
+    assert _run(repo, "validate", "--source-only") == 1
+
+
+@pytest.mark.parametrize("returncode,expected", [(0, True), (1, False)])
+def test_ignore_classification_uses_git_not_filename_guess(monkeypatch, tmp_path, returncode, expected):
+    def git(command, **kwargs):
+        assert command[-5:-1] == ["check-ignore", "--no-index", "--quiet", "--"]
+        assert command[-1] in ("archive/data.jsonl", "archive/data.jsonl/")
+        assert kwargs["stdin"] == subprocess.DEVNULL
+        return SimpleNamespace(returncode=returncode)
+
+    monkeypatch.setattr(exp.subprocess, "run", git)
+    assert exp._ignored_input(tmp_path, "archive/data.jsonl") is expected
+
+
+def test_absent_directory_uses_directory_only_ignore_rule(monkeypatch, tmp_path):
+    calls = []
+
+    def git(command, **kwargs):
+        calls.append(command[-1])
+        return SimpleNamespace(returncode=0 if command[-1].endswith("/") else 1)
+
+    monkeypatch.setattr(exp.subprocess, "run", git)
+    assert exp._ignored_input(tmp_path, "archive/results_old")
+    assert calls == ["archive/results_old", "archive/results_old/"]
+
+
+def test_ignore_failure_is_not_a_missing_data_waiver(monkeypatch, tmp_path):
+    monkeypatch.setattr(exp.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=128))
+    with pytest.raises(exp.ExpError):
+        exp._ignored_input(tmp_path, "archive/data.jsonl")
+
+
+def test_default_experiment_local_warning_is_preserved(repo, monkeypatch):
+    _run(repo, "new", "cell", "--type", "eval")
+    data = _manifest(repo, "cell")
+    data["inputs"] = ["experiments/cell/analysis/absent.jsonl"]
+    data["question"] = "Does the existing local-data warning remain?"
+    _write_manifest(repo, "cell", data)
+
+    def unexpected(*_):
+        raise AssertionError("default validation must not use the source-only Git check")
+
+    monkeypatch.setattr(exp, "_tracked_source_paths", unexpected)
+    assert _run(repo, "validate") == 0
 
 
 def _run(root: Path, *args: str) -> int:
@@ -90,6 +206,8 @@ def _sign_ready(repo: Path, slug: str) -> Path:
     m["prediction"] = "Small positive effect."
     m["falsifier"] = "No difference vs control."
     m["instrument"]["configs"] = ["cell.yaml"]
+    # Complete the existing sign prerequisite; no runtime is installed or run.
+    m["instrument"]["engine"] = {"name": "vllm", "version": "unit-test-pinned"}
     _write_manifest(repo, slug, m)
     return d
 

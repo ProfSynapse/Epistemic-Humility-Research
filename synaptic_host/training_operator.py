@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from . import modal_sdk
+
 
 _SCHEMA = "synaptic-training-operator-result/v1"
 _REQUEST_SCHEMA = "synaptic-training-operator-request/v1"
@@ -358,7 +360,7 @@ def _reconcile(
 
 def main(
     argv: list[str], *, project_root: Path, engine_root: Path,
-    sdk_loader: Callable[[], object] = lambda: importlib.import_module("modal"),
+    sdk_loader: Callable[[], object] = modal_sdk.load_modal_sdk,
     clock: Callable[[], str] | None = None,
 ) -> int:
     parsed = _parse(argv)

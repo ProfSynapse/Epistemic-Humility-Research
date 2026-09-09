@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import inspect
 import json
 import subprocess
 import sys
@@ -61,13 +62,13 @@ import pytest
 from synaptic_host.cli import TrainingRunCommandCodeV2, TrainingRunIngressV1
 import synaptic_host.cli as cli
 import synaptic_host.modal_training as modal_training
+from synaptic_host import modal_credentials, modal_sdk, training_operator
 from synaptic_tuner.api.v1.training_input_loader import (
     load_training_input_contract_v1,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
 ENGINE = ROOT / "synaptic-tuner"
-PINNED_ENGINE_GITLINK = "5db2809d0160b166a0d2b133b97368ddcfe426ce"
 
 # Every code the composition entry point can refuse with.  A refusal is
 # acceptable to G4 only if it NAMES one of these; an unnamed refusal is RED.
@@ -270,13 +271,37 @@ def _code_name(result) -> str | None:
 # --------------------------------------------------------------------------
 
 
+def _assert_engine_pin(listing: str, engine_head: str) -> None:
+    fields = listing.split()
+    assert len(fields) == 4 and fields[:2] == ["160000", "commit"] and fields[3] == "synaptic-tuner", (
+        "synaptic-tuner is not the expected gitlink"
+    )
+    assert len(fields[2]) == 40 and all(char in "0123456789abcdef" for char in fields[2]), (
+        "engine gitlink is not a full commit identifier"
+    )
+    assert fields[2] == engine_head.strip(), "engine checkout does not match the committed Host gitlink"
+
+
+@pytest.mark.parametrize("listing,engine_head", [
+    ("160000 commit " + "a" * 40 + "\tsynaptic-tuner", "b" * 40),
+    ("100644 blob " + "a" * 40 + "\tsynaptic-tuner", "a" * 40),
+    ("", "a" * 40),
+    ("160000 commit short\tsynaptic-tuner", "short"),
+])
+def test_bind1_rejects_mismatched_or_invalid_engine_pin(listing, engine_head) -> None:
+    with pytest.raises(AssertionError):
+        _assert_engine_pin(listing, engine_head)
+
+
 def test_bind1_engine_binding_is_contained_and_pinned() -> None:
     """BIND1: containment proves WHICH TREE, the gitlink proves WHICH COMMIT.
 
     Falsifier: bind the parent repository's `synaptic_tuner` (which exists and
     imports cleanly) and containment fails while every test still collects; or
-    move the submodule pin and the gitlink assertion fails while containment
-    still holds.  Neither part implies the other, so both are asserted.
+    move the engine checkout away from the committed Host gitlink and the pin
+    assertion fails while containment still holds. Neither part implies the
+    other, so both are asserted. The release pin comes from Host HEAD, not an
+    obsolete hardcoded smoke revision.
     """
 
     for name in ("synaptic_tuner", "synaptic_tuner.api.v1.publication"):
@@ -303,11 +328,12 @@ def test_bind1_engine_binding_is_contained_and_pinned() -> None:
         capture_output=True,
         text=True,
         check=True,
-    ).stdout.split()
-    assert listing[0] == "160000", f"synaptic-tuner is not a gitlink: {listing!r}"
-    assert listing[2] == PINNED_ENGINE_GITLINK, (
-        f"engine gitlink {listing[2]} is not the pinned {PINNED_ENGINE_GITLINK}"
-    )
+    ).stdout
+    engine_head = subprocess.run(
+        ("git", "-C", str(ENGINE), "rev-parse", "HEAD"),
+        capture_output=True, text=True, check=True,
+    ).stdout
+    _assert_engine_pin(listing, engine_head)
 
 
 # --------------------------------------------------------------------------
@@ -346,10 +372,10 @@ def test_g1_seam_sdk_absent_before_composition_and_present_after() -> None:
         sys.path.insert(0, {str(ROOT)!r})
         sys.path.append({str(ENGINE)!r})
         report = {{"before_any_host_import": "modal" in sys.modules}}
-        import synaptic_host.modal_training as modal_training
+        from synaptic_host import modal_training, modal_credentials, training_operator, modal_sdk
         report["before_loader"] = "modal" in sys.modules
         try:
-            sdk = modal_training._default_sdk_loader()
+            sdk = modal_sdk.load_modal_sdk()
         except ModuleNotFoundError:
             report["sdk_installed"] = False
         else:
@@ -416,7 +442,22 @@ def test_g1_seam_the_default_loader_is_the_single_sdk_entry_point() -> None:
     # Compared as path PARTS, not as a string: a string prefix bakes in the
     # separator and fails on Windows for a reason that has nothing to do with
     # the seam.
-    assert entries[0][0] == ("synaptic_host", "modal_training.py"), entries[0]
+    assert entries[0][0] == ("synaptic_host", "modal_sdk.py"), entries[0]
+
+
+def test_g1_all_native_consumers_use_the_shared_lazy_loader(monkeypatch) -> None:
+    for consumer in (modal_training.execute_modal_training_run_v2, training_operator.main):
+        assert inspect.signature(consumer).parameters["sdk_loader"].default is modal_sdk.load_modal_sdk
+
+    calls = []
+
+    def unavailable_sdk():
+        calls.append("sdk")
+        raise RuntimeError("synthetic SDK refusal")
+
+    monkeypatch.setattr(modal_sdk, "load_modal_sdk", unavailable_sdk)
+    assert modal_credentials.saved_modal_credentials() is None
+    assert calls == ["sdk"]
 
 
 # --------------------------------------------------------------------------
@@ -710,7 +751,7 @@ def test_x2_the_seam_is_the_only_difference_between_the_two_arms(
     def unreached_loader() -> object:
         raise AssertionError("this loader must not be reached on a pre-seam arm")
 
-    real_loader = modal_training._default_sdk_loader
+    real_loader = modal_sdk.load_modal_sdk
 
     for description, overrides in (
         ("missing-credentials", {"token_id": ""}),

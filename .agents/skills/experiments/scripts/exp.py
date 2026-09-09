@@ -22,7 +22,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import posixpath
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -522,7 +524,46 @@ def _is_untracked_data_input(rel: str) -> bool:
     )
 
 
-def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[str]:
+def _tracked_source_paths(root: Path) -> frozenset[str]:
+    """Include HEAD so staging a deletion cannot turn source into local data."""
+    paths: set[str] = set()
+    for args in (("ls-files", "--cached", "-z"), ("ls-tree", "-r", "--name-only", "-z", "HEAD")):
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(root), *args], capture_output=True,
+                stdin=subprocess.DEVNULL, check=True, timeout=30,
+            )
+            output = result.stdout.decode("utf-8")
+            if output and not output.endswith("\0"):
+                raise ValueError("invalid path listing")
+            paths.update(path for path in output.split("\0") if path)
+        except (OSError, ValueError, subprocess.SubprocessError) as exc:
+            raise ExpError("source-only validation could not read Git source paths") from exc
+    return frozenset(paths)
+
+
+def _ignored_input(root: Path, rel: str) -> bool:
+    # Inputs can be files or directories. A missing directory needs the slash
+    # for Git's directory-only ignore rules; never create it just to classify it.
+    for candidate in (rel, rel.rstrip("/") + "/"):
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(root), "check-ignore", "--no-index", "--quiet", "--", candidate],
+                capture_output=True, stdin=subprocess.DEVNULL, timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise ExpError("source-only validation could not classify an input") from exc
+        if result.returncode not in (0, 1):
+            raise ExpError("source-only validation could not classify an input")
+        if result.returncode == 0:
+            return True
+    return False
+
+
+def _validate_manifest(
+    root: Path, slug: str, mpath: Path, data: dict,
+    *, source_paths: frozenset[str] | None = None,
+) -> list[str]:
     """Return a list of human-readable problems for one manifest (empty = ok)."""
     problems: list[str] = []
 
@@ -696,6 +737,23 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
         ipath = root / str(rel)
         if ipath.exists():
             continue
+        if source_paths is not None:
+            normalized = posixpath.normpath(str(rel).replace("\\", "/"))
+            if (not isinstance(rel, str) or normalized in (".", "..")
+                    or normalized.startswith(("/", "../")) or re.match(r"^[A-Za-z]:", normalized)):
+                err(f"input must be a repository-relative path: {rel}")
+                continue
+            if any(path == normalized or path.startswith(normalized + "/") for path in source_paths):
+                err(f"tracked input path does not exist: {rel}")
+                continue
+            if _is_untracked_data_input(normalized) or _ignored_input(root, normalized):
+                print(
+                    f"exp validate: warning: {slug}: local data input absent "
+                    f"(source-only; not run-readiness evidence): {rel}", file=sys.stderr,
+                )
+                continue
+            err(f"input path does not exist: {rel}")
+            continue
         if _is_untracked_data_input(str(rel)):
             print(
                 f"exp validate: warning: {slug}: gitignored data input absent "
@@ -754,10 +812,11 @@ def _scan_kg_ids(root: Path) -> set[str]:
     return ids
 
 
-def validate(root: Path) -> int:
+def validate(root: Path, *, source_only: bool = False) -> int:
     """Validate every manifest under experiments/. Returns process exit code."""
     base = experiments_dir(root)
     problems: list[str] = []
+    source_paths = _tracked_source_paths(root) if source_only else None
 
     if base.is_dir():
         # Surface experiment dirs that lack a manifest entirely.
@@ -769,7 +828,7 @@ def validate(root: Path) -> int:
             if not (child / MANIFEST_NAME).is_file():
                 problems.append(f"{child}: missing {MANIFEST_NAME}")
         for slug, mpath, data in iter_manifests(root):
-            problems.extend(_validate_manifest(root, slug, mpath, data))
+            problems.extend(_validate_manifest(root, slug, mpath, data, source_paths=source_paths))
 
     if problems:
         print("exp validate: FAILED")
@@ -777,7 +836,10 @@ def validate(root: Path) -> int:
             print(f"  - {line}")
         return 1
     count = len(iter_manifests(root))
-    print(f"exp validate: OK ({count} experiment(s))")
+    if source_only:
+        print(f"exp validate: SOURCE-ONLY OK ({count} experiment(s)); not run-readiness evidence")
+    else:
+        print(f"exp validate: OK ({count} experiment(s))")
     return 0
 
 
@@ -1244,7 +1306,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="terminal status (default: resolved)",
     )
 
-    sub.add_parser("validate", help="validate every manifest under experiments/")
+    p_validate = sub.add_parser("validate", help="validate every manifest under experiments/")
+    p_validate.add_argument(
+        "--source-only", action="store_true",
+        help="commit-source checks; allow missing untracked ignored data, not missing tracked source",
+    )
 
     p_regen = sub.add_parser("regen", help="regenerate the registry files")
     p_regen.add_argument("--check", action="store_true",
@@ -1271,7 +1337,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "resolve":
             return cmd_resolve(root, args.slug, args.verdict, args.status)
         if args.command == "validate":
-            return validate(root)
+            return validate(root, source_only=args.source_only)
         if args.command == "regen":
             return regen(root, check=args.check)
     except ExpError as exc:

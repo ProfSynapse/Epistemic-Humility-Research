@@ -23,10 +23,11 @@ if [ -d docs/sessions ]; then
   $PYTHON .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
 fi
 
-# Experiments-first layout: validate every manifest and confirm the generated
-# registry is current. Only runs when the experiments/ tree exists.
+# Host research governance, not an engine/submodule requirement. Validate
+# committed-source integrity without requiring local historical datasets or
+# checkpoints. Experiment/run input checks remain in the research workflow.
 if [ -d experiments ]; then
-  $PYTHON .agents/skills/experiments/scripts/exp.py validate
+  $PYTHON .agents/skills/experiments/scripts/exp.py validate --source-only
   $PYTHON .agents/skills/experiments/scripts/exp.py regen --check
 fi
 
