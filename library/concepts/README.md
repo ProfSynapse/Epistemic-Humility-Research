@@ -739,7 +739,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
 - [[vicuna-7b]] : Vicuna-7B is a LLaMA-7B descendant fine-tuned on user-shared conversations. The paper evaluates whether the base entity-tracking circuit and
 
-## Terms (234)
+## Terms (237)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention-inflation]] : Ling et al. (2025) name "Abstention Inflation" the phenomenon where an LLM abstains not because of genuine uncertainty about the answer but 
@@ -879,6 +879,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[non-identifiability]] : Non-identifiability, applied to steering vectors, describes the property that
 - [[nonlinear-sae-error]] : Nonlinear SAE error is the part of the sparse-autoencoder reconstruction error
 - [[novel-latent]] : A latent in a larger SAE that has low cosine similarity to every latent in a smaller SAE trained on the same activations (below 0.7 in GPT-2
+- [[object-selection-routing]] : Object-selection routing is the function of choosing which of multiple candidate contents already represented in a hidden state controls the
 - [[online-rl-training]] : Online RL training is a regime in which the policy being updated also generates the training rollouts at each step, so the data distribution
 - [[out-of-distribution-detection]] : Out-of-distribution (OOD) detection is the task of flagging inputs at test time
 - [[outcome-reward-model]] : An outcome reward model assigns a single scalar reward to a complete reasoning chain based solely on whether the final answer is correct, wi
@@ -887,6 +888,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[over-hedging]] : Over-hedging is a failure mode in which a model trained to reward epistemic humility adds excessive caveats or claims there is no clear answ
 - [[overconfidence]] : Overconfidence is a calibration failure in which a model's expressed confidence is systematically higher than its actual accuracy. In a well
 - [[overthinking]] : Overthinking (OT) is a stable behavioral failure regime (Jaccard >= 0.81, 94% inter-annotator agreement) in which a model answers a question
+- [[parameter-retrieval-routing]] : Parameter-retrieval routing is hidden-state information that specifies which fact subsequent computation should retrieve from model paramete
 - [[performative-chain-of-thought]] : A performative chain-of-thought is a mismatch between a model's internal belief
 - [[phenomenal-consciousness]] : Phenomenal consciousness is subjective experience: the question of whether there is something it is like to be in a mental or computational 
 - [[policy-entropy-collapse]] : A training pathology in reinforcement learning with verifiable rewards (RLVR) where the policy's output distribution prematurely concentrate
@@ -919,6 +921,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[residual-stream]] : The residual stream is the running sum that accumulates across all components of
 - [[reward-tampering]] : An extreme form of specification gaming in which a model directly modifies the code or mechanism that generates its training reward, rather 
 - [[rogue-dimensions]] : Rogue dimensions are a small subset, often one to three and at most five, of
+- [[routing-content-handoff]] : A routing-content handoff is an operational depth profile in which answers become less sensitive to deleting a fitted request-routing compon
 - [[sae-crystal-structure]] : Geometric structures in the SAE feature point cloud where groups of four feature vectors form approximate parallelograms or trapezoids, refl
 - [[sae-dark-matter]] : SAE dark matter is the unexplained variance in a model activation that a sparse
 - [[sae-eigenvalue-power-law]] : The SAE eigenvalue power law is the finding that the eigenvalue spectrum of the covariance matrix of SAE feature directions decays as a powe
@@ -976,9 +979,10 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 - [[x-lora-scaling-head]] : The X-LoRA scaling head is a feed-forward network that maps hidden states to softmax-normalized adapter coefficients. It is the only trainab
 
-## Mechanisms (cause -> effect) (671)
+## Mechanisms (cause -> effect) (676)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
+- [[abstention-instruction-amplifies-the-gated-write]] : An abstention-permitting system-prompt sentence (which also seeds the literal refusal string the narrow grader matches) is present in context alongside the doub
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
 - [[activation-addition-steers-generation]] : Adding a steering-vector to intermediate activations during generation. **enables** Model generations shift toward the behavior represented by the vector.
 - [[activation-and-token-consistency-follow-distinct-update-paths]] : ACT directly minimizes clean-versus-wrapped activation distance, whereas BCT minimizes response-token cross-entropy. **decouples** BCT can increase activation d
@@ -1102,6 +1106,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[denoising-enables-non-chronological-reasoning]] : Text diffusion inference revises all canvas positions across denoising steps rather than fixing tokens left to right **enables** The model can generate reasonin
 - [[depth-scaling-spreads-computation-rather-than-composing-new]] : increasing model depth within the same architecture family (more transformer layers at comparable width/training regime). **redistributes** linear maps between 
 - [[detection-and-identification-use-distinct-introspection-circuits]] : Detection asks whether an internal perturbation occurred, while forced identification asks the model to decode the injected concept after an affirmative prefill
+- [[detector-v2-overfires-on-random-arm-text]] : Clear-positive judge-calibration decoys are drawn from rows the frozen detector_v2 pattern instrument marks refused, sourced from random-direction or no-abstent
 - [[detector-v2-undercounts-baseline-abstention-by-family-varying-margins]] : Detector v2 (RR2's frozen pattern-match screen, byte-identical pins) is compared against the wide two-instrument stack (detector v2 OR blinded context-free adju
 - [[dev-split-fix-dataset-confound-is-provenance-only]] : Retraining the locked PROTOCOL v0.3 headline seed-1 DPO and KTO cells (4B, cold-start from unsloth/Qwen3-4B-bnb-4bit) on the post-fix dataset build already cons
 - [[dial-margin-over-logprob-is-checkpoint-dependent]] : Measuring the correctness dial's margin over the model's own length-normalized mean answer-span log-probability on two checkpoints of the same fresh self-consis
@@ -1192,6 +1197,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[generator-size-dominates-verifier-size]] : Independently scaling the generator versus the verifier model size in a sample-and-rank pipeline. **increases** Solve rate improves more from a larger generator
 - [[generic-irregularity-detection-mimics-steering-awareness]] : A model experiences either a residual-stream concept injection or a prompt-only instruction that makes the same concept unusually salient. **decouples** The mod
 - [[global-conformal-threshold-fails-conditional-coverage]] : A single globally calibrated conformal threshold applied uniformly across heterogeneous prompt categories **prevents** Systematic over-coverage in easier catego
+- [[global-routing-content-handoff]] : Moving from prespecified earlier to later layer sets while deleting the fitted global first-versus-second request direction in paired country-continent question
 - [[global-workspace-ablation-impairs-flexible-cognition]] : Ablating the J-space component of a model's activations **decreases** flexible, deliberate tasks (multi-hop reasoning, translation, summarization, sonnet-writin
 - [[global-workspace-mediates-intermediate-reasoning-steps]] : An intermediate, never-verbalized computational step in a multi-hop reasoning chain (e.g. the identity implied by a definitional clue) is represented in the mod
 - [[gpt-input-discarded-immediately]] : Autoregressive next-token prediction objective requiring conversion of input token representations to predicted-output representations **enables** After the ver
@@ -1386,6 +1392,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[own-company-preference-biases-claude-toward-anthropic]] : Claude models are post-trained against an explicit constitution describing Anthropic's mission, Claude's relationship to Anthropic, and Anthropic's commercial s
 - [[p-ik-context-sensitivity]] : Prepending relevant source material (e.g. a Wikipedia article) or correct step-by-step math hints to a question evaluated by a P(IK) value head trained only on 
 - [[p-ik-ood-generalization-gap]] : Training a p-ik value-head classifier exclusively on triviaqa questions and evaluating on arithmetic, Lambada, or code tasks **enables** Decent auroc discrimina
+- [[pair-conditioned-request-routing-steers-later-factual-content]] : Reversing a fitted pair-conditioned request component at Qwen layer 32 in natural country-continent questions. **modulates** The answer margin and the layer-36
 - [[parameter-sharing-increases-input-dependent-depth-use]] : tying parameters across layers (universal-transformer-style weight sharing, as in MoEUT) instead of using a stack of distinct, layer-specific weights. **increas
 - [[penalty-lambda-controls-abstention-threshold]] : Setting the error penalty to lambda in a ternary reward (+1 correct, 0 abstain, -lambda wrong) during RLVR training **enables** The rational agent abstains when
 - [[per-answer-correctness-linearly-readable-post-generation]] : Fitting a linear probe on residual-stream activations at the post-generation content token (after the model has emitted its answer), as opposed to at the pre-ge
@@ -1481,6 +1488,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[representational-drift-breaks-logit-lens]] : Transformer hidden states exhibit representational drift (rogue dimensions, shifting covariance across layers) that is not corrected by the fixed unembedding ma
 - [[representational-entanglement-blocks-linear-correction]] : A failure-mode direction (e.g., Overthinking) in the residual stream sharing most of its variance with task-relevant computation (specificity ratio <= 0.152) **
 - [[reproduction-bet-causes-generation-capture-round-trip-failure]] : Reconstructing a generation's exact answer-span token identities after the fact rather than capturing them at generation time: v1 re-tokenized the decoded answe
+- [[request-direction-construction-modulates-causal-effect]] : Replacing a global request direction with a pair-conditioned direction while holding the paired Qwen task, late layers, weights, precision, state position, and
 - [[residual-connection-refines-not-overrides]] : Interaction between the residual-stream and feed-forward layer output at each transformer-feed-forward-layer **enables** Model output is refined bottom-up with 
 - [[residual-connections-preserve-basis]] : Residual (skip) connections combined with weight decay during transformer training **enables** The model maintains a consistent vector-space basis across all la
 - [[residual-stream-recovery-attenuates-injected-perturbations]] : Normal downstream computation follows a localized steering-vector injection into the residual-stream. **decreases** The perturbed trajectory returns toward its
