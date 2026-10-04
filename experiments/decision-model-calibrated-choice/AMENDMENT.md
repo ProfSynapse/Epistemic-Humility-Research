@@ -21,10 +21,18 @@ predictions:
       present at many positions after the question, so a probe and the
       frozen base axis both read it.
   user:
-    call: pending (recorded verbatim at sign)
-    recorded: pending
+    call: "Readout blind to knowledge (H-C fails); knows but doesn't say (H-D1 and H-D2 pass)"
+    recorded: 2026-10-04
+    selected_from: candidate outcomes listed by the orchestrator, which offered no recommendation
     quote: >-
-      pending
+      Readout (H-A/H-B/H-C): "Blind to knowledge". H-C fails (AUROC < 0.75):
+      calibrated confidence reflects option-format cues more than what the
+      torso knows, even if it's calibrated on average. Internal signal
+      (H-D1/H-D2): "Knows but doesn't say". D1 high (the frozen base KU
+      direction reads known/unknown on the decision model's <answer> state at
+      >= 0.75), but the readout lags: a probe beats the readout by >= 0.03
+      (H-D2 passes). This is the EH "knows but doesn't say" result in a model
+      that can't refuse.
 outcome: pending
 scoreboard:
   user: pending
@@ -244,11 +252,15 @@ EH's extraction -> probe-fit -> freeze pipeline, applied to the labeler.
   checkpoint `.../decision-qwen35-2b-pointer/20261004_122756/final_model`,
   tree sha256 `e0cc616d...a4acbfc` (adapter `7d66a8a9...`, pointer head
   `d7d97981...`, decision_config `7cd67f75...`).
-- Descriptive secondary: the letter-logit readout model
-  (`decision_qwen35_2b_letter_logits.yaml`), still training at drafting time.
-  Every gate statistic is recomputed and reported for it, but it adjudicates
-  nothing. Its checkpoint path and tree digest are recorded in the NOTEBOOK
-  before its analysis is launched.
+- SECONDARY arm (PI decision, 2026-10-04): the letter-logit readout model,
+  tuner run `decision-qwen35-2b-letter-logits`, recipe
+  `Trainers/recipes/decision_qwen35_2b_letter_logits.yaml`. It is scored with
+  the identical gates and labelled secondary/exploratory. It carries no
+  confirmatory claim, so no multiplicity correction is applied. Confirmatory
+  claims rest on the PRIMARY pointer arm alone. Checkpoint provenance:
+  **pending run completion** (the training was still running on 2026-10-04).
+  Its checkpoint path and tree sha256 are recorded in the NOTEBOOK and the run
+  record before its analysis is launched.
 - Engine call: `analyze_confidence.py` via `tuner.py local-run` with
   `recipe_pointer.yaml` (mirrors the engine's own analysis recipe) and
   `analysis_pointer.yaml` (ablation off, all layers captured at `<answer>`,
@@ -408,7 +420,10 @@ them). All on TEST except Stage 0.
 
 ## Gates
 
-Pre-stated in `gates.yaml`, fixed at signing, never retuned. Summary:
+Pre-stated in `gates.yaml`, fixed at signing, never retuned. **The PI
+confirmed the drafted thresholds on 2026-10-04, before any outcome.** They
+apply in full to the primary pointer arm and, identically but as exploratory
+evidence only, to the secondary letter-logit arm. Summary:
 
 | Gate | Statistic (population) | PASS | FAIL | CI |
 |---|---|---|---|---|
@@ -469,7 +484,7 @@ never rounded to a neighbor.
 - Per-relation accuracy and mean R1, known vs unknown.
 - Stage 0 dial direction: FIT layer surface and CAL AUROC.
 - Gate calibration: Platt and isotonic CAL ECE.
-- The letter-logit model on every statistic above.
+- The secondary letter-logit arm: every gate above, labelled exploratory.
 - Ambiguous-label counts overall and by relation.
 
 ## Rerun / launch policy
@@ -526,14 +541,35 @@ Results and IDs for each check are in the NOTEBOOK and in
    Measured: kill after 159 s, resume in 215 s, for model load plus 3 rows per
    shard. A full-scale Stage 0 wall-clock estimate needs a one-shard smoke
    (500 rows) on an exclusive GPU.
-6. **User prediction.** Open; recorded verbatim at sign.
+6. **User prediction. CLOSED.** The PI's prediction was recorded verbatim on 2026-10-04 (Predictions scoreboard), and the PI confirmed the drafted thresholds the same day.
 
 ## Predictions scoreboard
 
 | Predictor | Call |
 |-----------|------|
 | orchestrator | S0-G1 PASS (~80%). H-A FAIL on a1: calibrated confidence on unknowns sits near pooled 4-way accuracy, gap about 0.15 to 0.20; a2 PASS (~60%). H-B INCONCLUSIVE or FAIL: a temperature fit on an unknown-dominated CAL compresses known-row confidence (~50%). H-C PASS or INCONCLUSIVE, point 0.75 to 0.85 (~55%). H-D1 PASS: entity familiarity survives LoRA r16 at the same layer index (~55%). H-D2 PASS (~70%). Matrix cell: "readout tracks the base KU axis", with residual signal left on the table. |
-| user | pending (verbatim at sign) |
+| user (PI, 2026-10-04) | Readout: "Blind to knowledge". H-C fails (AUROC < 0.75): calibrated confidence reflects option-format cues more than what the torso knows, even if it's calibrated on average. Internal signal: "Knows but doesn't say". D1 high (the frozen base KU direction reads known/unknown on the decision model's `<answer>` state at >= 0.75), but the readout lags: a probe beats the readout by >= 0.03 (H-D2 passes). This is the EH "knows but doesn't say" result in a model that can't refuse. |
+
+Recording notes (PI prediction):
+
+- The PI chose these two calls from a list of candidate outcomes the
+  orchestrator wrote out. The orchestrator recommended neither call.
+- The two calls are jointly consistent. Together they pick out one cell of the
+  interpretation matrix: H-D1 PASS with H-C FAIL, read as "KU signal present in
+  the decision state but not expressed by the readout". H-D2 PASS (probe beats
+  readout by >= 0.03) fits a readout that lags the internal signal. Neither
+  call constrains H-A or H-B.
+- Falsifiers of the readout call ("Blind to knowledge"): H-C PASS (95% CI lower
+  bound of AUROC(R1 -> known) >= 0.75) contradicts it. H-C INCONCLUSIVE leaves
+  it unresolved.
+- Falsifiers of the internal-signal call ("Knows but doesn't say"): H-D1 FAIL
+  (CI upper bound < 0.75) contradicts its "D1 high" half. H-D2 FAIL (paired CI
+  upper bound < +0.03) contradicts its "readout lags" half. Either is enough to
+  score the call wrong. H-D1 NOT-ADJUDICABLE (Stage 0 validity failed) or
+  INCONCLUSIVE in either gate leaves it unresolved, scored as a TIE per
+  protocol-amendments.md.
+- Both calls are scored on the PRIMARY pointer arm only. The secondary arm is
+  reported, not scored.
 
 Disclosure: the orchestrator call was recorded at first draft, before the
 2026-10-04 pre-sign check showed the LoRA moving generic-prompt states by a

@@ -96,7 +96,9 @@ s0_descriptive:
   - Platt and isotonic maps fitted on FIT in-sample probe scores, CAL ECE (15 bins) raw-sigmoid vs Platt vs isotonic
 
 # ---------------------------------------------------------------------------
-# Stage 1 hypotheses (pointer model = primary; letter-logit arm descriptive).
+# Stage 1 hypotheses (pointer model = PRIMARY, confirmatory; letter-logit model =
+# SECONDARY: identical gates, exploratory label, no confirmatory claim, no
+# multiplicity correction). PI confirmed these thresholds 2026-10-04, before any outcome.
 # ---------------------------------------------------------------------------
 h_a_unknowns_near_chance:
   a1_confidence_over_chance:
@@ -172,7 +174,7 @@ secondary_descriptive:
   recall_vs_recognition: unknown-row 4-way accuracy with Wilson CI against chance 0.25 (unknown-but-correct rate), reported, never hidden
   per_relation: accuracy and mean R1 per popqa relation, known vs unknown
   arms_descriptive: R0_raw, P_dial, S_stacked blocks as the engine emits them
-  letter_logit_model: every gate statistic recomputed and reported; adjudicates nothing
+  letter_logit_model: SECONDARY arm; every gate evaluated identically and reported as exploratory; never a confirmatory claim; no multiplicity correction
 
 line_falsifiers:
   readout_tracks_knowledge: H-C FAIL, or H-A FAIL

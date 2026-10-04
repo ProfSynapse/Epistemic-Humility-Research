@@ -4,7 +4,7 @@
 # Every knob the harness reads lives here; the harness hard-codes none of them.
 # Sibling instrument files (also pinned): probe.yaml (EH knowledge-probe config),
 # analysis_pointer.yaml / recipe_pointer.yaml (primary engine call),
-# analysis_letter_logits.yaml / recipe_letter_logits.yaml (descriptive secondary),
+# analysis_letter_logits.yaml / recipe_letter_logits.yaml (secondary, exploratory),
 # gates.yaml (pre-stated thresholds).
 
 slug: decision-model-calibrated-choice
@@ -135,11 +135,12 @@ models:
     analysis_config: experiments/decision-model-calibrated-choice/analysis_pointer.yaml
     recipe: experiments/decision-model-calibrated-choice/recipe_pointer.yaml
   letter_logits:
-    role: descriptive_secondary      # never adjudicates a gate (AMENDMENT "Arms")
+    role: secondary_exploratory      # identical gates, exploratory label, no confirmatory claim (PI 2026-10-04)
     run_id: dmcc-letter-logits-popqa
     tuner_run: decision-qwen35-2b-letter-logits
     recipe_in_engine: Trainers/recipes/decision_qwen35_2b_letter_logits.yaml
-    # Still training at drafting time. The operator passes --source-checkpoint
+    # Provenance PENDING RUN COMPLETION (training still running 2026-10-04).
+    # The operator passes --source-checkpoint
     # and --expect-tree-sha256 on the command line; both are recorded in the
     # NOTEBOOK and the run record BEFORE the analysis is launched.
     source_checkpoint: null
