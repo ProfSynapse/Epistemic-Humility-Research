@@ -1,0 +1,49 @@
+# Materialized tuner recipe, primary arm (pointer). Mirrors the engine's own
+# Trainers/recipes/decision_confidence_analysis_pointer.yaml at commit 26cb57c7,
+# with this cell's staged data/checkpoint/config and output paths.
+#
+# Launch (from the synaptic-tuner directory, Windows Python launcher; see
+# experiment-runner reference/local-runtime.md), only after explicit launch
+# approval naming this run:
+#   py.exe -3.11 tuner.py local-run --job-config '<worktree>\experiments\decision-model-calibrated-choice\recipe_pointer.yaml' --yes
+# dmcc_harness.py `analyze --model pointer` builds exactly that argv.
+# setup.copy paths resolve relative to synaptic-tuner/; the staged dir is
+# written by dmcc_harness.py `stage-engine` into the tuner's gitignored scratch.
+name: dmcc-pointer-popqa
+description: EH decision-model-calibrated-choice, pointer decision model on PopQA known/unknown rows (read-only).
+target: local
+method: decision
+provider: local_docker
+
+job:
+  image: unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - transformers==5.17.0
+    - peft==0.21.2
+    - flash-linear-attention
+  copy:
+    - Trainers/decision
+    - shared
+    - MechInterp
+    - scratch/eh_staging/dmcc-pointer-popqa
+
+run:
+  method: decision
+  trainer: Trainers/decision/analyze_confidence.py
+  command:
+    - python
+    - Trainers/decision/analyze_confidence.py
+    - --config
+    - scratch/eh_staging/dmcc-pointer-popqa/analysis_pointer.yaml
+    - --output-root
+    - scratch/eh_staging/dmcc-pointer-popqa/output
+    - --run-timestamp
+    - "{timestamp}"
+
+artifacts:
+  host_path: scratch/eh_staging/dmcc-pointer-popqa/output/{timestamp}

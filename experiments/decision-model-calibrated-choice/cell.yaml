@@ -1,0 +1,153 @@
+# Instrument config for decision-model-calibrated-choice (pinned at `bin/exp sign`).
+#
+# Consumed by: experiments/decision-model-calibrated-choice/dmcc_harness.py
+# Every knob the harness reads lives here; the harness hard-codes none of them.
+# Sibling instrument files (also pinned): probe.yaml (EH knowledge-probe config),
+# analysis_pointer.yaml / recipe_pointer.yaml (primary engine call),
+# analysis_letter_logits.yaml / recipe_letter_logits.yaml (descriptive secondary),
+# gates.yaml (pre-stated thresholds).
+
+slug: decision-model-calibrated-choice
+
+# ---------------------------------------------------------------------------
+# Primary substrate: PopQA, every row of the pinned test split.
+# ---------------------------------------------------------------------------
+dataset:
+  hf_id: akariasai/PopQA
+  revision: 098765c79ea10a2cb19c828324e33281b8336ec0
+  filename: test.tsv
+  # sha256 of test.tsv at the pinned revision (pre-sign feasibility probe,
+  # NOTEBOOK 2026-10-04). The harness refuses a file with any other digest.
+  file_sha256: 9a5227f41bff0e4c331d4a774d946b12f95307892b58f860a9606ef356e6089b
+  expected_rows: 14267
+  expected_relations: 16
+  # The probe pool is every row (probe.yaml probe_pool.max_questions: null).
+  # Chosen from the gates.yaml G0 floors, not from any outcome
+  # (AMENDMENT "Sample size").
+  question_id_prefix: popqa-
+
+# ---------------------------------------------------------------------------
+# Labeler: the decision torso's BASE model, run through EH's own
+# known/unknown instrument (experiments/common/knowledge_probe/probe.py).
+# ---------------------------------------------------------------------------
+labeler:
+  hf_id: Qwen/Qwen3.5-2B-Base
+  revision: b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+  # probe.py's VLLMBackend takes no revision argument, so the harness stages
+  # the pinned snapshot locally and points the MATERIALIZED probe config's
+  # model.model_name at that snapshot directory. It asserts the snapshot
+  # directory name equals `revision`. probe.yaml itself is pinned unchanged.
+  probe_config: experiments/decision-model-calibrated-choice/probe.yaml
+  probe_entrypoint: experiments/common/knowledge_probe/probe.py
+  # Runtime for the label stage (Linux vLLM; native Windows vLLM is unusable,
+  # see experiment-runner reference/local-runtime.md). Same isolated venv the
+  # dial-logprob-baseline-v3 cell pinned at vllm==0.27.1.
+  python: /home/profsynapse/.venvs/vllm/bin/python
+  vllm_version: 0.27.1
+  env:
+    VLLM_BATCH_INVARIANT: "1"
+    VLLM_WSL2_ENABLE_PIN_MEMORY: "1"
+  # EH probe label names -> engine meta.knowledge names.
+  label_map: {known: known, unknown: unknown, discard: ambiguous}
+
+# ---------------------------------------------------------------------------
+# PopQA -> decision `choice` rows (port of the tuner-side build_choice_rows).
+# ---------------------------------------------------------------------------
+choices:
+  n_options: 4                     # gold + 3 distractors
+  distractor_source: same_relation # other PopQA objects of the SAME relation (prop)
+  instructions: Which option correctly answers the question in the state?
+  seed: 0
+  # Ambiguous (EH `discard`) rows are excluded from the primary analysis file.
+  include_ambiguous_in_primary: false
+
+# ---------------------------------------------------------------------------
+# Stage 0: base-model KU readout (extraction -> probe-fit -> freeze), run
+# BEFORE any decision-model analysis. FIT + CAL rows only; TEST never touched.
+# ---------------------------------------------------------------------------
+stage0:
+  extract_recipe: experiments/decision-model-calibrated-choice/stage0_extract.yaml
+  probe_fit_recipes:
+    gate: experiments/decision-model-calibrated-choice/stage0_probe_fit_gate.yaml
+    dial: experiments/decision-model-calibrated-choice/stage0_probe_fit_dial.yaml
+    gate_permuted: experiments/decision-model-calibrated-choice/stage0_probe_fit_gate_permuted.yaml
+  shard_size: 500                 # rows per extract invocation (resume granularity)
+  permutation_seed: 0
+  directions_dir: experiments/decision-model-calibrated-choice/directions/qwen35-2b-base
+  # Freeze marker: stage0-validate writes it with the sha256 of every frozen
+  # direction JSON; `analyze` refuses to launch without it.
+  freeze_marker: experiments/decision-model-calibrated-choice/analysis-committed/stage0_freeze.json
+  calibration:
+    # Maps mirror experiments/common/mechinterp/fit_calibration.py (Platt on the
+    # probe logit, C=1e6; isotonic, clip). That script is not invoked: its
+    # loaders are bound to the legacy Amendment S/U extraction layout.
+    methods: [platt, isotonic]
+    ece_bins: 15
+  runtime:
+    # mechinterp-runner (synaptic-tuner docker/mechinterp-runner/) built with
+    # TRANSFORMERS_VERSION=5.17.0 so Stage 0 shares the decision stack's
+    # transformers (the validated runner default is 5.12.1). Image ID captured
+    # at pre-sign into experiment.yaml instrument.runtime_image_digest.
+    image_tag: mechinterp-runner:dmcc-tf5.17.0
+    build_args: {TRANSFORMERS_VERSION: 5.17.0}
+    docker: [docker, run, --rm, --gpus, all]
+    hf_cache_mount: "$HOME/.cache/huggingface:/root/.cache/huggingface"
+    workdir_in_container: /workspace
+    pythonpath: experiments/decision-model-calibrated-choice:experiments/common/knowledge_probe
+
+# ---------------------------------------------------------------------------
+# Engine (synaptic-tuner submodule) and decision models. Checkpoints are
+# produced by the tuner's `decision` method (recipes
+# Trainers/recipes/decision_qwen35_2b_{pointer,letter_logits}.yaml at the
+# pinned engine SHA) and live outside this repo; the harness stages them into
+# the tuner's gitignored scratch and verifies the tree digest first.
+# ---------------------------------------------------------------------------
+engine:
+  submodule: synaptic-tuner
+  commit: 26cb57c72c68c382cf9299096bce535d4a606929
+  decision_method_commit: 31962293
+  cli: Trainers/decision/analyze_confidence.py
+  # Windows Python launcher: the tuner shells out to Docker Desktop
+  # (experiment-runner reference/local-runtime.md, "Proven local-run launch").
+  launcher: [py.exe, "-3.11", tuner.py, local-run, --job-config]
+  staging_root: scratch/eh_staging   # tuner-relative, already gitignored in the tuner
+  image: unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397
+
+models:
+  pointer:
+    role: primary
+    run_id: dmcc-pointer-popqa
+    tuner_run: decision-qwen35-2b-pointer
+    recipe_in_engine: Trainers/recipes/decision_qwen35_2b_pointer.yaml
+    source_checkpoint: F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-pointer/20261004_122756/final_model
+    # bin/exp `_path_sha256` tree digest of final_model (adapter, pointer head,
+    # tokenizer, decision_config). The harness refuses any other bytes.
+    tree_sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
+    analysis_config: experiments/decision-model-calibrated-choice/analysis_pointer.yaml
+    recipe: experiments/decision-model-calibrated-choice/recipe_pointer.yaml
+  letter_logits:
+    role: descriptive_secondary      # never adjudicates a gate (AMENDMENT "Arms")
+    run_id: dmcc-letter-logits-popqa
+    tuner_run: decision-qwen35-2b-letter-logits
+    recipe_in_engine: Trainers/recipes/decision_qwen35_2b_letter_logits.yaml
+    # Still training at drafting time. The operator passes --source-checkpoint
+    # and --expect-tree-sha256 on the command line; both are recorded in the
+    # NOTEBOOK and the run record BEFORE the analysis is launched.
+    source_checkpoint: null
+    tree_sha256: null
+    analysis_config: experiments/decision-model-calibrated-choice/analysis_letter_logits.yaml
+    recipe: experiments/decision-model-calibrated-choice/recipe_letter_logits.yaml
+
+# ---------------------------------------------------------------------------
+# In-cell scoring of the engine outputs (CPU only).
+# ---------------------------------------------------------------------------
+scoring:
+  gates: experiments/decision-model-calibrated-choice/gates.yaml
+  bootstrap_reps: 2000
+  bootstrap_seed: 0
+  ci_level: 0.95
+
+paths:
+  analysis_root: experiments/decision-model-calibrated-choice/analysis            # gitignored
+  committed_root: experiments/decision-model-calibrated-choice/analysis-committed # aggregates only
+  run_records: experiments/decision-model-calibrated-choice/analysis-committed/run_records

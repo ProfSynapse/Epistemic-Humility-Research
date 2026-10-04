@@ -1,0 +1,16 @@
+# Stage 0 control (gates.yaml s0_g2_permuted_control): the gate recipe on FIT
+# labels permuted once with seed 0 (labels_fit_permuted.jsonl, written by
+# dmcc_harness.py `stage0-rows`). Same verb, same recipe; only labels and output
+# differ. Its provenance.auroc_by_layer at the frozen gate layer and its CAL
+# projection AUROC must both sit in [0.40, 0.60].
+activations_path: experiments/decision-model-calibrated-choice/analysis/stage0/extraction
+labels_path: experiments/decision-model-calibrated-choice/analysis/stage0/labels_fit_permuted.jsonl
+position_family: anchor
+n_components: 128
+n_splits: 5
+seed: 0
+solver: saga
+tol: 0.001
+C: 1.0
+output_direction: experiments/decision-model-calibrated-choice/directions/qwen35-2b-base/direction_gate_permuted.json
+normalize: true

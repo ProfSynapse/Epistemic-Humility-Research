@@ -1,0 +1,43 @@
+# Engine analysis config, DESCRIPTIVE secondary arm: letter-logit decision model.
+# Identical to analysis_pointer.yaml except the run_id paths. Never adjudicates
+# a gate (AMENDMENT "Arms"). Schema and staging as in analysis_pointer.yaml.
+
+checkpoint: scratch/eh_staging/dmcc-letter-logits-popqa/final_model
+
+data:
+  files: [scratch/eh_staging/dmcc-letter-logits-popqa/decision_rows_primary.jsonl]
+  max_rows: null
+  fit_fraction: 0.4
+  cal_fraction: 0.2
+  seed: 0
+
+ablation:
+  enabled: false
+
+capture:
+  layers: all
+  batch_size: 8
+  max_length: null
+
+probe:
+  n_components: 128
+  n_splits: 5
+  C: 1.0
+  max_iter: 2000
+  permuted_control: true
+
+conformal:
+  alphas: [0.1, 0.2]
+  min_rows_per_kind: 50
+
+thresholds:
+  confident: 0.8
+  underconfident: 0.5
+  ece_bins: 15
+
+bootstrap:
+  n_boot: 2000
+  seed: 0
+
+output:
+  output_root: scratch/eh_staging/dmcc-letter-logits-popqa/output

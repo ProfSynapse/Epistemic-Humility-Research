@@ -1,0 +1,42 @@
+# Materialized tuner recipe, DESCRIPTIVE secondary arm (letter logits).
+# Identical to recipe_pointer.yaml except the run_id paths and config name.
+# Launch only after explicit launch approval naming this run and after the
+# letter-logit checkpoint digest is recorded in the NOTEBOOK.
+name: dmcc-letter-logits-popqa
+description: EH decision-model-calibrated-choice, letter-logit decision model on PopQA known/unknown rows (read-only, descriptive).
+target: local
+method: decision
+provider: local_docker
+
+job:
+  image: unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - transformers==5.17.0
+    - peft==0.21.2
+    - flash-linear-attention
+  copy:
+    - Trainers/decision
+    - shared
+    - MechInterp
+    - scratch/eh_staging/dmcc-letter-logits-popqa
+
+run:
+  method: decision
+  trainer: Trainers/decision/analyze_confidence.py
+  command:
+    - python
+    - Trainers/decision/analyze_confidence.py
+    - --config
+    - scratch/eh_staging/dmcc-letter-logits-popqa/analysis_letter_logits.yaml
+    - --output-root
+    - scratch/eh_staging/dmcc-letter-logits-popqa/output
+    - --run-timestamp
+    - "{timestamp}"
+
+artifacts:
+  host_path: scratch/eh_staging/dmcc-letter-logits-popqa/output/{timestamp}
