@@ -1,6 +1,6 @@
 # Stage 0a extraction recipe: base-model known/unknown activations.
 #
-# Schema: synaptic-tuner MechInterp.config.ExtractConfig (engine 26cb57c7).
+# Schema: synaptic-tuner MechInterp.config.ExtractConfig (engine 29f7af0c).
 # Verb:   tuner.py mechinterp extract (model and revision are CLI args:
 #         --model Qwen/Qwen3.5-2B-Base --model-revision b1485b2f..., no --adapter).
 # Runtime: inside the pinned mechinterp-runner image (mechinterp-cells

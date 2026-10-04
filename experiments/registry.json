@@ -1440,7 +1440,7 @@
     {
       "checkpoint": {
         "adapter": "tuner run decision-qwen35-2b-pointer/20261004_122756 final_model (LoRA r16 + pointer head), tree sha256 e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
-        "engine": "synaptic-tuner 26cb57c72c68c382cf9299096bce535d4a606929 (interim pin; precedes the submodule-first api/v1 repoint, EH branch feat/submodule-cloud-api-v1-host)",
+        "engine": "synaptic-tuner 29f7af0c35e3c825d96f770b62f46c60ac4db2b7 (interim pin; precedes the submodule-first api/v1 repoint, EH branch feat/submodule-cloud-api-v1-host)",
         "repo": "Qwen/Qwen3.5-2B-Base",
         "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c"
       },
@@ -1482,7 +1482,7 @@
           "name": "vllm",
           "version": "0.27.1"
         },
-        "engine_note": "vLLM 0.27.1 (batch invariance on) is the generation engine for the label stage (EH probe.py). Stage 0 hidden-state capture uses the tuner mechinterp extract verb on HF transformers, per batched-generation.md (new capture-only surface; no vLLM bridge registered for Qwen3.5-2B). Stage 1 runs no generation (option-logit forward passes inside the engine's analyze_confidence.py).",
+        "engine_note": "vLLM 0.27.1 (batch invariance OFF, unsupported for Qwen3.5 GDN layers; one request per question) is the generation engine for the label stage (EH probe.py). Stage 0 hidden-state capture uses the tuner mechinterp extract verb on HF transformers, per batched-generation.md (new capture-only surface; no vLLM bridge registered for Qwen3.5-2B). Stage 1 runs no generation (option-logit forward passes inside the engine's analyze_confidence.py).",
         "lane": "local_3090",
         "modules": [
           "dmcc_harness.py",
@@ -1508,14 +1508,16 @@
           },
           "dmcc_harness.py": {
             "checkpoint_path": "experiments/decision-model-calibrated-choice/analysis/",
-            "note": "directory prefix. label resumes from probe.py's per-row append-log; stage0-extract resumes per 500-row shard (manifest_shard_<k>.json markers); analyze is one read-only tuner local-run invocation, re-runnable from its staged inputs; build-pool, convert, stage0-rows, stage0-fit, stage0-validate, collect and score are short CPU passes with atomic writes. Kill-resume drill and smoke wall-clocks are a pre-sign item (AMENDMENT checklist 5).",
+            "note": "directory prefix. label resumes from probe.py's per-row append-log; stage0-extract resumes per 500-row shard (manifest_shard_<k>.json markers); analyze is one read-only tuner local-run invocation, re-runnable from its staged inputs; build-pool, convert, stage0-rows, stage0-fit, stage0-validate, collect and score are short CPU passes with atomic writes. Kill-resume drill 2026-10-04 PASSED for stage0-extract (kill at 159 s, resume 215 s, 2 shards x 3 rows incl. model load); the label drill on the real vLLM path is open (AMENDMENT checklist 5).",
             "persistence": "incremental"
           }
         },
         "pins": {},
+        "runtime_image_digest": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
+        "runtime_image_digest_note": "Stage 0 runtime. Local Image ID of mechinterp-runner:dmcc-tf5.17.0, built 2026-10-04 from synaptic-tuner@29f7af0c docker/mechinterp-runner with TRANSFORMERS_VERSION=5.17.0 (Docker Desktop daemon, reached from WSL as context default). Stage 1 runs in the unsloth digest under runtimes.stage1; the label stage in the WSL vLLM venv.",
         "runtimes": {
           "label": "/home/profsynapse/.venvs/vllm (vllm==0.27.1)",
-          "stage0": "mechinterp-runner built with TRANSFORMERS_VERSION=5.17.0 (Image ID -> runtime_image_digest before sign)",
+          "stage0": "mechinterp-runner:dmcc-tf5.17.0 (runtime_image_digest above)",
           "stage1": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397"
         }
       },

@@ -152,7 +152,8 @@ Added by the drafter:
   `b1485b2fa6dfa1287294f269f5fb618e03d52d7c`, adapter-free. Facts live in the
   torso; the decision LoRA was trained on classification, not trivia.
 - Instrument: `experiments/common/knowledge_probe/probe.py`, unchanged, on
-  vLLM 0.27.1 (batch invariance on). 1 greedy + 32 sampled answers per
+  vLLM 0.27.1, batch invariance OFF (vLLM 0.27.1 refuses it for Qwen3.5's
+  gated DeltaNet layers; see Lane). 1 greedy + 32 sampled answers per
   question (T = 1.0, top-p 0.9, 64 new tokens, master seed 20260610).
   probe.py's vLLM backend takes no revision argument, so `stage-model` stages
   the pinned snapshot and writes a materialized config whose `model_name` is
@@ -239,7 +240,7 @@ EH's extraction -> probe-fit -> freeze pipeline, applied to the labeler.
 - Primary model: the pointer decision model, tuner run
   `decision-qwen35-2b-pointer` (LoRA r16 / alpha 32 + pointer head, strands v5
   short-task corpus, 1 epoch), recipe
-  `Trainers/recipes/decision_qwen35_2b_pointer.yaml` at engine `26cb57c7`;
+  `Trainers/recipes/decision_qwen35_2b_pointer.yaml` (engine `31962293`);
   checkpoint `.../decision-qwen35-2b-pointer/20261004_122756/final_model`,
   tree sha256 `e0cc616d...a4acbfc` (adapter `7d66a8a9...`, pointer head
   `d7d97981...`, decision_config `7cd67f75...`).
@@ -253,14 +254,26 @@ EH's extraction -> probe-fit -> freeze pipeline, applied to the labeler.
   `analysis_pointer.yaml` (ablation off, all layers captured at `<answer>`,
   PCA(128) probes with 5-fold sweep on FIT, permuted control on, conformal
   alpha in {0.1, 0.2}, thresholds 0.8 / 0.5, 15 ECE bins, paired bootstrap
-  2000 / seed 0). Inputs are staged under the tuner's gitignored
-  `scratch/eh_staging/<run_id>/`. A run record is written before launch.
+  2000 / seed 0, `export.per_row: true`, `export.states: false`, and a
+  `directions:` list naming the three frozen Stage 0 JSONs `base_gate`,
+  `base_gate_permuted` and `base_dial`, each at its own frozen layer, with no
+  layer override allowed). Inputs, including the frozen direction JSONs, are
+  staged under the tuner's gitignored `scratch/eh_staging/<run_id>/`. The
+  harness checks the staged directions byte-for-byte against the Stage 0 freeze
+  marker before staging and again before launch. A run record is written
+  before launch.
 - Confidence of record: R1, the per-kind temperature-calibrated max option
   probability (temperature fit on CAL). R0 raw, P-dial and the CAL stacker S
   are reported descriptively.
 - Arms the engine reports and how they are used: R0 (descriptive), R1
   (gated), P-dial (descriptive), S (descriptive), KU probe (H-D2), frozen
-  base gate direction (H-D1, scored in-cell).
+  base gate direction (H-D1: the engine scores it as the direction's own
+  logistic decision value `h_L @ coef + intercept` at the frozen layer index of
+  the decision model's `<answer>` state, and reports
+  `directions.base_gate.auroc_known_vs_unknown`; the harness bootstraps the CI
+  from per-row `direction_scores.base_gate` and requires its point AUROC to equal
+  the engine's), frozen permuted gate (descriptive H-D1 control on TEST), frozen
+  base dial (descriptive).
 
 ### Controls
 
@@ -289,43 +302,54 @@ outcome.
 
 - Local RTX 3090, one GPU job at a time.
 - Labeling: vLLM 0.27.1 in the isolated WSL venv used by
-  `dial-logprob-baseline-v3` (`/home/profsynapse/.venvs/vllm`),
-  `VLLM_BATCH_INVARIANT=1`.
-- Stage 0: mechinterp-runner image built from the pinned submodule's
-  `docker/mechinterp-runner/` with `TRANSFORMERS_VERSION=5.17.0`. Its Image ID
-  is recorded as `instrument.runtime_image_digest` before sign (open item).
+  `dial-logprob-baseline-v3` (`/home/profsynapse/.venvs/vllm`; torch
+  2.13.0+cu130, transformers 5.15.0), `VLLM_BATCH_INVARIANT=0`. The 2026-10-04
+  pre-sign check found that vLLM 0.27.1 refuses batch-invariant mode for this
+  model ("batch_invariant mode is not supported for GDN_ATTN"). Deviation from
+  the batched-generation.md default, stated here: probe.py sends one request
+  per question (greedy n = 1; sampled n = 32 with a per-question seed), so no
+  cross-question batch composition enters any decode. Repeatability is gated by
+  the exclusive-GPU repeat smoke instead (pre-sign checklist). vLLM loads the
+  checkpoint as `Qwen3_5ForConditionalGeneration` and profiles its vision
+  encoder at startup. That allocation can exceed a low
+  `gpu_memory_utilization` cap, so the label stage needs the GPU to itself
+  (NOTEBOOK, 2026-10-04 incident).
+- Stage 0: `mechinterp-runner:dmcc-tf5.17.0`, built 2026-10-04 from the pinned
+  submodule's `docker/mechinterp-runner/` with `TRANSFORMERS_VERSION=5.17.0`
+  (torch 2.9.1+cu128). Image ID
+  `sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c`,
+  recorded as `instrument.runtime_image_digest`. It is run from WSL against
+  the Docker Desktop daemon (`docker --context default`).
 - Stage 1: `unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397`
   (torch 2.11, transformers 5.17.0, peft 0.21.2, plus flash-linear-attention).
   Version note: the validated mechinterp-runner default is transformers
   5.12.1. The decision stack needs 5.17.0 for `Qwen3_5ForCausalLM`, which is
   why Stage 0's image is built at 5.17.0.
-- Engine pin: `synaptic-tuner` at `26cb57c72c68c382cf9299096bce535d4a606929`
+- Engine pin: `synaptic-tuner` at `29f7af0c35e3c825d96f770b62f46c60ac4db2b7`
   (branch `jev-models-tuner-training-b55d92`; `31962293` adds the `decision`
-  method, `26cb57c7` adds the confidence analysis). This is an INTERIM pin. It
+  method, `26cb57c7` adds the confidence analysis, and `29f7af0c` adds per-row
+  export, TEST state export and external frozen directions). This is an INTERIM pin. It
   precedes the submodule-first API repoint (EH branch
   `feat/submodule-cloud-api-v1-host`), whose `api/v1` exposes only SFT today.
   This cell therefore reaches the engine through `tuner.py local-run` and the
   `mechinterp` verbs, not `api/v1`.
 
-### Engine capability gaps (flagged, not worked around)
+### Engine capability gaps (closed at `29f7af0c`)
 
-At `26cb57c7` the engine's `test_rows.jsonl` carries `conf_r1`, `correct`,
-`gold`, `n_options` and `meta`, but:
-
-1. no per-row TEST `<answer>` hidden states, so H-D1 (scoring the frozen base
-   direction on decision-model states) cannot be computed;
-2. no per-row calibrated option probabilities, so conformal sets cannot be
-   split by knowledge label (the engine reports conformal only for all TEST
-   rows);
-3. no per-row KU-probe scores, so H-D2's probe AUROC has no in-cell CI (H-D2
-   itself adjudicates on the engine's own paired bootstrap, which exists).
-
-The fix is generic and belongs in the tuner: an opt-in analysis setting that
-writes `test_states.npz` (every captured layer, float16, row-aligned with
-`test_rows.jsonl`, keys `L<i>`) and adds `probs_r1` and `ku_probe_score` to each
-TEST record. The scorer already consumes exactly those names and reports
-NOT-COMPUTED when they are absent. Per the no-pollution rule, the cell does not
-re-implement the decision prompt or load the decision model itself.
+The first draft pinned `26cb57c7`, whose `test_rows.jsonl` had no per-row
+`<answer>` states, option probabilities or KU-probe scores, so H-D1 and the
+conformal-by-knowledge secondary could not be computed. That gap was flagged to
+the tuner as a generic capability and closed upstream in `29f7af0c`, with no
+EH-specific code: an `export` section (`per_row` adds `row_index`, `probs_r0`,
+`probs_r1`, `dial_score`, `stack_score`, `ku_probe_score` and
+`direction_scores`; `states` optionally writes `test_states.npz`) and a
+`directions:` list that scores external `mechinterp-direction/v1` JSONs on TEST
+`<answer>` states. It fails loudly on a missing file, wrong schema, hidden-size
+mismatch or uncaptured layer, including in `--dry-run`. The engine's layer
+index is the decoder's `output_hidden_states` index (0 = embeddings, i = output
+of block i), the same convention as `MechInterp.extraction`; the pre-sign
+layer-index check confirms it on this model (NOTEBOOK). The cell does not load
+the decision model itself.
 
 ### Implementation boundary
 
@@ -355,9 +379,15 @@ them). All on TEST except Stage 0.
 - **H-C (readout separates):** AUROC(R1 -> known), known vs unknown, >= 0.75.
 - **H-D1 (base axis transfer):** the FROZEN base gate direction, applied
   without refitting to the decision model's `<answer>` state at the same layer
-  index, reads known vs unknown at AUROC >= 0.75. LoRA leaves the residual
-  geometry comparable, though the prompt and position differ (QA prompt end vs
-  decision `<answer>`). It is also compared against R1 with a paired bootstrap.
+  index, reads known vs unknown at AUROC >= 0.75. The index convention is
+  verified (pre-sign, NOTEBOOK): `mechinterp extract` and the decision capture
+  path give the same 25 states (0 = embeddings, i = block i, 24 = after the
+  final norm). Whether the residual geometry survives the LoRA is what H-D1
+  tests, not an assumption. The pre-sign check saw the adapter move the last
+  prompt token's state by a mean relative L2 of 0.10 to 0.50 across indices 1
+  to 23, measured on 6 generic non-PopQA prompts (descriptive; not a population
+  result). The prompt and position also differ (QA prompt end vs decision
+  `<answer>`). H-D1 is also compared against R1 with a paired bootstrap.
 - **H-D2 (fresh probe beats readout):** an EH-style KU probe on the decision
   model's `<answer>` state (MechInterp PCA -> logistic, layer sweep on FIT)
   beats R1 on known vs unknown by >= 0.03 AUROC with the paired-bootstrap CI
@@ -429,7 +459,8 @@ never rounded to a neighbor.
 
 - Split-conformal LAC sets at alpha in {0.1, 0.2} (q-hat on CAL): coverage and
   mean set size on known vs unknown. Expectation: sets widen on unknowns at
-  held coverage. Requires engine gap 2; otherwise NOT-COMPUTED.
+  held coverage. Computed in-cell from per-row `probs_r1` and the engine's CAL
+  q-hat for `choice`.
 - Popularity (`s_pop`) quartiles (engine block).
 - Recall vs recognition: "unknown" means the base model cannot *generate* the
   answer, but on a 4-way choice it may still *recognize* it or eliminate the
@@ -450,8 +481,10 @@ never rounded to a neighbor.
   stage0-rows -> stage0-extract -> stage0-fit -> stage0-validate (freeze) ->
   stage-engine -> analyze -> collect -> score.
 - GPU smoke before each full GPU stage (standing directive 2026-07-16):
-  - a small-N vLLM generation smoke of the label path (render bytes and token
-    IDs, repeat-order invariance, model load under vLLM 0.27.1);
+  - a small-N vLLM generation smoke of the label path on an exclusive GPU
+    (engine-observed prompt token IDs, repeat and reorder identity of greedy
+    and seeded sampled completions, model load under vLLM 0.27.1 at the
+    registered `gpu_memory_utilization` 0.90);
   - a one-shard extraction smoke (provenance line present, both families
     captured, layer count);
   - a `--dry-run` of `analyze_confidence.py` on the staged rows.
@@ -463,27 +496,37 @@ never rounded to a neighbor.
   and A from the original design, the strands state-ablation analysis, and
   TriviaQA / KUQ / CoCoNot. Each needs its own amendment.
 
-## Pre-sign checklist (open items; the cell cannot be signed until each is closed or waived in writing by the PI)
+## Pre-sign checklist (status 2026-10-04; the cell cannot be signed until each open item is closed or waived in writing by the PI)
 
-1. **Engine capability gaps 1-3.** Repin `synaptic-tuner` (draft, so no
-   `exp repin` is needed) to an engine commit that emits `test_states.npz`,
-   `probs_r1` and `ku_probe_score`, or have the PI waive H-D1 and the
-   conformal-by-knowledge secondary as NOT-COMPUTED.
-2. **Stage 0 runtime.** Build mechinterp-runner at `TRANSFORMERS_VERSION=5.17.0`
-   from the pinned submodule; record its Image ID as
-   `instrument.runtime_image_digest`. Confirm `AutoModelForCausalLM` loads
-   Qwen3.5-2B-Base @ `b1485b2f` there, and that hidden-state index i means the
-   same layer in `mechinterp extract` and the decision model's capture (0 =
-   embeddings). H-D1 depends on it.
-3. **vLLM capability check** (anti-stale clause): confirm vLLM 0.27.1 serves
-   Qwen3.5-2B-Base and batch invariance on the 3090, and record it in the
-   NOTEBOOK.
-4. **Render identity:** the extraction render (HF tokenizer) and probe.py's
-   vLLM render produce byte-identical prompts and token IDs on about 20 rows.
-5. **Kill-resume drill** for `dmcc_harness.py`'s incremental stages
-   (mechinterp-cells organization.md), and record the measured smoke
-   wall-clocks.
-6. **User prediction** recorded verbatim in the scoreboard below.
+Results and IDs for each check are in the NOTEBOOK and in
+`analysis-committed/run_records/dmcc-presign-infra-20261004.json`.
+
+1. **Engine capability gaps. CLOSED.** Repinned to `29f7af0c`; H-D1,
+   conformal-by-knowledge and the H-D2 in-cell CI are computable end to end.
+   The Stage 0 -> engine direction contract round-trips (schema, hidden size
+   2048, layer resolution, loud failure on a size mismatch).
+2. **Stage 0 runtime and layer convention. CLOSED.** Image built and pinned.
+   Qwen3.5-2B-Base @ `b1485b2f` loads under MechInterp's loader. The
+   extraction and the decision capture path (adapter disabled) agree index for
+   index on all 25 states: max relative L2 0.023 on the diagonal, at least 0.30
+   to a neighbouring index.
+3. **vLLM. OPEN.** Batch invariance is unsupported for this model in vLLM 0.27.1
+   (recorded; the deviation is stated under Lane). The generation repeat smoke
+   is BLOCKED on the shared GPU and must run with the GPU exclusive (no
+   training container) at the registered 0.90 utilization.
+4. **Render identity. CLOSED at tokenizer level.** 20 of 20 rows have
+   byte-identical prompts and identical token IDs between the label path
+   (vLLM 0.27.1 tokenizer, transformers 5.15.0) and the extraction path (runner,
+   transformers 5.17.0). Engine-observed prompt token IDs are folded into item 3.
+5. **Kill-resume drill. PARTIAL.** `stage0-extract` passes on the real harness
+   path (shard 0 skipped with its marker unchanged, shard 1 completed, both
+   families on all rows, no leftover container) after two harness defects the
+   drill surfaced were fixed. The `label` drill on the real vLLM path is
+   BLOCKED with item 3; EH probe.py's resume logic passes its own stub tests.
+   Measured: kill after 159 s, resume in 215 s, for model load plus 3 rows per
+   shard. A full-scale Stage 0 wall-clock estimate needs a one-shard smoke
+   (500 rows) on an exclusive GPU.
+6. **User prediction.** Open; recorded verbatim at sign.
 
 ## Predictions scoreboard
 
@@ -491,6 +534,10 @@ never rounded to a neighbor.
 |-----------|------|
 | orchestrator | S0-G1 PASS (~80%). H-A FAIL on a1: calibrated confidence on unknowns sits near pooled 4-way accuracy, gap about 0.15 to 0.20; a2 PASS (~60%). H-B INCONCLUSIVE or FAIL: a temperature fit on an unknown-dominated CAL compresses known-row confidence (~50%). H-C PASS or INCONCLUSIVE, point 0.75 to 0.85 (~55%). H-D1 PASS: entity familiarity survives LoRA r16 at the same layer index (~55%). H-D2 PASS (~70%). Matrix cell: "readout tracks the base KU axis", with residual signal left on the table. |
 | user | pending (verbatim at sign) |
+
+Disclosure: the orchestrator call was recorded at first draft, before the
+2026-10-04 pre-sign check showed the LoRA moving generic-prompt states by a
+mean relative L2 of 0.10 to 0.50. That observation was not used to revise it.
 
 ## Outcome
 

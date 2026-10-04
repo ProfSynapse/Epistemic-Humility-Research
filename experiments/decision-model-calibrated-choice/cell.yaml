@@ -45,7 +45,13 @@ labeler:
   python: /home/profsynapse/.venvs/vllm/bin/python
   vllm_version: 0.27.1
   env:
-    VLLM_BATCH_INVARIANT: "1"
+    # Batch invariance is OFF: vLLM 0.27.1 refuses it for Qwen3.5's gated
+    # DeltaNet layers ("batch_invariant mode is not supported for GDN_ATTN",
+    # pre-sign check 2026-10-04, NOTEBOOK). probe.py issues one request per
+    # question (greedy n=1; sampled n=32 with a per-question seed), so no
+    # cross-question batching occurs; repeatability is gated by the
+    # exclusive-GPU repeat smoke instead (AMENDMENT pre-sign checklist).
+    VLLM_BATCH_INVARIANT: "0"
     VLLM_WSL2_ENABLE_PIN_MEMORY: "1"
   # EH probe label names -> engine meta.knowledge names.
   label_map: {known: known, unknown: unknown, discard: ambiguous}
@@ -90,7 +96,10 @@ stage0:
     # at pre-sign into experiment.yaml instrument.runtime_image_digest.
     image_tag: mechinterp-runner:dmcc-tf5.17.0
     build_args: {TRANSFORMERS_VERSION: 5.17.0}
-    docker: [docker, run, --rm, --gpus, all]
+    # Harness runs from WSL; the Docker Desktop daemon is reached via context `default`
+    # (the `desktop-linux` npipe context is unusable from a Linux shell).
+    docker_cli: [docker, --context, default]
+    docker: [docker, --context, default, run, --rm, --gpus, all]
     hf_cache_mount: "$HOME/.cache/huggingface:/root/.cache/huggingface"
     workdir_in_container: /workspace
     pythonpath: experiments/decision-model-calibrated-choice:experiments/common/knowledge_probe
@@ -104,8 +113,8 @@ stage0:
 # ---------------------------------------------------------------------------
 engine:
   submodule: synaptic-tuner
-  commit: 26cb57c72c68c382cf9299096bce535d4a606929
-  decision_method_commit: 31962293
+  commit: 29f7af0c35e3c825d96f770b62f46c60ac4db2b7
+  decision_method_commit: 31962293   # 26cb57c7 confidence analysis; 29f7af0c per-row export + external directions
   cli: Trainers/decision/analyze_confidence.py
   # Windows Python launcher: the tuner shells out to Docker Desktop
   # (experiment-runner reference/local-runtime.md, "Proven local-run launch").

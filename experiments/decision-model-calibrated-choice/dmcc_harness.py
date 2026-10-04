@@ -360,7 +360,7 @@ def stage_label(c: dict, args) -> None:
 
 
 def _split_by_task(rows: list[dict], val_fraction: float, seed: int) -> tuple[list[dict], list[dict]]:
-    """Exact port of synaptic-tuner decision_core.examples.split_by_task @ 26cb57c7
+    """Exact port of synaptic-tuner decision_core.examples.split_by_task @ 29f7af0c
     (same RNG calls in the same order). Verified after the engine run by the
     G0 split-identity check; never trusted on its own."""
     if not 0.0 <= val_fraction < 1.0:
@@ -383,7 +383,7 @@ def _split_by_task(rows: list[dict], val_fraction: float, seed: int) -> tuple[li
 
 
 def engine_split(rows: list[dict], fit: float, cal: float, seed: int):
-    """Port of confidence_analysis.split_fit_cal_test @ 26cb57c7."""
+    """Port of confidence_analysis.split_fit_cal_test @ 29f7af0c."""
     rest, fit_rows = _split_by_task(rows, fit, seed)
     test_rows, cal_rows = _split_by_task(rest, cal / (1.0 - fit), seed + 1)
     return fit_rows, cal_rows, test_rows
@@ -449,7 +449,7 @@ def stage_convert(c: dict, args) -> None:
              (("fit", fit), ("cal", cal), ("test", test))}
     by = {name: dict(Counter(r["meta"]["knowledge"] for r in part)) for name, part in
           (("fit", fit), ("cal", cal), ("test", test))}
-    write_json_atomic(P["splits"], {"rows_sha256": rows_sha, "split_port": "synaptic-tuner@26cb57c7 "
+    write_json_atomic(P["splits"], {"rows_sha256": rows_sha, "split_port": "synaptic-tuner@29f7af0c "
                                     "decision_core split_fit_cal_test", "fractions": acfg,
                                     "counts": {k: len(v) for k, v in split.items()},
                                     "knowledge_by_split": by, "qids": split})
@@ -518,7 +518,7 @@ def stage0_rows(c: dict, args) -> None:
 
 def _runner_image_id(c: dict) -> str:
     tag = c["stage0"]["runtime"]["image_tag"]
-    out = subprocess.run(["docker", "image", "inspect", tag, "--format", "{{.Id}}"],
+    out = subprocess.run(list(c["stage0"]["runtime"]["docker_cli"]) + ["image", "inspect", tag, "--format", "{{.Id}}"],
                          capture_output=True, text=True)
     if out.returncode != 0:
         raise StageError(f"runner image {tag} not found; build it per cell.yaml stage0.runtime")
@@ -530,9 +530,11 @@ def _pinned_runtime_digest() -> str | None:
     return (m.get("instrument") or {}).get("runtime_image_digest")
 
 
-def runner_argv(c: dict, inner: list[str], gpu: bool, image_id: str) -> list[str]:
+def runner_argv(c: dict, inner: list[str], gpu: bool, image_id: str, name: str | None = None) -> list[str]:
     rt = c["stage0"]["runtime"]
     argv = list(rt["docker"]) if gpu else [x for x in rt["docker"] if x not in ("--gpus", "all")]
+    if name:
+        argv += ["--name", name]
     argv += ["-v", os.path.expandvars(rt["hf_cache_mount"]), "-v", f"{REPO_ROOT}:{rt['workdir_in_container']}",
              "-w", rt["workdir_in_container"], "--env", f"IMAGE_DIGEST={image_id}",
              "--env", f"PYTHONPATH={rt['pythonpath']}", "--env", "HF_TOKEN", rt["image_tag"]]
@@ -558,8 +560,17 @@ def stage0_extract_argvs(c: dict, image_id: str) -> list[tuple[int, list[str]]]:
                  "--mi-config", cfg_path.relative_to(REPO_ROOT).as_posix(),
                  "--model", lab["hf_id"], "--model-revision", lab["revision"],
                  "--i-know-this-runs-on-gpu"]
-        out.append((idx, runner_argv(c, inner, gpu=True, image_id=image_id)))
+        out.append((idx, runner_argv(c, inner, gpu=True, image_id=image_id, name=shard_container(c, idx))))
     return out
+
+
+def shard_container(c: dict, idx: int) -> str:
+    """Deterministic container name per shard. A killed harness can leave its
+    `docker run` container alive (killing the CLI client does not stop it), so a
+    resumed shard first force-removes any container of the same name: no
+    orphan may still be writing into the shared output dir."""
+    tag = hashlib.sha256(str(rp(_yaml_load(rp(c["stage0"]["extract_recipe"]))["output_dir"])).encode()).hexdigest()[:8]
+    return f"dmcc-stage0-{tag}-shard{idx:03d}"
 
 
 def stage0_extract(c: dict, args) -> None:
@@ -569,11 +580,20 @@ def stage0_extract(c: dict, args) -> None:
     ext_dir = rp(_yaml_load(rp(c["stage0"]["extract_recipe"]))["output_dir"])
     logs = P["stage0"] / "logs"
     logs.mkdir(parents=True, exist_ok=True)
+    # The harness user must own the output dir: the container runs as root, and
+    # a root-created dir on the host mount is not writable for the shard
+    # markers (kill-resume drill 2026-10-04).
+    ext_dir.mkdir(parents=True, exist_ok=True)
+    if not os.access(ext_dir, os.W_OK):
+        raise StageError(f"{ext_dir} is not writable by the harness user (created by the container?); "
+                         "move it aside and rerun")
     for idx, argv in stage0_extract_argvs(c, image_id):
         marker = ext_dir / f"manifest_shard_{idx:03d}.json"
         if marker.exists():
             print(f"stage0-extract: shard {idx:03d} done, skipping")
             continue
+        subprocess.run(list(c["stage0"]["runtime"]["docker_cli"]) + ["rm", "-f", shard_container(c, idx)],
+                       capture_output=True)
         log = logs / f"extract_{idx:03d}.log"
         with open(log, "w", encoding="utf-8") as fh:
             rc = subprocess.run(argv, cwd=str(REPO_ROOT), stdout=fh, stderr=subprocess.STDOUT).returncode
@@ -582,7 +602,13 @@ def stage0_extract(c: dict, args) -> None:
             raise StageError(f"shard {idx:03d} extract exited {rc}; see {log}")
         if "mechinterp_runner_provenance" not in text:
             raise StageError(f"shard {idx:03d}: runner provenance line missing from {log}")
-        os.replace(ext_dir / "manifest.json", marker)
+        # Copy, do not rename: the container writes manifest.json as root on the
+        # host mount, which the harness user may not rename (kill-resume drill
+        # 2026-10-04). The marker is written atomically by the harness user; the
+        # next shard's container overwrites manifest.json.
+        tmp = marker.with_suffix(".json.tmp")
+        tmp.write_bytes((ext_dir / "manifest.json").read_bytes())
+        os.replace(tmp, marker)
         print(f"stage0-extract: shard {idx:03d} complete")
 
 
@@ -748,6 +774,39 @@ def analyze_argv(c: dict, m: dict) -> list[str]:
     return list(c["engine"]["launcher"]) + [to_windows_path(rp(m["recipe"])), "--yes"]
 
 
+def frozen_direction_files(c: dict) -> dict[str, tuple[Path, str]]:
+    """{direction_<name>.json: (path, frozen sha256)} for every Stage 0 direction.
+    Refuses if the freeze marker is missing or any file differs from it."""
+    marker = rp(c["stage0"]["freeze_marker"])
+    if not marker.exists():
+        raise StageError("Stage 0 freeze marker missing: the base KU directions must be frozen "
+                         "before any decision-model analysis (AMENDMENT Stage 0)")
+    frozen = json.loads(marker.read_text(encoding="utf-8"))["direction_sha256"]
+    out = {}
+    for name, sha in frozen.items():
+        path = rp(c["stage0"]["directions_dir"]) / f"direction_{name}.json"
+        if sha256_file(path) != sha:
+            raise StageError(f"{path.name} differs from its frozen digest")
+        out[path.name] = (path, sha)
+    return out
+
+
+def check_staged_directions(c: dict, m: dict) -> None:
+    """Every `directions:` entry of the analysis config must resolve to a staged
+    file whose bytes equal the frozen Stage 0 direction of the same file name,
+    with no layer override (the frozen layer is the registered layer)."""
+    frozen = frozen_direction_files(c)
+    for d in _yaml_load(rp(m["analysis_config"])).get("directions") or []:
+        staged = TUNER_DIR / d["path"]
+        fname = Path(d["path"]).name
+        if fname not in frozen:
+            raise StageError(f"analysis direction {d['name']} -> {fname} is not a frozen Stage 0 direction")
+        if not staged.exists() or sha256_file(staged) != frozen[fname][1]:
+            raise StageError(f"staged {staged} missing or not the frozen bytes")
+        if d.get("layer") is not None:
+            raise StageError(f"direction {d['name']}: a layer override is not allowed (frozen layer only)")
+
+
 def stage_engine(c: dict, args) -> None:
     m = _model(c, args)
     P = paths(c)
@@ -759,12 +818,17 @@ def stage_engine(c: dict, args) -> None:
     if head != c["engine"]["commit"]:
         raise StageError(f"synaptic-tuner HEAD {head} != pinned engine commit {c['engine']['commit']}")
     rows = require(P["rows_primary"], "decision rows")
+    frozen = frozen_direction_files(c)  # refuses without the Stage 0 freeze marker
     sd = staging_dir(c, m)
     if sd.exists() and any(sd.iterdir()):
         raise StageError(f"staging dir {sd} not empty; move it aside (never overwritten)")
     sd.mkdir(parents=True)
     shutil.copytree(src, sd / "final_model")
     shutil.copy2(rows, sd / "decision_rows_primary.jsonl")
+    (sd / "directions").mkdir()
+    for fname, (path, _sha) in frozen.items():
+        shutil.copy2(path, sd / "directions" / fname)
+    check_staged_directions(c, m)
     acfg = rp(m["analysis_config"])
     shutil.copy2(acfg, sd / acfg.name)
     if tree_sha256(sd / "final_model") != m["tree_sha256"]:
@@ -790,16 +854,15 @@ def stage_engine(c: dict, args) -> None:
 
 def stage_analyze(c: dict, args) -> None:
     m = _model(c, args)
+    frozen_direction_files(c)
     marker = rp(c["stage0"]["freeze_marker"])
-    if not marker.exists():
-        raise StageError("Stage 0 freeze marker missing: the base KU directions must be frozen "
-                         "before any decision-model analysis (AMENDMENT Stage 0)")
     rr = run_record_path(c, m)
     rec = json.loads(require(rr, "run record (run stage-engine)").read_text(encoding="utf-8"))
     sd = staging_dir(c, m)
     if tree_sha256(sd / "final_model") != m["tree_sha256"] or \
             sha256_file(sd / "decision_rows_primary.jsonl") != rec["data_sha256"]:
         raise StageError("staged inputs changed since stage-engine; restage")
+    check_staged_directions(c, m)
     if git_head(TUNER_DIR) != c["engine"]["commit"]:
         raise StageError("synaptic-tuner HEAD moved off the pinned engine commit")
     argv = analyze_argv(c, m)
@@ -1048,28 +1111,35 @@ def stage_score(c: dict, args) -> None:
     d2_auc = kb.get("ku_probe", {}).get("test_auroc_known_vs_unknown")
     res["gates"]["h_d2"] = {"verdict": hd2 if adjudicable else na, "engine": d2, "permuted_label_cv_auroc": perm,
                             "ku_probe_test_auroc": d2_auc, "best_layer": kb.get("ku_probe", {}).get("best_layer")}
-    if test and "ku_probe_score" in test[0]:
+    if test and test[0].get("ku_probe_score") is not None:
         s2 = np.array([r["ku_probe_score"] for r in test], dtype=np.float64)
         res["gates"]["h_d2"]["in_cell_auroc_ci95"] = bootstrap_auroc_ci(y_ku, s2, reps, seed)
-    # ---- H-D1 (frozen base gate direction on decision <answer> states)
-    states_path = out_dir / "test_states.npz"
+        res["gates"]["h_d2"]["in_cell_minus_readout"] = paired_auroc_diff_ci(y_ku, s2, conf, reps, seed)
+    # ---- H-D1 (frozen base gate direction scored by the engine on decision <answer> states)
+    gd1 = gates["h_d1_base_axis_transfer"]
     marker = json.loads(rp(c["stage0"]["freeze_marker"]).read_text(encoding="utf-8"))
+    dname = gd1["engine_direction"]
+    eng = report.get("directions", {}).get(dname)
+    frozen_layer = marker["summary"]["gate"]["layer"]
     if not marker.get("h_d1_adjudicable"):
         res["gates"]["h_d1"] = {"verdict": na, "reason": "Stage 0 validity gate (S0-G1/S0-G2) did not pass"}
-    elif not states_path.exists():
-        res["gates"]["h_d1"] = {"verdict": "NOT-COMPUTED",
-                                "reason": "engine emitted no per-row TEST <answer> states (capability gap)"}
+    elif eng is None or not test or dname not in (test[0].get("direction_scores") or {}):
+        res["gates"]["h_d1"] = {"verdict": na, "reason": f"engine report/rows lack direction {dname!r}"}
+    elif int(eng["layer"]) != int(frozen_layer):
+        res["gates"]["h_d1"] = {"verdict": na, "reason": f"engine scored layer {eng['layer']} != frozen {frozen_layer}"}
     else:
-        gdir = rp(c["stage0"]["directions_dir"]) / "direction_gate.json"
-        if sha256_file(gdir) != marker["direction_sha256"]["gate"]:
-            raise StageError("direction_gate.json differs from the frozen digest")
-        dg = json.loads(gdir.read_text(encoding="utf-8"))
-        H = np.load(states_path)[f"L{dg['layer']}"].astype(np.float64)
-        s1 = H @ np.asarray(dg["vector"], dtype=np.float64)
+        s1 = np.array([r["direction_scores"][dname] for r in test], dtype=np.float64)
         d1_auc, d1_ci = auroc(y_ku, s1), bootstrap_auroc_ci(y_ku, s1, reps, seed)
-        hd1 = three_way(d1_ci, gates["h_d1_base_axis_transfer"]["threshold"], "at_least")
-        res["gates"]["h_d1"] = {"verdict": hd1 if adjudicable else na, "layer": dg["layer"], "auroc": d1_auc,
-                                "ci95": d1_ci, "minus_readout": paired_auroc_diff_ci(y_ku, s1, conf, reps, seed)}
+        if abs(d1_auc - float(eng["auroc_known_vs_unknown"])) > 1e-6:
+            raise StageError(f"in-cell H-D1 AUROC {d1_auc} != engine {eng['auroc_known_vs_unknown']}")
+        hd1 = three_way(d1_ci, gd1["threshold"], "at_least")
+        perm_eng = report["directions"].get(gd1["control_direction"], {})
+        res["gates"]["h_d1"] = {"verdict": hd1 if adjudicable else na, "layer": eng["layer"], "auroc": d1_auc,
+                                "ci95": d1_ci,
+                                "minus_readout_engine": eng.get("auroc_known_vs_unknown_minus_r1"),
+                                "minus_readout_in_cell": paired_auroc_diff_ci(y_ku, s1, conf, reps, seed),
+                                "by_knowledge": eng.get("by_knowledge"),
+                                "permuted_control_auroc_descriptive": perm_eng.get("auroc_known_vs_unknown")}
     # ---- interpretation matrix (fixed reading; INCONCLUSIVE stays unresolved)
     v_d1, v_c = res["gates"]["h_d1"]["verdict"], res["gates"]["h_c"]["verdict"]
     d2_high = d2_auc is not None and d2_auc >= float(gd2["d2_high_threshold"])

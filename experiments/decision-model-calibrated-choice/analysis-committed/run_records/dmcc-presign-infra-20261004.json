@@ -1,0 +1,105 @@
+{
+  "run_id": "dmcc-presign-infra-20261004",
+  "cell": "decision-model-calibrated-choice",
+  "tier": "lab-notebook (pre-sign infrastructure checks)",
+  "authorized_by": "PI decision relayed by the coordinator 2026-10-04: run pre-sign infrastructure checks; no labeling, no Stage 0 extraction, no decision-model analysis",
+  "population": "20 fixed non-PopQA smoke questions (presign/smoke_questions.py); nothing scored; no PopQA row generated on",
+  "research_repo_commit_at_run": "c0a5278194b7e7e8de2b4a44ac8d4c7eac4c40fd",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "lane": "local RTX 3090, shared with a running training container (local-run-decision-qwen35-2b-letter-logits-*)",
+  "model": {
+    "hf_id": "Qwen/Qwen3.5-2B-Base",
+    "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c"
+  },
+  "images": {
+    "stage0_runner": "mechinterp-runner:dmcc-tf5.17.0 sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c (torch 2.9.1+cu128, transformers 5.17.0, built from synaptic-tuner@29f7af0c docker/mechinterp-runner)",
+    "stage1": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397 (torch 2.11.0+cu128, transformers 5.17.0, peft 0.21.2, + flash-linear-attention installed in the throwaway container as the recipe does)",
+    "label": "WSL venv /home/profsynapse/.venvs/vllm: vllm 0.27.1, torch 2.13.0+cu130, transformers 5.15.0"
+  },
+  "checks": [
+    {
+      "name": "stage0_image",
+      "status": "PASS",
+      "detail": "built and pinned as experiment.yaml instrument.runtime_image_digest; provenance line printed with image_git_revision 29f7af0c and transformers 5.17.0"
+    },
+    {
+      "name": "model_load_and_layer_index",
+      "status": "PASS",
+      "invocation": "presign/check_layer_index.py in the Stage 1 image over the drill's mechinterp-extract anchor tensors",
+      "result": {
+        "num_hidden_layers": 24,
+        "count_match": true,
+        "worst_diag_rel_err_adapter_disabled": 0.022685470059514046,
+        "best_offdiag_rel_err_adapter_disabled": 0.3048931658267975,
+        "convention_holds": true
+      },
+      "note": "MechInterp AutoModelForCausalLM load (runner) and decision text_tower load + model._decoder() (capture path, adapter disabled) give 25 hidden states each; index i matches index i (max rel L2 0.023) and not i+-1 (min 0.30). Descriptive: with the adapter ENABLED the same states move by mean rel L2 0.10 (index 1) to 0.50 (index 23) and 0.97 (index 24, final norm)."
+    },
+    {
+      "name": "vllm_batch_invariance",
+      "status": "BLOCKED (unsupported)",
+      "invocation": "presign/check_vllm.py with VLLM_BATCH_INVARIANT=1",
+      "result": "engine init fails: RuntimeError 'VLLM batch_invariant mode is not supported for GDN_ATTN' (Qwen3.5 gated DeltaNet layers, vLLM 0.27.1)"
+    },
+    {
+      "name": "vllm_generation_repeat_smoke",
+      "status": "BLOCKED (shared GPU)",
+      "invocation": "presign/check_vllm.py with VLLM_BATCH_INVARIANT=0, gpu_memory_utilization 0.30",
+      "result": "vLLM resolved Qwen3_5ForConditionalGeneration and profiled the multimodal encoder (budget 114688 tokens, 1 video item); a 3.5 GiB allocation exceeded the cap and the card reached ~24.2 GB used for ~7 min; the process was killed by the operator; the training container stayed up and GPU memory returned to 6.7 GB. Not retried on the shared card."
+    },
+    {
+      "name": "render_identity",
+      "status": "PASS",
+      "invocation": "presign/check_vllm_render.py (vLLM tokenizer factory, CPU) vs presign/check_runner_render.py (runner image) -> presign/compare_render.py",
+      "result": {
+        "n_rows": 20,
+        "prompt_bytes_mismatch_rows": [],
+        "prompt_token_id_mismatch_rows": []
+      },
+      "note": "tokenizer-level identity; engine-observed prompt_token_ids pend the exclusive-GPU vLLM smoke"
+    },
+    {
+      "name": "kill_resume_stage0_extract",
+      "status": "PASS (after two harness fixes)",
+      "invocation": "presign/drill_resume.py --only stage0-extract (real dmcc_harness stage0-extract path, 2 shards x 3 rows)",
+      "result": {
+        "killed_after_s": 158.7,
+        "resume_rc": 0,
+        "resume_wall_s": 215.0,
+        "shard0_skipped": true,
+        "shard0_marker_unchanged": true,
+        "orphan_container_running_after_kill": false,
+        "pass": true
+      },
+      "defects_found_and_fixed": [
+        "shard marker was an os.replace of the container's root-owned manifest.json (EACCES on the host mount) -> harness now copies it atomically",
+        "container-created output dir not writable by the harness user -> harness pre-creates it and refuses if unwritable"
+      ],
+      "note": "the kill landed between shards, so the orphan-container cleanup path (named shard containers, docker rm -f on resume) was not exercised"
+    },
+    {
+      "name": "kill_resume_label",
+      "status": "BLOCKED (shared GPU)",
+      "note": "real path needs the vLLM engine; EH probe.py resume is covered by its own stub tests (experiments/common/knowledge_probe/tests/test_probe_smoke.py, 40 passed incl. resumability tests)"
+    },
+    {
+      "name": "direction_contract",
+      "status": "PASS",
+      "invocation": "presign/check_direction_contract.py in the runner image",
+      "result": {
+        "check": "direction_contract",
+        "schema": "mechinterp-direction/v1",
+        "hidden_dim": 2048,
+        "resolved_layer": 12,
+        "n_scored": 6,
+        "finite": true,
+        "pass": true,
+        "hidden_size_mismatch_fails_loudly": true
+      }
+    }
+  ],
+  "outcome": {
+    "status": "completed",
+    "verified": false
+  }
+}

@@ -1,5 +1,5 @@
 # Materialized tuner recipe, primary arm (pointer). Mirrors the engine's own
-# Trainers/recipes/decision_confidence_analysis_pointer.yaml at commit 26cb57c7,
+# Trainers/recipes/decision_confidence_analysis_pointer.yaml at commit 29f7af0c,
 # with this cell's staged data/checkpoint/config and output paths.
 #
 # Launch (from the synaptic-tuner directory, Windows Python launcher; see

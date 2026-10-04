@@ -1,5 +1,5 @@
 # Stage 0b readout fit: GATE direction (anchor = last prompt token).
-# Schema: synaptic-tuner MechInterp.config.ProbeFitConfig (engine 26cb57c7).
+# Schema: synaptic-tuner MechInterp.config.ProbeFitConfig (engine 29f7af0c).
 # Verb:   tuner.py mechinterp probe-fit --mi-config <this file>   (CPU)
 # Fits on FIT rows ONLY (labels_fit.jsonl: row_key + label, known=1 unknown=0,
 # ambiguous absent). Sweeps every extracted layer by 5-fold out-of-fold AUROC,

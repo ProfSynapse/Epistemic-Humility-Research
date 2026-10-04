@@ -40,7 +40,7 @@ g0_integrity:
   probe_rows_must_equal: 14267            # every pool row probed (probe.py append-log complete)
   probe_config_sha_single_value: true     # one probe_config_sha across all rows
   pointer_checkpoint_tree_sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
-  engine_commit: 26cb57c72c68c382cf9299096bce535d4a606929
+  engine_commit: 29f7af0c35e3c825d96f770b62f46c60ac4db2b7
   engine_split_must_match_harness_split: true   # TEST qid set and FIT/CAL/TEST counts identical
   ambiguous_excluded_from_engine_rows: true
   applies_to: [h_a, h_b, h_c, h_d1, h_d2, secondary]
@@ -133,16 +133,18 @@ h_c_readout_separates:
   ci: bootstrap (stratified)
 
 h_d1_base_axis_transfer:
-  precondition: [s0_g1_gate_validity PASS, s0_g2_permuted_control PASS, engine per-row TEST <answer> states available]
-  statistic: AUROC(h_L . v_gate -> known) on TEST, h_L = decision-model <answer> hidden state at the frozen gate layer index L, v_gate = frozen base direction (no refit)
+  precondition: [s0_g1_gate_validity PASS, s0_g2_permuted_control PASS, engine directions.base_gate present and scored at the frozen layer]
+  engine_direction: base_gate              # analysis_*.yaml directions[].name -> direction_gate.json (frozen Stage 0)
+  control_direction: base_gate_permuted    # descriptive control, same scoring
+  statistic: AUROC(s_i -> known) on TEST, s_i = h_L @ coef + intercept (the frozen base gate's own logistic decision value; engine directions.base_gate.auroc_known_vs_unknown, per-row direction_scores.base_gate), h_L = decision-model <answer> hidden state at the frozen gate layer index L (no refit, no layer override)
   threshold: 0.75
   direction: at_least
-  ci: bootstrap (stratified)
+  ci: bootstrap (stratified) over per-row direction_scores; the in-cell point must equal the engine point
   comparison_with_readout:
-    statistic: AUROC(D1) - AUROC(R1) on the same TEST rows
+    statistic: AUROC(D1) - AUROC(R1) on the same TEST rows (engine auroc_known_vs_unknown_minus_r1; in-cell paired bootstrap reported alongside)
     ci: paired bootstrap
     reported_as: registered comparison (feeds the interpretation matrix); margin +0.03 with CI lower bound > 0 is read as "the base axis carries more than the readout reports"
-  missing_states: NOT-COMPUTED (engine capability gap; see AMENDMENT "Engine capability gaps")
+  engine_missing_or_layer_mismatch: NOT-ADJUDICABLE (the engine fails loudly on a missing file, schema, hidden-size or uncaptured layer)
 
 h_d2_fresh_probe_beats_readout:
   statistic: AUROC(KU probe) - AUROC(R1) on TEST known+unknown rows   # engine knowledge.ku_probe_minus_readout
@@ -165,7 +167,7 @@ interpretation_matrix:
   d1_fail_and_d2_low: no linearly recoverable KU signal at <answer>
 
 secondary_descriptive:
-  conformal_by_knowledge: split-conformal LAC sets, alpha in {0.1, 0.2}, q-hat from CAL; coverage and mean set size on known vs unknown TEST rows (requires engine per-row option probabilities; else NOT-COMPUTED)
+  conformal_by_knowledge: split-conformal LAC sets, alpha in {0.1, 0.2}, q-hat from CAL (engine qhat_by_kind.choice); coverage and mean set size on known vs unknown TEST rows from per-row probs_r1
   popularity_quartiles: engine knowledge.by_popularity_quartile
   recall_vs_recognition: unknown-row 4-way accuracy with Wilson CI against chance 0.25 (unknown-but-correct rate), reported, never hidden
   per_relation: accuracy and mean R1 per popqa relation, known vs unknown

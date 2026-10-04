@@ -1,7 +1,7 @@
 # Engine analysis config, primary arm: pointer decision model on PopQA rows.
 #
 # Schema: synaptic-tuner Trainers/decision/decision_core/confidence_analysis.py
-#         (ConfidenceAnalysisConfig) at engine commit 26cb57c7; reference
+#         (ConfidenceAnalysisConfig) at engine commit 29f7af0c; reference
 #         configs Trainers/decision/configs/experiments/confidence_analysis_*.yaml.
 # Consumed by: synaptic-tuner Trainers/decision/analyze_confidence.py, inside
 #              the container launched by recipe_pointer.yaml.
@@ -49,3 +49,23 @@ bootstrap:
 
 output:
   output_root: scratch/eh_staging/dmcc-pointer-popqa/output
+
+export:
+  states: false           # H-D1 is scored by the engine's directions block; raw states not needed
+  layers: null
+  per_row: true           # probs_r0/probs_r1, dial_score, stack_score, ku_probe_score, direction_scores
+
+# Stage 0 frozen base-model directions (mechinterp-direction/v1), copied into
+# the staging dir by dmcc_harness.py stage-engine after their sha256 is checked
+# against analysis-committed/stage0_freeze.json. layer omitted = the layer frozen
+# in each JSON (the Stage 0 FIT best layer); the engine scores
+# h @ coef + intercept at that hidden-state index of the decision model's
+# <answer> state (0 = embeddings, i = output of decoder block i; same index
+# convention as MechInterp extraction, verified pre-sign, NOTEBOOK).
+directions:
+  - name: base_gate             # H-D1
+    path: scratch/eh_staging/dmcc-pointer-popqa/directions/direction_gate.json
+  - name: base_gate_permuted    # H-D1 control (descriptive)
+    path: scratch/eh_staging/dmcc-pointer-popqa/directions/direction_gate_permuted.json
+  - name: base_dial             # descriptive
+    path: scratch/eh_staging/dmcc-pointer-popqa/directions/direction_dial.json
