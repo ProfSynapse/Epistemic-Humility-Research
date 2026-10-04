@@ -1459,6 +1459,12 @@
         },
         {
           "availability": "local",
+          "path": "synaptic-tuner/scratch/eh_staging/dmcc-letter-logits-popqa/final_model",
+          "sha256": "3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96",
+          "source": "tuner decision run decision-qwen35-2b-letter-logits/20261004_152616/final_model (registry run id 55307ef8-ec80-414e-967d-c55ba6d7d1d6; secondary arm), staged by dmcc_harness.py stage-engine"
+        },
+        {
+          "availability": "local",
           "path": "experiments/decision-model-calibrated-choice/analysis/popqa/probe_pool.jsonl",
           "source": "dmcc_harness.py build-pool from akariasai/PopQA@098765c79ea10a2cb19c828324e33281b8336ec0 test.tsv (sha256 9a5227f41bff0e4c331d4a774d946b12f95307892b58f860a9606ef356e6089b)"
         }

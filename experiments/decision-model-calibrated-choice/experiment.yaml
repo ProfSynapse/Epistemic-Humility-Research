@@ -108,6 +108,12 @@ inputs:
     (Toolset-Training worktree jev-models-tuner-training-b55d92), staged by dmcc_harness.py
     stage-engine
   sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
+- path: synaptic-tuner/scratch/eh_staging/dmcc-letter-logits-popqa/final_model
+  availability: local
+  source: tuner decision run decision-qwen35-2b-letter-logits/20261004_152616/final_model
+    (registry run id 55307ef8-ec80-414e-967d-c55ba6d7d1d6; secondary arm), staged by
+    dmcc_harness.py stage-engine
+  sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96
 - path: experiments/decision-model-calibrated-choice/analysis/popqa/probe_pool.jsonl
   availability: local
   source: dmcc_harness.py build-pool from akariasai/PopQA@098765c79ea10a2cb19c828324e33281b8336ec0

@@ -141,9 +141,45 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _host_path(p: str, base: Path) -> Path:
+    """A gitdir pointer as this host sees it: 'F:/x' -> '/mnt/f/x' under WSL;
+    relative pointers resolve against the directory holding the .git file."""
+    if len(p) > 2 and p[1] == ":" and p[2] in "/\\" and os.name != "nt":
+        return Path("/mnt/" + p[0].lower() + "/" + p[3:].replace("\\", "/"))
+    q = Path(p)
+    return q if q.is_absolute() else (base / q)
+
+
+def _read_head(path: Path) -> str:
+    """Resolve HEAD without the git CLI. Needed under WSL, where a worktree created
+    from Windows has a .git pointer `gitdir: F:/...` that Linux git cannot follow
+    (pre-sign drill 2026-10-04)."""
+    dotgit = path / ".git"
+    gitdir = dotgit
+    if dotgit.is_file():
+        gitdir = _host_path(dotgit.read_text(encoding="utf-8").split(":", 1)[1].strip(), path)
+    head = (gitdir / "HEAD").read_text(encoding="utf-8").strip()
+    if not head.startswith("ref:"):
+        return head
+    ref = head.split(":", 1)[1].strip()
+    commondir = gitdir
+    if (gitdir / "commondir").exists():
+        commondir = _host_path((gitdir / "commondir").read_text(encoding="utf-8").strip(), gitdir)
+    for base in (gitdir, commondir):
+        f = base / ref
+        if f.exists():
+            return f.read_text(encoding="utf-8").strip()
+    for line in (commondir / "packed-refs").read_text(encoding="utf-8").splitlines():
+        if line.endswith(" " + ref):
+            return line.split()[0]
+    raise StageError(f"cannot resolve HEAD ref {ref} for {path}")
+
+
 def git_head(path: Path) -> str:
-    return subprocess.run(["git", "-C", str(path), "rev-parse", "HEAD"], capture_output=True,
-                          text=True, check=True).stdout.strip()
+    out = subprocess.run(["git", "-C", str(path), "rev-parse", "HEAD"], capture_output=True, text=True)
+    if out.returncode == 0 and out.stdout.strip():
+        return out.stdout.strip()
+    return _read_head(path)
 
 
 def to_windows_path(p: Path) -> str:
@@ -1047,7 +1083,7 @@ def stage_score(c: dict, args) -> None:
                 and report["n_rows"] == {k: len(v) for k, v in split["qids"].items()})
     amb_ok = all(r["meta"]["knowledge"] in ("known", "unknown") for r in test)
     commit_ok = rr["submodule_commit"] == g0["engine_commit"]
-    ckpt_ok = (args.model != "pointer") or rr["checkpoint"]["tree_sha256"] == g0["pointer_checkpoint_tree_sha256"]
+    ckpt_ok = rr["checkpoint"]["tree_sha256"] == g0[f"{args.model}_checkpoint_tree_sha256"]
     res["g0"]["integrity"] = {"split_identity": split_ok, "ambiguous_excluded": amb_ok,
                               "engine_commit": commit_ok, "checkpoint_digest": ckpt_ok}
     integrity_ok = split_ok and amb_ok and commit_ok and ckpt_ok

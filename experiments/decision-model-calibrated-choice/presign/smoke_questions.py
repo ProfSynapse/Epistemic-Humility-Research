@@ -29,3 +29,19 @@ QUESTIONS = [
     "Which famous scientist proposed the three laws of motion that underlie classical mechanics?",
     "If a train travels at a constant 60 kilometres per hour for two and a half hours, how far does it go?",
 ]
+
+
+def synthetic(n: int, seed: int = 0) -> list[str]:
+    """Deterministic templated arithmetic / unit-conversion questions for
+    throughput timing only. No entities, no PopQA relation, never scored."""
+    import random
+
+    rng = random.Random(seed)
+    templates = [
+        lambda a, b: f"What is {a} plus {b}?",
+        lambda a, b: f"What is {a} multiplied by {b}?",
+        lambda a, b: f"How many minutes are there in {a} hours and {b} minutes?",
+        lambda a, b: f"If you have {a} apples and give away {min(a, b)}, how many are left?",
+        lambda a, b: f"How many centimetres are there in {a} metres and {b} centimetres?",
+    ]
+    return [templates[i % len(templates)](rng.randint(2, 999), rng.randint(2, 99)) for i in range(n)]

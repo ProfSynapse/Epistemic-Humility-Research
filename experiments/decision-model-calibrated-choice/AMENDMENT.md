@@ -123,9 +123,13 @@ The PI asked for this to be stated plainly. Verbatim facts:
    analysis was started and stopped before it produced output.
 4. The pointer model's own training evaluation on strands held-out tasks HAS
    been observed: accuracy 0.633, calibrated ECE 0.031,
-   answer-change-under-reordering 0.086 on 10,500 rows. Any strands-holdout
-   claim is therefore exploratory, not pre-registered. This amendment's
-   confirmatory gates are PopQA-only.
+   answer-change-under-reordering 0.086 on 10,500 rows. The letter-logit
+   model's own strands held-out training evaluation HAS also been observed
+   (disclosed 2026-10-04, after its training finished): accuracy 0.654,
+   calibrated ECE 0.015, answer-change-under-reordering 0.097. Any
+   strands-holdout claim for either model is therefore exploratory, not
+   pre-registered. These are strands-only results, not PopQA. This
+   amendment's confirmatory gates are PopQA-only.
 
 Added by the drafter:
 
@@ -146,6 +150,15 @@ Added by the drafter:
    probe.py's self-check accepts. No generation was run.
 8. The sample size (all 14,267 rows) was chosen from the gate floors below,
    not from any outcome.
+9. The pre-sign infrastructure checks (2026-10-04) generated text with the
+   base model only on 20 fixed non-PopQA smoke questions and on deterministic
+   synthetic arithmetic and unit-conversion prompts. They observed:
+   - completions, as token IDs, compared for identity and never scored;
+   - the frequency of generated thinking markers (checklist item 7);
+   - generation and extraction throughput;
+   - how much the adapter displaces hidden states on 6 generic prompts.
+   No PopQA row was generated on, labeled or extracted, and no decision-model
+   output on any QA item was produced.
 
 ## Design
 
@@ -249,18 +262,29 @@ EH's extraction -> probe-fit -> freeze pipeline, applied to the labeler.
   `decision-qwen35-2b-pointer` (LoRA r16 / alpha 32 + pointer head, strands v5
   short-task corpus, 1 epoch), recipe
   `Trainers/recipes/decision_qwen35_2b_pointer.yaml` (engine `31962293`);
-  checkpoint `.../decision-qwen35-2b-pointer/20261004_122756/final_model`,
-  tree sha256 `e0cc616d...a4acbfc` (adapter `7d66a8a9...`, pointer head
-  `d7d97981...`, decision_config `7cd67f75...`).
+  checkpoint `.../decision-qwen35-2b-pointer/20261004_122756/final_model`
+  (3,045 steps, 2 h 40 m), tree sha256
+  `e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc`
+  (adapter_model.safetensors
+  `7d66a8a9d34f85eb3661b458598ed85e727a6748a4831effec83a820d3770ab6`,
+  readout_head.safetensors
+  `d7d979817375367ccec4bf09bfa54e2ffbea07872958b7462e328608c0857989`,
+  decision_config `7cd67f75...`).
 - SECONDARY arm (PI decision, 2026-10-04): the letter-logit readout model,
   tuner run `decision-qwen35-2b-letter-logits`, recipe
   `Trainers/recipes/decision_qwen35_2b_letter_logits.yaml`. It is scored with
   the identical gates and labelled secondary/exploratory. It carries no
   confirmatory claim, so no multiplicity correction is applied. Confirmatory
-  claims rest on the PRIMARY pointer arm alone. Checkpoint provenance:
-  **pending run completion** (the training was still running on 2026-10-04).
-  Its checkpoint path and tree sha256 are recorded in the NOTEBOOK and the run
-  record before its analysis is launched.
+  claims rest on the PRIMARY pointer arm alone. Checkpoint provenance (run
+  completed 2026-10-04): run dir
+  `F:\Code\Toolset-Training\.claude\worktrees\jev-models-tuner-training-b55d92\toolset-training-artifacts\runs\local_docker\decision\decision-qwen35-2b-letter-logits\20261004_152616`
+  (`final_model/`), recipe at tuner commit `29f7af0c` (training code unchanged
+  since `31962293`), registry run id `55307ef8-ec80-414e-967d-c55ba6d7d1d6`,
+  3,045 steps, 2 h 15 m. Tree sha256
+  `3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96`;
+  adapter_model.safetensors
+  `3ab902d84d2a937b74e1181a7018df9f558de5ee89310d66ea564d19b46b4180` (no
+  readout head: the letter-logit readout uses the LM head).
 - Engine call: `analyze_confidence.py` via `tuner.py local-run` with
   `recipe_pointer.yaml` (mirrors the engine's own analysis recipe) and
   `analysis_pointer.yaml` (ablation off, all layers captured at `<answer>`,
@@ -525,23 +549,57 @@ Results and IDs for each check are in the NOTEBOOK and in
    extraction and the decision capture path (adapter disabled) agree index for
    index on all 25 states: max relative L2 0.023 on the diagonal, at least 0.30
    to a neighbouring index.
-3. **vLLM. OPEN.** Batch invariance is unsupported for this model in vLLM 0.27.1
-   (recorded; the deviation is stated under Lane). The generation repeat smoke
-   is BLOCKED on the shared GPU and must run with the GPU exclusive (no
-   training container) at the registered 0.90 utilization.
-4. **Render identity. CLOSED at tokenizer level.** 20 of 20 rows have
-   byte-identical prompts and identical token IDs between the label path
-   (vLLM 0.27.1 tokenizer, transformers 5.15.0) and the extraction path (runner,
-   transformers 5.17.0). Engine-observed prompt token IDs are folded into item 3.
-5. **Kill-resume drill. PARTIAL.** `stage0-extract` passes on the real harness
-   path (shard 0 skipped with its marker unchanged, shard 1 completed, both
-   families on all rows, no leftover container) after two harness defects the
-   drill surfaced were fixed. The `label` drill on the real vLLM path is
-   BLOCKED with item 3; EH probe.py's resume logic passes its own stub tests.
-   Measured: kill after 159 s, resume in 215 s, for model load plus 3 rows per
-   shard. A full-scale Stage 0 wall-clock estimate needs a one-shard smoke
-   (500 rows) on an exclusive GPU.
-6. **User prediction. CLOSED.** The PI's prediction was recorded verbatim on 2026-10-04 (Predictions scoreboard), and the PI confirmed the drafted thresholds the same day.
+3. **vLLM. CLOSED for the probe.py regime, with a disclosed property**
+   (exclusive GPU, registered 0.90 utilization, batch invariance off;
+   `analysis-committed/run_records/dmcc-presign-exclusive-20261004.json`).
+   - Engine-observed prompt token IDs equal the extraction render on 20 of 20
+     rows.
+   - Single-request greedy, the probe.py regime, repeats 20 of 20.
+   - Batched vs single greedy differ on 2 of 20 rows. probe.py never batches
+     across questions, so this does not apply to the label stage.
+   - Seeded sampling (n = 8) repeats on 158 of 160 completions; two rows
+     differ by one completion each.
+   - Labels are therefore not bit-reproducible across reruns. A differing
+     sample moves p_correct by 1/32, so only rows sitting at a band edge (0/32
+     or 16/32) could change label. Disclosed; no gate depends on bit identity.
+   - The first attempt failed on a Windows `nvcc` on the WSL PATH. cell.yaml now
+     sets a Linux-only PATH for the label stage.
+4. **Render identity. CLOSED**, now also at engine level (item 3).
+5. **Kill-resume drill. CLOSED.**
+   - `stage0-extract` passes (earlier entry).
+   - `label` passes on the real vLLM path: SIGKILL after the first
+     append-log row, resume rc 0, 6 of 6 unique rows, the pre-kill row
+     byte-identical.
+   - The drill surfaced, and the harness now fixes, a git-HEAD lookup failure
+     under WSL. The WSL worktree's `.git` points to `F:/...`, so the harness now
+     resolves HEAD in pure Python when the git CLI fails.
+7. **Thinking-marker abort in the label stage. OPEN; BLOCKS SIGN (PI
+   decision needed).** In the throughput run on synthetic arithmetic prompts,
+   EH `probe.py` aborted at question 4 of 200: a T = 1.0 sample from the base
+   model contained `</think>`. With thinking off, `assert_no_generated_thinking`
+   is a hard abort that voids the partial run. At roughly one marker in ~130
+   generations, a 14,267 x 33-generation run would almost surely abort.
+   Options (the orchestrator makes no recommendation):
+   - (i) Add a configurable generated-thinking policy to the shared EH
+     instrument, e.g. abort (default, unchanged for existing cells) | score the
+     text after the final `</think>` | count the sample as incorrect. This is
+     an `experiments/common/` change with its own review. It is not a tuner
+     change.
+   - (ii) Label with a base-mode k-shot prompt (the Amendment Y pattern) instead
+     of the chat template. Stage 0's render would change with it.
+   - (iii) Run thinking ON and score after the final `</think>` (supported
+     today). This changes the prompt, and thinking can exhaust the 64-token
+     budget.
+   Any choice is a pre-sign instrument change: it is recorded here, and the
+   prior-exposure section notes it was made after seeing marker frequency on
+   synthetic prompts only.
+8. **Timing (synthetic prompts; PopQA lengths may differ).**
+   - Stage 0: 1.65 s per row on a 500-row shard, plus about 90 s model load
+     per shard. At most about 8,560 FIT + CAL known/unknown rows gives about
+     4 to 4.5 h and about 3.4 GB.
+   - Labeling, once 6a is resolved: about 0.3 to 0.5 s per question after an
+     8 to 13 min engine load, so about 1.5 to 2.5 h for 14,267 questions.
+9. **User prediction. CLOSED.** The PI's prediction was recorded verbatim on 2026-10-04 (Predictions scoreboard), and the PI confirmed the drafted thresholds the same day.
 
 ## Predictions scoreboard
 

@@ -53,6 +53,11 @@ labeler:
     # exclusive-GPU repeat smoke instead (AMENDMENT pre-sign checklist).
     VLLM_BATCH_INVARIANT: "0"
     VLLM_WSL2_ENABLE_PIN_MEMORY: "1"
+    # Linux-only PATH. WSL interop otherwise appends Windows paths, including a
+    # non-executable `nvcc` from a Windows CUDA toolkit; torch inductor then dies
+    # with "Permission denied: 'nvcc'" during vLLM engine compile (pre-sign
+    # check 2026-10-04).
+    PATH: /home/profsynapse/.venvs/vllm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/wsl/lib
   # EH probe label names -> engine meta.knowledge names.
   label_map: {known: known, unknown: unknown, discard: ambiguous}
 
@@ -125,6 +130,9 @@ engine:
 models:
   pointer:
     role: primary
+    # 3,045 steps, 2 h 40 m. adapter_model.safetensors sha256
+    # 7d66a8a9d34f85eb3661b458598ed85e727a6748a4831effec83a820d3770ab6;
+    # readout_head.safetensors d7d979817375367ccec4bf09bfa54e2ffbea07872958b7462e328608c0857989
     run_id: dmcc-pointer-popqa
     tuner_run: decision-qwen35-2b-pointer
     recipe_in_engine: Trainers/recipes/decision_qwen35_2b_pointer.yaml
@@ -139,12 +147,14 @@ models:
     run_id: dmcc-letter-logits-popqa
     tuner_run: decision-qwen35-2b-letter-logits
     recipe_in_engine: Trainers/recipes/decision_qwen35_2b_letter_logits.yaml
-    # Provenance PENDING RUN COMPLETION (training still running 2026-10-04).
-    # The operator passes --source-checkpoint
-    # and --expect-tree-sha256 on the command line; both are recorded in the
-    # NOTEBOOK and the run record BEFORE the analysis is launched.
-    source_checkpoint: null
-    tree_sha256: null
+    # Training run completed 2026-10-04 (3,045 steps, 2 h 15 m; registry run id
+    # 55307ef8-ec80-414e-967d-c55ba6d7d1d6; recipe at tuner 29f7af0c, training code
+    # unchanged since 31962293). adapter_model.safetensors sha256
+    # 3ab902d84d2a937b74e1181a7018df9f558de5ee89310d66ea564d19b46b4180; no readout head
+    # (letter logits read the LM head). Tree digest below (bin/exp algorithm); the
+    # harness refuses any other bytes.
+    source_checkpoint: F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-letter-logits/20261004_152616/final_model
+    tree_sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96
     analysis_config: experiments/decision-model-calibrated-choice/analysis_letter_logits.yaml
     recipe: experiments/decision-model-calibrated-choice/recipe_letter_logits.yaml
 

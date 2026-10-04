@@ -6,6 +6,81 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-04 (evening): exclusive-GPU pre-sign checks and letter-logit provenance
+
+Authorized by the PI via the coordinator. The GPU was exclusive: 13 MiB
+used at start, no local-run containers. Inputs were the 20 smoke questions
+plus deterministic synthetic arithmetic and unit-conversion prompts
+(`presign/smoke_questions.py synthetic(seed=20261004)`); nothing was scored.
+Chains were launched detached (Windows `Start-Process wsl.exe ...
+run_exclusive{,2,3}.sh`), with a per-step UTC log in
+`analysis/presign/excl/status.log`. Run record:
+`analysis-committed/run_records/dmcc-presign-exclusive-20261004.json`.
+
+- **(a) vLLM repeat/reorder smoke** (`presign/check_vllm.py --gpu-mem 0.90`,
+  `VLLM_BATCH_INVARIANT=0`).
+  - Attempt 1 failed in the engine compile with `PermissionError: 'nvcc'`.
+    The detached WSL session inherits the Windows PATH, which includes a
+    Windows CUDA toolkit `bin`. Fix: a Linux-only PATH, now also in
+    `cell.yaml labeler.env`.
+  - Attempt 2 completed. Engine load took 802 s, including a 364 s
+    torch.compile that is now cached.
+  - Attempt 3 (with the detail fields) loaded in 506 s.
+  - Engine `prompt_token_ids` equal the runner render on 20 of 20 rows.
+  - Single-request greedy (the probe.py regime) repeats on 20 of 20.
+  - Batched greedy vs single greedy differ on rows 15 and 16; batched vs
+    reversed differ on row 16; batched greedy across two engine processes
+    differs on row 16.
+  - Seeded sampled n = 8 repeats on 158 of 160 completions; rows 0 and 17
+    each have one differing completion.
+  - Verdict: PASS for the label regime, with non-bit-reproducible sampling
+    disclosed (AMENDMENT checklist 3).
+- **(b) Label kill-resume drill** (`presign/drill_resume.py --only label
+  --sandbox drill_label2`, real `dmcc_harness label` -> EH `probe.py`).
+  - Attempt 1 failed in the harness's `git rev-parse` under WSL: the
+    worktree `.git` points to `F:/...`. Fix: a pure-Python HEAD resolver
+    fallback, which resolves both the worktree (`6d686ca6`) and the
+    submodule (`29f7af0c`).
+  - Attempt 2 PASSED: killed after 568.5 s with 1 row written; resume rc 0
+    in 606.7 s; 6 rows, 6 unique keys; the pre-kill row byte-identical.
+- **(c) Stage 0 500-row timing shard** (`presign/drill_resume.py --timing 200
+  500 --sandbox timing`, real `dmcc_harness stage0-extract`, runner image
+  `sha256:b4166dbd...`).
+  - 500 of 500 rows answered and captured, anchor and answer_end, 25 states x
+    2048.
+  - Wall time 912.2 s; first-to-last tensor 824 s, or 1.65 s per row; 200 MB
+    on disk.
+  - Real FIT rows were not used: they do not exist before labeling, and using
+    them would be exposure.
+- **Label throughput** (`--timing 200 0 --only label --sandbox timing_label`).
+  - ABORTED at synthetic question 4 of 200. EH probe.py raised
+    `RuntimeError: Qwen3 generated sampled[16] output containing thinking
+    marker '</think>'` ("do not reuse this partial run").
+  - Before the abort: greedy about 0.02 s and sampled n = 32 about 0.12 to
+    0.42 s per question after load.
+  - This blocks the registered label stage (AMENDMENT checklist 7, PI
+    decision).
+- **Estimates** (synthetic prompts):
+  - Stage 0: at most about 8,560 rows x 1.65 s plus shard loads, about 4 to
+    4.5 h and 3.4 GB.
+  - Labeling, once checklist 7 is resolved: about 1.5 to 2.5 h for 14,267
+    questions.
+- **Letter-logit provenance** (secondary arm; pending provenance replaced).
+  - Run dir `...\decision\decision-qwen35-2b-letter-logits\20261004_152616\final_model`;
+    recipe `Trainers/recipes/decision_qwen35_2b_letter_logits.yaml` at tuner
+    `29f7af0c` (training code unchanged since `31962293`); registry run id
+    `55307ef8-ec80-414e-967d-c55ba6d7d1d6`; 3,045 steps, 2 h 15 m.
+  - Hashes: adapter_model.safetensors `3ab902d84d2a937b74e1181a7018df9f558de5ee89310d66ea564d19b46b4180`;
+    tree sha256 (bin/exp algorithm) `3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96`.
+    There is no readout head.
+  - The pointer arm was re-hashed and is unchanged: tree `e0cc616d...`,
+    adapter `7d66a8a9...`, head `d7d97981...`; 3,045 steps, 2 h 40 m.
+  - Both tree digests are pinned in cell.yaml and gates.yaml G0. The harness
+    G0 checkpoint check is now per-arm.
+  - Disclosure added to prior-exposure item 4: the letter-logit model's
+    strands-holdout training eval (accuracy 0.654, calibrated ECE 0.015,
+    answer-change 0.097) has been observed.
+
 ### 2026-10-04: pre-sign infrastructure checks (lab-notebook tier; no outcomes)
 
 Authorization: the PI's decision, relayed by the coordinator, to run pre-sign

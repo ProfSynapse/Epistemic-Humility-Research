@@ -82,6 +82,18 @@ def main() -> int:
 
     s1, s2 = sampled_run(), sampled_run()
     sampled_ok = s1 == s2
+    # Detail (added after attempt 2): which greedy regimes disagree, whether the
+    # probe.py regime (one request per question) repeats, and how many sampled
+    # completions differ between two identical seeded runs.
+    c_two = [run([rendered[i]], greedy)[0] for i in idx]
+    detail = {
+        "greedy_rows_batched_vs_reversed_differ": [i for i in idx if a[i][1] != b_rev[i][1]],
+        "greedy_rows_batched_vs_single_differ": [i for i in idx if a[i][1] != c_one[i][1]],
+        "greedy_rows_single_repeat_differ": [i for i in idx if c_one[i][1] != c_two[i][1]],
+        "sampled_completions_identical": sum(x == y for i in idx for x, y in zip(s1[i], s2[i])),
+        "sampled_completions_total": sum(len(s1[i]) for i in idx),
+        "sampled_rows_with_any_difference": [i for i in idx if s1[i] != s2[i]],
+    }
 
     res = {
         "check": "vllm_label_path_smoke",
@@ -96,6 +108,7 @@ def main() -> int:
         "greedy_invariant_across_batch_orders": greedy_ok,
         "greedy_mismatch_rows": greedy_diff,
         "sampled_repeat_identical": sampled_ok,
+        "detail": detail,
         "prompt_ids_consistent_across_regimes": all(a[i][0] == b_rev[i][0] == c_one[i][0] for i in idx),
     }
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

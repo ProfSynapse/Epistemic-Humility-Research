@@ -40,6 +40,7 @@ g0_integrity:
   probe_rows_must_equal: 14267            # every pool row probed (probe.py append-log complete)
   probe_config_sha_single_value: true     # one probe_config_sha across all rows
   pointer_checkpoint_tree_sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
+  letter_logits_checkpoint_tree_sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96   # secondary arm
   engine_commit: 29f7af0c35e3c825d96f770b62f46c60ac4db2b7
   engine_split_must_match_harness_split: true   # TEST qid set and FIT/CAL/TEST counts identical
   ambiguous_excluded_from_engine_rows: true

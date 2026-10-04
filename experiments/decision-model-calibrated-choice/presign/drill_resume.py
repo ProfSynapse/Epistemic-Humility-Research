@@ -40,7 +40,7 @@ sys.path.insert(0, str(HERE))
 import yaml  # noqa: E402
 
 import dmcc_harness as H  # noqa: E402
-from smoke_questions import QUESTIONS  # noqa: E402
+from smoke_questions import QUESTIONS, synthetic  # noqa: E402
 
 SANDBOX = CELL / "analysis" / "presign" / "drill"
 
@@ -86,6 +86,37 @@ def write_inputs(c: dict) -> None:
         sc["rows_path"] = rel(rp_)
         H._yaml_dump(sc, st / "shards" / f"extract_{k:03d}.yaml")
     H.write_json_atomic(st / "stage0_rows_manifest.json", {"counts": {}, "n_shards": 2, "s0_floors_met": False})
+
+
+def write_timing_inputs(c: dict, n_label: int, n_extract: int) -> None:
+    """Throughput timing sandbox: synthetic non-PopQA questions (never scored).
+    Label pool of n_label rows; ONE extraction shard of n_extract rows."""
+    qs = synthetic(max(n_label, n_extract), seed=20261004)
+    pool = [{"question": q, "question_id": f"timing-{i}",
+             "answer": {"normalized_aliases": ["zzzz"], "value": "zzzz"}} for i, q in enumerate(qs[:n_label])]
+    H.write_jsonl_atomic(SANDBOX / "popqa" / "probe_pool.jsonl", pool)
+    st = SANDBOX / "stage0"
+    rows = [{"row_key": f"timing-{i}", "question": q, "label": i % 2, "split": "fit"}
+            for i, q in enumerate(qs[:n_extract])]
+    template = H._yaml_load(H.rp(c["stage0"]["extract_recipe"]))
+    rp_ = st / "shards" / "rows_000.jsonl"
+    H.write_jsonl_atomic(rp_, rows)
+    sc = dict(template)
+    sc["rows_path"] = rel(rp_)
+    H._yaml_dump(sc, st / "shards" / "extract_000.yaml")
+    H.write_json_atomic(st / "stage0_rows_manifest.json", {"counts": {}, "n_shards": 1, "s0_floors_met": False})
+
+
+def timing(stage: str, c: dict) -> dict:
+    rc, wall = run_to_end(stage, SANDBOX / f"timing_{stage}.log")
+    out = {"stage": stage, "rc": rc, "wall_s": round(wall, 1)}
+    if stage == "label":
+        out["rows"] = len(lines(H.probe_results_path(c)))
+    else:
+        ext = H.rp(H._yaml_load(H.rp(c["stage0"]["extract_recipe"]))["output_dir"])
+        m = ext / "manifest_shard_000.json"
+        out["rows"] = len(json.loads(m.read_text())["rows"]) if m.exists() else 0
+    return out
 
 
 def child(stage: str, c: dict) -> int:
@@ -163,10 +194,23 @@ def main() -> int:
     ap.add_argument("--snapshot", required=True)
     ap.add_argument("--gpu-mem", type=float, default=0.30)
     ap.add_argument("--only", choices=["label", "stage0-extract"], default=None)
+    ap.add_argument("--timing", type=int, nargs=2, metavar=("N_LABEL", "N_EXTRACT"), default=None)
+    ap.add_argument("--sandbox", default=None, help="sandbox dir name under analysis/presign/")
     args = ap.parse_args()
+    global SANDBOX
+    if args.sandbox:
+        SANDBOX = CELL / "analysis" / "presign" / args.sandbox
     c = patched_cfg(args.snapshot, args.gpu_mem)
     if args.child:
         return child(args.child, c)
+    if args.timing:
+        write_timing_inputs(c, *args.timing)
+        res = {"drill": "timing", "sandbox": rel(SANDBOX), "results": []}
+        for st in ([args.only] if args.only else ["label", "stage0-extract"]):
+            res["results"].append(timing(st, c))
+            H.write_json_atomic(SANDBOX / "timing.json", res)
+        print(json.dumps(res, indent=1))
+        return 0
     write_inputs(c)
     out = {"drill": "kill_resume", "sandbox": rel(SANDBOX), "results": []}
     if args.only in (None, "label"):
