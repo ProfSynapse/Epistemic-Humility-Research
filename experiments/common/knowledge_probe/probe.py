@@ -36,6 +36,8 @@ from backends import (
     assert_no_generated_thinking_batch,
     build_backend,
     extract_answer_after_thinking,
+    has_generated_thinking,
+    resolve_generated_thinking_policy,
 )
 from scoring import is_correct, normalize_question, p_correct
 
@@ -179,13 +181,20 @@ def assign_label(greedy_correct: bool, pc: float, labels_cfg: dict) -> str:
 
 
 def prepare_generated_for_scoring(
-    texts: list[str], *, question: str, generation_kind: str, enable_thinking: bool
+    texts: list[str], *, question: str, generation_kind: str, enable_thinking: bool,
+    generated_thinking_policy: str = "abort",
 ) -> tuple[list[str], list[str] | None]:
-    """Apply the thinking-on/off output contract before TriviaQA scoring."""
+    """Apply the thinking-on/off output contract before TriviaQA scoring.
+
+    Thinking off: under the default "abort" policy any generated thinking marker
+    raises. Under "count_wrong" the texts pass through unchanged and the caller
+    scores marker-bearing generations as incorrect (see probe_one).
+    """
     if not enable_thinking:
-        assert_no_generated_thinking_batch(
-            texts, question=question, generation_kind=generation_kind
-        )
+        if generated_thinking_policy == "abort":
+            assert_no_generated_thinking_batch(
+                texts, question=question, generation_kind=generation_kind
+            )
         return texts, None
     scored: list[str] = []
     statuses: list[str] = []
@@ -228,6 +237,10 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
     s = config["sampling"]
     seed = derive_seed(s["seed"], question_id)
     enable_thinking = bool(config["model"].get("enable_thinking", False))
+    policy = resolve_generated_thinking_policy(config)
+    # count_wrong applies only with thinking OFF (thinking ON scores the text
+    # after the final </think> and never asserts).
+    count_wrong = policy == "count_wrong" and not enable_thinking
 
     sampled_raw_answers = backend.generate_batch(
         question=question, n_samples=s["n_samples"],
@@ -239,8 +252,11 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         question=question,
         generation_kind="sampled",
         enable_thinking=enable_thinking,
+        generated_thinking_policy=policy,
     )
-    sampled_correct = [is_correct(a, aliases) for a in sampled_answers]
+    sampled_marker = [count_wrong and has_generated_thinking(a) for a in sampled_answers]
+    sampled_correct = [False if flagged else is_correct(a, aliases)
+                       for a, flagged in zip(sampled_answers, sampled_marker)]
     pc = p_correct(sampled_correct)
 
     greedy_raw_answer = backend.generate_greedy(question, s["max_new_tokens"])
@@ -249,6 +265,7 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         question=question,
         generation_kind="greedy",
         enable_thinking=enable_thinking,
+        generated_thinking_policy=policy,
     )
     greedy_answer = greedy_answers[0]
     greedy_thinking_extract_status = (
@@ -256,7 +273,8 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         if greedy_thinking_extract_statuses is not None
         else None
     )
-    greedy_correct = is_correct(greedy_answer, aliases)
+    greedy_marker = count_wrong and has_generated_thinking(greedy_answer)
+    greedy_correct = False if greedy_marker else is_correct(greedy_answer, aliases)
 
     label = assign_label(greedy_correct, pc, config["labels"])
 
@@ -278,6 +296,14 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         "model_tag": config["model"]["model_tag"],
         "probe_config_sha": cfg_sha,
     }
+    if count_wrong:
+        # Present only under the opt-in policy, so default-policy rows keep
+        # their historical schema byte-for-byte.
+        record.update({
+            "generated_thinking_policy": policy,
+            "n_sampled_thinking_marker": int(sum(sampled_marker)),
+            "greedy_thinking_marker": bool(greedy_marker),
+        })
     if enable_thinking:
         record.update({
             "greedy_answer_raw": greedy_raw_answer,
@@ -382,6 +408,27 @@ def sensitivity_grid(records: list[dict], sens_cfg: dict) -> dict:
     return {"n_questions_in_grid": len(pool), "cells": cells}
 
 
+def generated_thinking_summary(records: list[dict]) -> dict:
+    """Run-level counts for the count_wrong policy (rows lacking the fields count 0)."""
+    n_samples = sum(int(r.get("n_samples", 0)) for r in records)
+    n_sampled_marked = sum(int(r.get("n_sampled_thinking_marker", 0)) for r in records)
+    n_greedy_marked = sum(1 for r in records if r.get("greedy_thinking_marker"))
+    n_generations = n_samples + len(records)
+    n_marked = n_sampled_marked + n_greedy_marked
+    return {
+        "policy": "count_wrong",
+        "n_questions": len(records),
+        "n_questions_affected": sum(
+            1 for r in records
+            if r.get("n_sampled_thinking_marker", 0) or r.get("greedy_thinking_marker")),
+        "n_sampled_marked": n_sampled_marked,
+        "n_greedy_marked": n_greedy_marked,
+        "n_generations": n_generations,
+        "marked_rate": (n_marked / n_generations) if n_generations else 0.0,
+        "sampled_marked_rate": (n_sampled_marked / n_samples) if n_samples else 0.0,
+    }
+
+
 def write_manifest(config: dict, records: list[dict], out_dir: Path,
                    pool_path: Path) -> Path:
     """Provenance sidecar: config, sampling, prompt, split source, counts."""
@@ -401,6 +448,8 @@ def write_manifest(config: dict, records: list[dict], out_dir: Path,
         "label_counts": label_counts,
         "labels_bands": config["labels"],
     }
+    if resolve_generated_thinking_policy(config) == "count_wrong":
+        manifest["generated_thinking"] = generated_thinking_summary(records)
     manifest_path = out_dir / config["output"]["manifest_filename"]
     manifest_path.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False),

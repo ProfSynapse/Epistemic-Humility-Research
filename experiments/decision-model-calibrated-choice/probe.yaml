@@ -43,6 +43,16 @@ probe_pool:
   max_questions: null
   subset_seed: 20260610
 
+scoring:
+  # Generated-thinking policy (EH probe, opt-in; default "abort"). PI decision
+  # 2026-10-04, before any PopQA labeling or outcome: a T=1.0 sample from the
+  # base model can contain '</think>' even with thinking off (pre-sign timing
+  # run aborted on synthetic prompts); such a generation is scored INCORRECT
+  # and counted (rows: n_sampled_thinking_marker / greedy_thinking_marker;
+  # manifest: generated_thinking). Sanity bound and sensitivity analysis:
+  # gates.yaml g0_label_marker_bound, AMENDMENT "Labels".
+  generated_thinking_policy: count_wrong
+
 labels:
   # EH protocol bands: known = greedy correct AND p_correct >= 0.5 (>= 16/32);
   # unknown = p_correct <= 0.0 (0/32); everything else = discard (ambiguous).

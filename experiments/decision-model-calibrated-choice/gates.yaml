@@ -46,6 +46,15 @@ g0_integrity:
   ambiguous_excluded_from_engine_rows: true
   applies_to: [h_a, h_b, h_c, h_d1, h_d2, secondary]
 
+g0_label_marker_bound:
+  # count_wrong thinking-marker policy (PI 2026-10-04, pre-outcome). If the
+  # observed marked rate over all label generations (sampled + greedy) exceeds
+  # this bound, labeling is FLAGGED and the PI is consulted before Stage 0 or
+  # Stage 1 proceeds (dmcc_harness convert refuses until the decision is
+  # recorded in analysis-committed/pi_marker_rate_ack.json).
+  max_marked_rate: 0.05
+  sensitivity: label counts and the H-A/H-B/H-C (and H-D1) statistics recomputed with every question that had any marked generation dropped; descriptive, reported beside the primary
+
 g0_floors:
   # Derivation (gate-diagnosticity.md arithmetic floor): a Wilson-upper cap c is
   # unsatisfiable at 0 events below N = z^2 (1-c)/c: N >= 35 for c = 0.10 and

@@ -45,6 +45,35 @@ from typing import Protocol
 # prompt despite enable_thinking=False. The </think> close token is 151668;
 # its text form plus the open tag are the textual tripwires.
 THINK_TAG_MARKERS = ("<think>", "</think>")
+
+# Policy for GENERATED outputs that contain a thinking marker while thinking is
+# OFF (config key scoring.generated_thinking_policy; absent = "abort").
+#   abort        historical behaviour: raise before writing any probe row
+#                (assert_no_generated_thinking). Default; existing configs and
+#                their probe_config_sha are unchanged.
+#   count_wrong  the affected generation is scored INCORRECT (never matched
+#                against the gold aliases) and the run continues; probe.py
+#                records per-question and run-level counts. Detection uses the
+#                same THINK_TAG_MARKERS substring test as the abort path.
+# Added 2026-10-04 for experiments/decision-model-calibrated-choice (a base
+# model that emits '</think>' under T=1.0 sampling); see that AMENDMENT.
+GENERATED_THINKING_POLICIES = ("abort", "count_wrong")
+
+
+def resolve_generated_thinking_policy(config: dict) -> str:
+    """The configured policy, validated; "abort" when the key is absent."""
+    policy = (config.get("scoring") or {}).get("generated_thinking_policy", "abort")
+    if policy not in GENERATED_THINKING_POLICIES:
+        raise ValueError(
+            f"scoring.generated_thinking_policy must be one of "
+            f"{GENERATED_THINKING_POLICIES}, got {policy!r}"
+        )
+    return policy
+
+
+def has_generated_thinking(text: str) -> bool:
+    """True iff the generation contains a thinking marker (the abort-path test)."""
+    return any(marker in text for marker in THINK_TAG_MARKERS)
 EMPTY_THINK_OFF_MARKER_RE = re.compile(r"<think>\s*</think>")
 
 
@@ -222,13 +251,18 @@ class VLLMBackend:
     """Real GPU backend. vLLM imported lazily so this file loads without it."""
 
     def __init__(self, model_name: str, enable_thinking: bool, system_prompt: str,
-                 vllm_opts: dict | None = None):
+                 vllm_opts: dict | None = None, generated_thinking_policy: str = "abort"):
         # Lazy import: keeps the module importable on CPU-only / no-vLLM hosts.
         from vllm import LLM  # noqa: PLC0415
 
         self.model_name = model_name
         self.enable_thinking = enable_thinking
         self.system_prompt = system_prompt
+        if generated_thinking_policy not in GENERATED_THINKING_POLICIES:
+            raise ValueError(f"unknown generated_thinking_policy {generated_thinking_policy!r}")
+        # Only "abort" asserts here; under "count_wrong" probe.py flags and
+        # scores the affected generations instead.
+        self._abort_on_generated_thinking = generated_thinking_policy == "abort"
         self._chat_template_mode: str | None = None
         opts = vllm_opts or {}
         self.llm = LLM(
@@ -285,7 +319,7 @@ class VLLMBackend:
             n_samples, temperature, top_p, max_new_tokens, seed)
         out = self.llm.generate([rendered], params)
         texts = [o.text for o in out[0].outputs]
-        if not self.enable_thinking:
+        if not self.enable_thinking and getattr(self, "_abort_on_generated_thinking", True):
             assert_no_generated_thinking_batch(
                 texts, question=question, generation_kind="sampled"
             )
@@ -299,7 +333,7 @@ class VLLMBackend:
             1, 0.0, 1.0, max_new_tokens, seed=0)
         out = self.llm.generate([rendered], params)
         text = out[0].outputs[0].text
-        if not self.enable_thinking:
+        if not self.enable_thinking and getattr(self, "_abort_on_generated_thinking", True):
             assert_no_generated_thinking(
                 text, question=question, generation_kind="greedy"
             )
@@ -364,6 +398,7 @@ def build_backend(config: dict, system_prompt: str) -> ProbeBackend:
             enable_thinking=config["model"]["enable_thinking"],
             system_prompt=system_prompt,
             vllm_opts=config["runtime"].get("vllm", {}),
+            generated_thinking_policy=resolve_generated_thinking_policy(config),
         )
     if backend == "stub":
         raise ValueError(

@@ -182,6 +182,53 @@ Added by the drafter:
 - Labels (EH bands): known = greedy correct AND p_correct >= 0.5 (>= 16/32);
   unknown = 0/32; everything else is EH `discard`, called ambiguous here, and
   is excluded from the primary analysis (counts reported).
+- Generated-thinking policy: **`count_wrong`**
+  (`probe.yaml scoring.generated_thinking_policy`).
+  - **What it does.** A sampled or greedy generation containing a thinking
+    marker (`<think>` or `</think>`, the same substring test as EH's abort
+    path) is scored INCORRECT and the run continues. Each probe row records
+    `n_sampled_thinking_marker` and `greedy_thinking_marker`. The probe
+    manifest and the harness's label run record carry the run total and rate.
+  - **Why it was needed.** The pre-sign timing run on synthetic non-PopQA
+    prompts showed the base model emitting `</think>` under T = 1.0 sampling
+    with thinking off. The aborted run saw about one marker in 130
+    generations. EH probe.py's default policy is a hard abort, which would
+    almost surely void a 14,267 x 33 generation run.
+  - **Measured under `count_wrong`** (pre-sign, 200 synthetic prompts; not
+    PopQA). 120 of 6,600 generations were marked (1.8%), all sampled and none
+    greedy. They touched 58 of the 200 questions (29%), most of them in one
+    or two of 32 samples. The rate is higher than the abort run's first
+    impression, so the per-question effect is small but not rare, and the
+    drop-affected sensitivity analysis may remove a sizeable share of
+    questions. That is why it is reported at both the label level and the
+    gate level.
+  - **Why this policy.** It keeps EH's canonical chat-template prompt and every
+    sampling knob, so labels stay comparable with earlier EH cells. It is
+    conservative: it can only lower p_correct and can never make a greedy
+    decode correct. It therefore cannot create a false "known", which needs a
+    correct greedy decode and at least 16/32 correct samples. It can only move
+    a question toward ambiguous or unknown, and a question changes label only
+    when its correct count sits within the marked count of a band edge (0/32
+    or 16/32).
+  - **Decision.** The PI chose this policy on 2026-10-04, before any PopQA
+    labeling or outcome; the alternatives considered are listed under pre-sign
+    checklist item 7.
+  - **Implementation.** An opt-in addition to the shared EH instrument
+    (`experiments/common/knowledge_probe/backends.py` and `probe.py`). The
+    default stays `abort`, so existing cells, configs and `probe_config_sha`
+    values are unchanged. Row schema and manifest are unchanged under the
+    default. Tests are in `tests/test_generated_thinking_policy.py`; the full
+    knowledge-probe suite shows no new failures (NOTEBOOK).
+  - **Pre-stated sanity bound** (`gates.yaml g0_label_marker_bound`). If the
+    marked rate over all label generations (sampled + greedy) on the real run
+    exceeds **5%**, labeling is FLAGGED. The PI is consulted before Stage 0 or
+    Stage 1 proceeds; `dmcc_harness convert` refuses until the PI's decision is
+    recorded in `analysis-committed/pi_marker_rate_ack.json`.
+  - **Registered sensitivity analysis** (descriptive, reported beside the
+    primary). It compares primary label counts with the counts after dropping
+    every question that had any marked generation, and it recomputes the H-A,
+    H-B, H-C and H-D1 statistics on TEST with those questions dropped. The
+    primary verdicts are not changed by it.
 
 ### Decision rows
 
@@ -573,32 +620,27 @@ Results and IDs for each check are in the NOTEBOOK and in
    - The drill surfaced, and the harness now fixes, a git-HEAD lookup failure
      under WSL. The WSL worktree's `.git` points to `F:/...`, so the harness now
      resolves HEAD in pure Python when the git CLI fails.
-7. **Thinking-marker abort in the label stage. OPEN; BLOCKS SIGN (PI
-   decision needed).** In the throughput run on synthetic arithmetic prompts,
-   EH `probe.py` aborted at question 4 of 200: a T = 1.0 sample from the base
-   model contained `</think>`. With thinking off, `assert_no_generated_thinking`
-   is a hard abort that voids the partial run. At roughly one marker in ~130
-   generations, a 14,267 x 33-generation run would almost surely abort.
-   Options (the orchestrator makes no recommendation):
-   - (i) Add a configurable generated-thinking policy to the shared EH
-     instrument, e.g. abort (default, unchanged for existing cells) | score the
-     text after the final `</think>` | count the sample as incorrect. This is
-     an `experiments/common/` change with its own review. It is not a tuner
-     change.
-   - (ii) Label with a base-mode k-shot prompt (the Amendment Y pattern) instead
-     of the chat template. Stage 0's render would change with it.
-   - (iii) Run thinking ON and score after the final `</think>` (supported
-     today). This changes the prompt, and thinking can exhaust the 64-token
-     budget.
-   Any choice is a pre-sign instrument change: it is recorded here, and the
-   prior-exposure section notes it was made after seeing marker frequency on
-   synthetic prompts only.
+7. **Thinking-marker abort in the label stage. CLOSED by PI decision
+   (2026-10-04, before any PopQA labeling or outcome): policy `count_wrong`.**
+   Rationale, sanity bound and sensitivity analysis are under Design / Labels.
+   - What happened: in the throughput run on synthetic arithmetic prompts, EH
+     `probe.py` aborted at question 4 of 200 because a T = 1.0 sample
+     contained `</think>`.
+   - Options considered, with no recommendation from the orchestrator:
+     - (i) a configurable generated-thinking policy in the shared EH
+       instrument (chosen, as `count_wrong`);
+     - (ii) a base-mode k-shot prompt instead of the chat template;
+     - (iii) thinking ON, scored after the final `</think>`.
+   - Prior-exposure note: the decision was informed only by marker frequency
+     on synthetic prompts.
 8. **Timing (synthetic prompts; PopQA lengths may differ).**
    - Stage 0: 1.65 s per row on a 500-row shard, plus about 90 s model load
      per shard. At most about 8,560 FIT + CAL known/unknown rows gives about
      4 to 4.5 h and about 3.4 GB.
-   - Labeling, once 6a is resolved: about 0.3 to 0.5 s per question after an
-     8 to 13 min engine load, so about 1.5 to 2.5 h for 14,267 questions.
+   - Labeling under `count_wrong`: 200 synthetic questions took 306 s after
+     an engine init of about 7 min (325 s of it compile), or 1.53 s per
+     question including per-row scoring and fsync-appends on the host mount.
+     That gives about 6 to 6.5 h for 14,267 questions.
 9. **User prediction. CLOSED.** The PI's prediction was recorded verbatim on 2026-10-04 (Predictions scoreboard), and the PI confirmed the drafted thresholds the same day.
 
 ## Predictions scoreboard

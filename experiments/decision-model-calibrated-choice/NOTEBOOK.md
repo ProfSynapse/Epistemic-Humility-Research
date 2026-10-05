@@ -6,6 +6,62 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-04 (late): checklist 7 closed. `count_wrong` policy implemented; label timing complete
+
+- **PI decision** (via coordinator, before any PopQA labeling or outcome): a
+  generation containing a thinking marker is scored wrong and the run
+  continues (`count_wrong`).
+- **Shared EH instrument change** (opt-in; default unchanged):
+  - `experiments/common/knowledge_probe/backends.py` adds
+    `GENERATED_THINKING_POLICIES` (`abort` | `count_wrong`),
+    `resolve_generated_thinking_policy(config)` (key
+    `scoring.generated_thinking_policy`; absent = `abort`; other values raise),
+    and `has_generated_thinking()`, which is the same `THINK_TAG_MARKERS`
+    substring test as the abort path.
+  - `VLLMBackend` takes `generated_thinking_policy` and skips its own assert
+    only under `count_wrong`.
+  - `probe.py` scores a marker-bearing sample or greedy decode as incorrect
+    under `count_wrong`. Rows gain `generated_thinking_policy`,
+    `n_sampled_thinking_marker` and `greedy_thinking_marker` (only under the
+    opt-in, so default-policy rows keep their historical schema), and the
+    manifest gains a `generated_thinking` run summary.
+  - Other users of the shared files: dial-logprob-baseline-v2/-v3 and
+    dial-logprob-t-deployed-confirmatory list `backends.py` as an unpinned
+    repository input. Their render path is untouched, and no signed experiment
+    pins these files (`exp validate` OK).
+- **Tests.**
+  - New `tests/test_generated_thinking_policy.py` (12 tests): default aborts;
+    `count_wrong` scores marked samples wrong and continues; a marked greedy
+    decode blocks "known"; manifest counts; default row schema and manifest
+    unchanged; `probe_config_sha` unchanged unless the key is set; VLLMBackend
+    aborts by default and passes text through under `count_wrong`; invalid
+    policies raise.
+  - Windows python: the policy tests plus `test_probe_smoke.py` give 52 passed.
+  - Full knowledge-probe suite in the runner image: before the change 12
+    failed / 436 passed; after it 12 failed / 448 passed. The failure set is
+    identical and pre-existing (hidden-state extraction and docker-config
+    tests unrelated to probe.py). Lists are in `analysis/presign/kp_tests_{baseline,after}.txt`.
+- **Cell wiring.**
+  - `probe.yaml` sets `scoring.generated_thinking_policy: count_wrong`.
+  - `gates.yaml g0_label_marker_bound.max_marked_rate: 0.05`.
+  - The harness `label` stage writes the run-level marker summary and the flag
+    to `label_run.json`. `convert` refuses while the flag is set until a PI
+    acknowledgement is recorded.
+  - `convert` reports label counts with marker-affected questions dropped.
+  - `score` adds the drop-affected sensitivity for H-A, H-B, H-C and H-D1.
+- **Label timing under `count_wrong`** (`presign/drill_resume.py --timing 200 0
+  --only label --sandbox timing_label_cw`, exclusive GPU, 200 synthetic
+  non-PopQA prompts, nothing scored against gold).
+  - rc 0, wall 740.8 s. Engine init 376 s, including 325 s of compile.
+  - 200 questions in about 306 s after init, or 1.53 s per question including
+    per-row scoring and append+flush on the host mount.
+  - Estimate for 14,267 questions: about 6 to 6.5 h.
+  - Marker rate: 120 of 6,600 generations (1.82%; sampled 1.88%, greedy 0),
+    touching 58 of 200 questions (29%). Below the 5% bound; flag false.
+  - The rate is higher than the abort run's first impression (about 1 in 130).
+    The AMENDMENT states the measured value and keeps the conservative
+    rationale: no false knowns are possible.
+
 ### 2026-10-04 (evening): exclusive-GPU pre-sign checks and letter-logit provenance
 
 Authorized by the PI via the coordinator. The GPU was exclusive: 13 MiB

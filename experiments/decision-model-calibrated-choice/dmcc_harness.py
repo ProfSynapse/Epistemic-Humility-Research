@@ -381,13 +381,33 @@ def stage_label(c: dict, args) -> None:
                                "research_repo_commit": git_head(REPO_ROOT), "status": "launched"})
     rc = subprocess.run(argv, cwd=str(REPO_ROOT), env=env).returncode
     results = probe_results_path(c)
-    n = len(read_jsonl(results)) if results.exists() else 0
+    rows = read_jsonl(results) if results.exists() else []
+    gen = marker_summary(rows)
+    bound = float(_yaml_load(rp(c["scoring"]["gates"]))["g0_label_marker_bound"]["max_marked_rate"])
+    flagged = gen["marked_rate"] > bound
     write_json_atomic(record, {**json.loads(record.read_text(encoding="utf-8")), "finished_at": now_utc(),
-                               "returncode": rc, "n_results": n,
+                               "returncode": rc, "n_results": len(rows),
+                               "generated_thinking": gen, "marker_rate_bound": bound,
+                               "marker_rate_flag": flagged,
                                "status": "completed" if rc == 0 else "failed"})
     if rc != 0:
         raise StageError(f"probe.py exited {rc}; rerun `label` to resume from the append-log")
-    print(f"label: {n:,} probe rows at {results}")
+    print(f"label: {len(rows):,} probe rows at {results}; thinking-marker rate "
+          f"{gen['marked_rate']:.4f} (bound {bound})" + ("  FLAGGED: consult the PI" if flagged else ""))
+
+
+def marker_summary(rows: list[dict]) -> dict:
+    """Run-level count_wrong policy totals over probe rows (same fields as the
+    probe manifest's generated_thinking block)."""
+    n_samples = sum(int(r.get("n_samples", 0)) for r in rows)
+    n_s = sum(int(r.get("n_sampled_thinking_marker", 0)) for r in rows)
+    n_g = sum(1 for r in rows if r.get("greedy_thinking_marker"))
+    n_gen = n_samples + len(rows)
+    return {"n_questions": len(rows),
+            "n_questions_affected": sum(1 for r in rows if r.get("n_sampled_thinking_marker", 0)
+                                        or r.get("greedy_thinking_marker")),
+            "n_sampled_marked": n_s, "n_greedy_marked": n_g, "n_generations": n_gen,
+            "marked_rate": (n_s + n_g) / n_gen if n_gen else 0.0}
 
 
 # --------------------------------------------------------------------------
@@ -460,13 +480,22 @@ def build_choice_rows(meta: list[dict], probe: dict[str, dict], ch: dict, label_
                      "p_correct": float(pr["p_correct"]),
                      "n_sampled_correct": int(round(float(pr["p_correct"]) * n_samples)),
                      "n_samples": n_samples, "s_pop": int(m["s_pop"]), "prop": m["prop"],
-                     "source": "popqa", "probe_config_sha": cfg_sha},
+                     "source": "popqa", "probe_config_sha": cfg_sha,
+                     "n_sampled_thinking_marker": int(pr.get("n_sampled_thinking_marker", 0)),
+                     "greedy_thinking_marker": bool(pr.get("greedy_thinking_marker", False))},
         })
     return rows, counts, skipped
 
 
 def stage_convert(c: dict, args) -> None:
     P = paths(c)
+    lr = P["kp"] / "label_run.json"
+    if lr.exists() and json.loads(lr.read_text(encoding="utf-8")).get("marker_rate_flag"):
+        ack = P["committed"] / "pi_marker_rate_ack.json"
+        if not ack.exists():
+            raise StageError("thinking-marker rate exceeded the registered bound (gates.yaml "
+                             "g0_label_marker_bound); the PI must be consulted and the decision "
+                             f"recorded in {ack} before Stage 0 or Stage 1 proceed")
     meta = read_jsonl(require(P["popqa_meta"], "PopQA meta"))
     results = read_jsonl(require(probe_results_path(c), "probe results"))
     probe = {r["question_id"]: r for r in results}
@@ -491,6 +520,12 @@ def stage_convert(c: dict, args) -> None:
                                     "knowledge_by_split": by, "qids": split})
     summary = {"converted_at": now_utc(), "rows_sha256": rows_sha, "n_rows_primary": len(rows),
                "label_counts_all": dict(counts), "skipped": dict(skipped),
+               # Registered sensitivity (count_wrong policy): label counts with every
+               # question that had any thinking-marked generation dropped.
+               "label_counts_drop_marker_affected": dict(Counter(
+                   c["labeler"]["label_map"][probe[q]["label"]] for q in probe
+                   if not (probe[q].get("n_sampled_thinking_marker", 0) or probe[q].get("greedy_thinking_marker")))),
+               "marker_summary": marker_summary(results),
                "knowledge_by_split": by,
                "per_relation": {p: dict(Counter(r["meta"]["knowledge"] for r in rows if r["meta"]["prop"] == p))
                                 for p in sorted({r["meta"]["prop"] for r in rows})}}
@@ -1215,6 +1250,23 @@ def stage_score(c: dict, args) -> None:
                     "mean_set_size": float(np.mean([len(s) for s in sets]))}
     else:
         sec["conformal_by_knowledge"] = "NOT-COMPUTED (engine emitted no per-row option probabilities)"
+    # Registered sensitivity (count_wrong policy): the readout statistics with
+    # every question that had any thinking-marked generation dropped.
+    aff = np.array([bool(r["meta"].get("n_sampled_thinking_marker", 0) or r["meta"].get("greedy_thinking_marker"))
+                    for r in test])
+    keep = ~aff
+    kk, uu = know & keep, unk & keep
+    sens = {"n_test_affected": int(aff.sum()), "n_known_kept": int(kk.sum()), "n_unknown_kept": int(uu.sum())}
+    if kk.any() and uu.any():
+        sens.update({
+            "h_a_gap": float((conf[uu] - chance[uu]).mean()),
+            "h_a_confident_wrong": float(((conf[uu] >= c_thr("confident", c, m)) & (ok[uu] == 0)).mean()),
+            "h_b_underconfident_right": float(((conf[kk] < c_thr("underconfident", c, m)) & (ok[kk] == 1)).mean()),
+            "h_c_auroc": auroc(know[keep].astype(int), conf[keep]),
+        })
+        if "s1" in locals():
+            sens["h_d1_auroc"] = auroc(know[keep].astype(int), s1[keep])
+    sec["thinking_marker_sensitivity"] = sens
     res["secondary"] = sec
     res["g0"]["adjudicable"] = bool(adjudicable)
     write_json_atomic(P["score"] / f"{m['run_id']}_verdicts.json", res)
