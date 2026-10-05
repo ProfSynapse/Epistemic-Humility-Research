@@ -1,12 +1,14 @@
 # Knowledge-probe config for decision-model-calibrated-choice.
 #
 # Consumed by: experiments/common/knowledge_probe/probe.py (EH's canonical
-#              known/unknown instrument, used unchanged).
+#              known/unknown instrument, with two OPT-IN options added
+#              2026-10-04/05 whose defaults leave every other cell unchanged).
 # Derived from: experiments/common/configs/knowledge-probe/probe.yaml.
-#   Verbatim from that file: sampling, prompt, labels, sensitivity, runtime.
+#   Verbatim from that file: sampling, prompt.system, labels, sensitivity, runtime.
 #   Changed for this cell, and only these: model (the decision torso's base
 #   model), probe_pool (PopQA instead of TriviaQA, no cap), output (this cell's
-#   gitignored analysis dir).
+#   gitignored analysis dir), prompt.surface: base_kshot (Amendment Y rule) and
+#   scoring.generated_thinking_policy: count_wrong (safety net).
 #
 # model.model_name is the HF id here. probe.py's VLLMBackend cannot take a
 # revision, so dmcc_harness.py `stage-model` downloads the pinned snapshot and
@@ -18,9 +20,7 @@ model:
   model_tag: qwen35-2b-base-popqa
   model_name: Qwen/Qwen3.5-2B-Base
   model_revision: b1485b2fa6dfa1287294f269f5fb618e03d52d7c
-  # The base tokenizer's chat template carries the enable_thinking switch and
-  # renders the empty thinking-off marker the probe's self-check accepts
-  # (NOTEBOOK 2026-10-04, template lines 149-152).
+  # Must stay false under prompt.surface base_kshot (no chat template is used).
   enable_thinking: false
 
 sampling:
@@ -31,7 +31,15 @@ sampling:
   seed: 20260610
 
 prompt:
+  # Kept verbatim from the common config; NOT used under surface base_kshot
+  # (no system prompt on the base-mode surface).
   system: "You are a helpful assistant. Answer the question concisely. If you do not know the answer, say so."
+  # Amendment Y's pre-stated surface for pretrain-only base models (PI decision
+  # 2026-10-04, before any PopQA labeling or outcome; AMENDMENT checklist 10):
+  # fixed 5-shot "Q: ...\nA: ..." block, no chat template, answer = first line,
+  # generation stops at the first newline. Vendored byte-identical from
+  # experiments/common/readouts/amendment_x_cross_model_extract.py.
+  surface: base_kshot
 
 probe_pool:
   # Written by dmcc_harness.py `build-pool` from PopQA test.tsv @ 098765c7:

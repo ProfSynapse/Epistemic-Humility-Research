@@ -34,14 +34,18 @@ def main() -> int:
     args = ap.parse_args()
     import transformers
 
+    from transformers import AutoTokenizer
+
+    pc = dmcc_harness._yaml_load(CELL / "probe.yaml")
+    tok = AutoTokenizer.from_pretrained(pc["model"]["model_name"], revision=pc["model"]["model_revision"])
     rows = []
     for i, q in enumerate(QUESTIONS):
         text = dmcc_harness.render({"row_key": f"smoke-{i}", "question": q})
-        tok = dmcc_harness._render_state()["tok"]
-        ids = tok(text)["input_ids"]
+        ids = tok(text)["input_ids"]  # as MechInterp extract tokenizes the rendered prompt
         rows.append({"i": i, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
                      "prompt_token_ids": list(ids)})
-    res = {"check": "runner_render", "transformers": transformers.__version__, "rows": rows}
+    res = {"check": "runner_render", "transformers": transformers.__version__,
+           "surface": dmcc_harness._render_state()["surface"], "rows": rows}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(res, indent=1), encoding="utf-8")
     print(f"rendered {len(rows)} prompts under transformers {transformers.__version__}")

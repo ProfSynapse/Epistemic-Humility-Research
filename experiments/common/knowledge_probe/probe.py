@@ -36,8 +36,11 @@ from backends import (
     assert_no_generated_thinking_batch,
     build_backend,
     extract_answer_after_thinking,
+    base_mode_first_line,
+    base_mode_kshot_sha,
     has_generated_thinking,
     resolve_generated_thinking_policy,
+    resolve_prompt_surface,
 )
 from scoring import is_correct, normalize_question, p_correct
 
@@ -238,6 +241,7 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
     seed = derive_seed(s["seed"], question_id)
     enable_thinking = bool(config["model"].get("enable_thinking", False))
     policy = resolve_generated_thinking_policy(config)
+    base_kshot = resolve_prompt_surface(config) == "base_kshot"
     # count_wrong applies only with thinking OFF (thinking ON scores the text
     # after the final </think> and never asserts).
     count_wrong = policy == "count_wrong" and not enable_thinking
@@ -254,6 +258,8 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         enable_thinking=enable_thinking,
         generated_thinking_policy=policy,
     )
+    if base_kshot:
+        sampled_answers = [base_mode_first_line(a) for a in sampled_answers]
     sampled_marker = [count_wrong and has_generated_thinking(a) for a in sampled_answers]
     sampled_correct = [False if flagged else is_correct(a, aliases)
                        for a, flagged in zip(sampled_answers, sampled_marker)]
@@ -268,6 +274,8 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         generated_thinking_policy=policy,
     )
     greedy_answer = greedy_answers[0]
+    if base_kshot:
+        greedy_answer = base_mode_first_line(greedy_answer)
     greedy_thinking_extract_status = (
         greedy_thinking_extract_statuses[0]
         if greedy_thinking_extract_statuses is not None
@@ -296,6 +304,8 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         "model_tag": config["model"]["model_tag"],
         "probe_config_sha": cfg_sha,
     }
+    if base_kshot:
+        record["prompt_surface"] = "base_kshot"
     if count_wrong:
         # Present only under the opt-in policy, so default-policy rows keep
         # their historical schema byte-for-byte.
@@ -450,6 +460,15 @@ def write_manifest(config: dict, records: list[dict], out_dir: Path,
     }
     if resolve_generated_thinking_policy(config) == "count_wrong":
         manifest["generated_thinking"] = generated_thinking_summary(records)
+    if resolve_prompt_surface(config) == "base_kshot":
+        manifest["prompt_surface"] = {
+            "surface": "base_kshot",
+            "kshot_sha": base_mode_kshot_sha(),
+            "source": "experiments/common/readouts/amendment_x_cross_model_extract.py "
+                      "(_BASE_MODE_FEWSHOT / build_base_mode_prompt; Amendment Y section 6)",
+            "system_prompt_used": False,
+            "answer_parse": "first line of the completion (stop at newline)",
+        }
     manifest_path = out_dir / config["output"]["manifest_filename"]
     manifest_path.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False),

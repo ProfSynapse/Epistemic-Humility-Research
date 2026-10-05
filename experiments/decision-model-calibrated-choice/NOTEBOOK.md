@@ -6,6 +6,68 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-05 (later): checklist item 10 closed. Base-mode 5-shot surface implemented and re-verified
+
+- **PI decision** (via coordinator, before any PopQA labeling or outcome):
+  label with Amendment Y's base-mode 5-shot surface. Stage 0 uses the
+  identical prompt.
+- **Source reused, not reinvented:**
+  `experiments/common/readouts/amendment_x_cross_model_extract.py`
+  (`_BASE_MODE_FEWSHOT`, `build_base_mode_prompt`, first-line parse
+  `cont.split("\n", 1)[0].strip()`, `_first_line_content_end`). It is
+  Amendment Y section 6's pre-stated surface and the one
+  `flavor-atlas-gemma-pt-confirmatory` vendored.
+- **Shared EH probe** (opt-in; default unchanged): `backends.py` gains
+  - `PROMPT_SURFACES` (`chat` | `base_kshot`) and `resolve_prompt_surface`
+    (key `prompt.surface`; absent = chat; base_kshot requires thinking off);
+  - vendored `BASE_MODE_FEWSHOT`, `build_base_mode_prompt`,
+    `base_mode_kshot_sha` and `base_mode_first_line`;
+  - `BASE_MODE_STOP = ["\n"]`.
+  `VLLMBackend` renders the k-shot block (no chat template, no system prompt,
+  no thinking self-check) and stops at newline. `probe.py` scores the first
+  line, stamps `prompt_surface` on rows, and writes a `prompt_surface` block
+  (kshot_sha `00638f1a900f2add`, source, parse) to the manifest, all only
+  under the opt-in.
+- **Tests:**
+  - New `tests/test_base_kshot_surface.py` (9 tests): exemplars
+    byte-identical to Y's source (AST read); the exact prompt string, which is
+    the one `test_amendment_y_base_mode.py` pins; Y's first-line parse
+    including leading newlines; surface validation; no chat template or
+    system prompt in the vLLM render; `stop=["\n"]` only under base_kshot;
+    first-line-only scoring through `run_probe` with a babbling stub; default
+    rows and `probe_config_sha` unchanged.
+  - Windows: 72 passed (new + policy + smoke + Y base-mode tests).
+  - Runner full suite: 12 failed / 456 passed. The failure set is identical
+    to the pre-change baseline (`analysis/presign/kp_tests_after_base.txt`).
+- **Cell changes:**
+  - `probe.yaml prompt.surface: base_kshot`, keeping `count_wrong` as a
+    safety net.
+  - `dmcc_harness` `render`, `content_end` (Y's first-line rule; empty first
+    line -> anchor-only) and the `_answered_keys` first-line rule.
+  - `check_vllm.py` and `check_runner_render.py` are surface-aware.
+  - The `convert` summary adds `exemplar_echo_au`.
+- **Exemplar/PopQA overlap check** (no model): no exemplar question is a
+  PopQA item, and no exemplar answer is a PopQA subject. The exemplar answer
+  "Au" equals the normalized alias "AU" (Australia) on 27 PopQA country
+  questions. The exemplars are kept byte-identical to Y's, with an echo count
+  pre-stated in `convert`.
+- **Re-run checks under base_kshot** (exclusive GPU, non-PopQA, `analysis/presign/base/`):
+  - Render identity: PASS. vLLM engine `prompt_token_ids` and the runner's
+    extraction render agree on 20 of 20 rows, byte and token ID.
+  - vLLM repeat/reorder: greedy single, batched and reversed identical on 20
+    of 20; seeded sampled 160 of 160 identical (the chat surface had 2 batch
+    and 2 sampling mismatches).
+  - Label kill-resume drill: PASS (kill at 499 s, resume rc 0 in 521.6 s, 6
+    of 6 unique rows, pre-kill row unchanged).
+  - Label timing on 200 synthetic questions: rc 0. Engine init 364 s (328 s
+    compile); 200 questions in about 152 s, or 0.76 s per question. Estimate:
+    about 3.1 h for 14,267 questions.
+  - Marker rate 0 of 6,600 generations (count_wrong never fired). Empty
+    answers 0; mean answer length 1.18 words; no newline in any answer.
+  - Stage 0 spot check (100 rows, prompt now about 106 tokens): 1.97 s per
+    row; 100 of 100 answered, all with a non-empty first line, 25 states.
+    Estimate: at most about 5 to 5.3 h for about 8,560 rows.
+
 ### 2026-10-05: `</think>` emission diagnostic (lab-notebook; non-PopQA only)
 
 Requested by the PI via the coordinator before signing. Run record:

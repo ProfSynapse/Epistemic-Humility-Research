@@ -134,10 +134,10 @@ The PI asked for this to be stated plainly. Verbatim facts:
 Added by the drafter:
 
 5. The preflight's counts are not a forecast for this cell. The preflight used
-   4-shot raw `Q:/A:` prompting, 16 new tokens and the bidirectional matcher.
-   EH's instrument uses the chat template with its fixed system prompt
-   (thinking off), 64 new tokens and word-bounded alias membership anywhere in
-   the generation. The known rate may move in either direction.
+   a 4-shot raw `Q:/A:` prompt with its own exemplars, 16 new tokens and the
+   bidirectional matcher. This cell uses Amendment Y's 5-shot base-mode block,
+   first-line answers capped at 64 tokens, and EH's word-bounded alias
+   membership. The known rate may move in either direction.
 6. Pre-sign feasibility probe (allowed and required by
    amendment-vs-lab-notebook.md; no model, no labels, no outcome): PopQA
    test.tsv @ `098765c7` has sha256 `9a5227f4...6089b`, 14,267 unique ids, 16
@@ -154,7 +154,9 @@ Added by the drafter:
    base model only on 20 fixed non-PopQA smoke questions and on deterministic
    synthetic arithmetic and unit-conversion prompts. They observed:
    - completions, as token IDs, compared for identity and never scored;
-   - the frequency of generated thinking markers (checklist item 7);
+   - the frequency of generated thinking markers (checklist item 7), and
+     a four-format prompt diagnostic on 140 non-PopQA questions, mostly
+     arithmetic, with known answers (checklist item 10);
    - generation and extraction throughput;
    - how much the adapter displaces hidden states on 6 generic prompts.
    No PopQA row was generated on, labeled or extracted, and no decision-model
@@ -172,13 +174,58 @@ Added by the drafter:
 - Labeler: the decision torso's base model `Qwen/Qwen3.5-2B-Base` @
   `b1485b2fa6dfa1287294f269f5fb618e03d52d7c`, adapter-free. Facts live in the
   torso; the decision LoRA was trained on classification, not trivia.
-- Instrument: `experiments/common/knowledge_probe/probe.py`, unchanged, on
-  vLLM 0.27.1, batch invariance OFF (vLLM 0.27.1 refuses it for Qwen3.5's
+- Instrument: `experiments/common/knowledge_probe/probe.py` on vLLM 0.27.1,
+  with two opt-in options whose defaults leave every other cell unchanged
+  (prompting surface, below; generated-thinking policy, below). Batch
+  invariance is OFF (vLLM 0.27.1 refuses it for Qwen3.5's
   gated DeltaNet layers; see Lane). 1 greedy + 32 sampled answers per
   question (T = 1.0, top-p 0.9, 64 new tokens, master seed 20260610).
   probe.py's vLLM backend takes no revision argument, so `stage-model` stages
   the pinned snapshot and writes a materialized config whose `model_name` is
   that snapshot directory, asserted to be named by the pinned revision.
+- Prompting surface: **base-mode 5-shot** (`probe.yaml prompt.surface:
+  base_kshot`). PI decision, 2026-10-04, before any PopQA labeling or outcome
+  (pre-sign checklist item 10).
+  - **What it is.** Amendment Y's pre-stated surface for pretrain-only base
+    models (`experiments/pretrain-only-base-readout/AMENDMENT.md` section 6),
+    reused, not reinvented. The fixed exemplars and the
+    `"Q: {q}\nA: {a}\n\n"` block come from
+    `experiments/common/readouts/amendment_x_cross_model_extract.py`
+    (`_BASE_MODE_FEWSHOT`, `build_base_mode_prompt`), vendored byte-identical
+    into `experiments/common/knowledge_probe/backends.py` as
+    `flavor-atlas-gemma-pt-confirmatory` also did. A test pins them to the
+    source (`tests/test_base_kshot_surface.py`). No chat template and no
+    system prompt are used; `prompt.system` is kept in the config only for
+    provenance. The answer is the first line of the completion (Y's
+    `cont.split("\n", 1)[0].strip()`), and vLLM generation stops at the first
+    newline. That changes no scored answer, because the first line is all the
+    parse reads. Stage 0 renders the identical string, and its `answer_end` is
+    Y's first-line content end.
+  - **Why.**
+    - It complies with Amendment Y's registered rule for pretrain-only bases.
+    - In the 2026-10-05 lab-notebook diagnostic on 140 non-PopQA questions
+      (NOTEBOOK, run record `dmcc-presign-think-diagnostic-20261005`), the chat
+      surface emitted thinking markers in 1.93% of generations. The model
+      wrote an answer, closed an implicit think block, and restated the
+      answer, giving 17-word answers. The base-mode surface emitted markers in
+      0.11% of generations, gave 1.2-word answers, and had higher greedy and
+      sampled accuracy (0.75 / 0.67 vs 0.59 / 0.48).
+    - The other chat variants (thinking on; no think block) were worse, at
+      10.5% and 30.5%.
+  - **Caveat.** The diagnostic set was mostly arithmetic (120 of 140), and the
+    exemplars are trivia. The size of the surface effect on PopQA entity
+    questions may differ. The two surfaces disagreed on 34% of known/unknown
+    labels in that set, so the surface choice changes which questions count as
+    known. That is why it was fixed before any PopQA labeling.
+  - **Exemplar/PopQA overlap check** (pre-sign, no model).
+    - None of the five exemplar questions is a PopQA item, and no exemplar
+      answer is a PopQA subject.
+    - One coincidence: the exemplar answer "Au" (gold) normalizes to the
+      PopQA alias "AU" (Australia) on 27 country questions.
+    - The exemplars stay byte-identical to Y's. A pre-stated descriptive check
+      in `convert` (`exemplar_echo_au`) counts first-line answers that are
+      exactly "Au" on those rows, so an exemplar echo scored correct is
+      visible.
 - Labels (EH bands): known = greedy correct AND p_correct >= 0.5 (>= 16/32);
   unknown = 0/32; everything else is EH `discard`, called ambiguous here, and
   is excluded from the primary analysis (counts reported).
@@ -189,27 +236,17 @@ Added by the drafter:
     path) is scored INCORRECT and the run continues. Each probe row records
     `n_sampled_thinking_marker` and `greedy_thinking_marker`. The probe
     manifest and the harness's label run record carry the run total and rate.
-  - **Why it was needed.** The pre-sign timing run on synthetic non-PopQA
-    prompts showed the base model emitting `</think>` under T = 1.0 sampling
-    with thinking off. The aborted run saw about one marker in 130
-    generations. EH probe.py's default policy is a hard abort, which would
-    almost surely void a 14,267 x 33 generation run.
-  - **Measured under `count_wrong`** (pre-sign, 200 synthetic prompts; not
-    PopQA). 120 of 6,600 generations were marked (1.8%), all sampled and none
-    greedy. They touched 58 of the 200 questions (29%), most of them in one
-    or two of 32 samples. The rate is higher than the abort run's first
-    impression, so the per-question effect is small but not rare, and the
-    drop-affected sensitivity analysis may remove a sizeable share of
-    questions. That is why it is reported at both the label level and the
-    gate level.
-  - **Why this policy.** It keeps EH's canonical chat-template prompt and every
-    sampling knob, so labels stay comparable with earlier EH cells. It is
-    conservative: it can only lower p_correct and can never make a greedy
-    decode correct. It therefore cannot create a false "known", which needs a
-    correct greedy decode and at least 16/32 correct samples. It can only move
-    a question toward ambiguous or unknown, and a question changes label only
-    when its correct count sits within the marked count of a band edge (0/32
-    or 16/32).
+  - **Why it is kept.** It began as the fix for the chat surface's markers.
+    It is retained as a safety net under the base-mode surface, where markers
+    are rare (pre-sign figures in the NOTEBOOK). EH probe.py's default is a hard
+    abort, so a single marker would otherwise void the run. The earlier
+    chat-surface rationale and its measured rates are superseded by the
+    surface decision. They are kept in the NOTEBOOK entries of 2026-10-04
+    (late) and 2026-10-05.
+  - **Why this policy.** It is conservative: it can only lower p_correct and
+    can never make a greedy decode correct. It therefore cannot create a false
+    "known", which needs a correct greedy decode and at least 16/32 correct
+    samples.
   - **Decision.** The PI chose this policy on 2026-10-04, before any PopQA
     labeling or outcome; the alternatives considered are listed under pre-sign
     checklist item 7.
@@ -265,13 +302,13 @@ EH's extraction -> probe-fit -> freeze pipeline, applied to the labeler.
 - **0a extraction** (`stage0_extract.yaml`): `tuner.py mechinterp extract`,
   `Qwen/Qwen3.5-2B-Base` @ `b1485b2f`, no adapter, in the native generative
   setting. The render (`dmcc_harness:render`) is byte-identical to the
-  labeling prompt: EH `backends.render_probe_prompt`, probe.yaml's system
-  prompt, pinned tokenizer, thinking off. Note for the record: the coordinator
-  brief said "the same few-shot QA prompt used for labeling"; in this cell
-  the labeling prompt is EH's chat-template prompt (no few-shot), so Stage 0
-  uses that. Rows: FIT + CAL known/unknown only. Positions: gate = `anchor`
-  (last prompt token); dial = `answer_end` (last content token of the model's
-  own greedy answer, 64 new tokens). All hidden states (0 = embeddings).
+  labeling prompt, which is Amendment Y's base-mode 5-shot block
+  (`backends.build_base_mode_prompt`; see Labels). Rows: FIT + CAL
+  known/unknown only. Positions: gate = `anchor`, the last prompt token (the
+  `:` of the final `A:` cue, as in Amendment Y). Dial = `answer_end`, the last
+  content token of the FIRST LINE of the model's own greedy answer (Y's
+  `_first_line_content_end` rule; 64 new tokens). Rows whose first line is
+  empty are excluded from the dial. All hidden states (0 = embeddings).
   Runs in the pinned mechinterp-runner image (local GPU invariant, 2026-07-10)
   built with `TRANSFORMERS_VERSION=5.17.0` to share the decision stack's
   transformers. Rows are sharded (500 per call) so a kill loses one shard.
@@ -611,12 +648,19 @@ Results and IDs for each check are in the NOTEBOOK and in
      or 16/32) could change label. Disclosed; no gate depends on bit identity.
    - The first attempt failed on a Windows `nvcc` on the WSL PATH. cell.yaml now
      sets a Linux-only PATH for the label stage.
-4. **Render identity. CLOSED**, now also at engine level (item 3).
+   - **Re-run under base-mode, 2026-10-05:** single-request and batched
+     greedy repeat 20 of 20 (no batch-order effect), and seeded sampling
+     repeats 160 of 160.
+4. **Render identity. CLOSED**, at engine level. Re-run under base-mode on
+   2026-10-05: the labeling prompts (vLLM engine `prompt_token_ids`) and the
+   Stage 0 extraction render (runner image) are byte-identical, with identical
+   token IDs, on 20 of 20 rows.
 5. **Kill-resume drill. CLOSED.**
    - `stage0-extract` passes (earlier entry).
    - `label` passes on the real vLLM path: SIGKILL after the first
      append-log row, resume rc 0, 6 of 6 unique rows, the pre-kill row
-     byte-identical.
+     byte-identical. Re-run under base-mode on 2026-10-05: PASS (kill at
+     499 s, resume rc 0, 6 of 6 unique rows, pre-kill row unchanged).
    - The drill surfaced, and the harness now fixes, a git-HEAD lookup failure
      under WSL. The WSL worktree's `.git` points to `F:/...`, so the harness now
      resolves HEAD in pure Python when the git CLI fails.
@@ -633,17 +677,25 @@ Results and IDs for each check are in the NOTEBOOK and in
      - (iii) thinking ON, scored after the final `</think>`.
    - Prior-exposure note: the decision was informed only by marker frequency
      on synthetic prompts.
-8. **Timing (synthetic prompts; PopQA lengths may differ).**
-   - Stage 0: 1.65 s per row on a 500-row shard, plus about 90 s model load
-     per shard. At most about 8,560 FIT + CAL known/unknown rows gives about
-     4 to 4.5 h and about 3.4 GB.
-   - Labeling under `count_wrong`: 200 synthetic questions took 306 s after
-     an engine init of about 7 min (325 s of it compile), or 1.53 s per
-     question including per-row scoring and fsync-appends on the host mount.
-     That gives about 6 to 6.5 h for 14,267 questions.
+8. **Timing under the registered base-mode surface** (2026-10-05; synthetic
+   non-PopQA prompts, so PopQA answer lengths may differ).
+   - Labeling: 200 questions in about 152 s after a roughly 7 min engine init
+     (328 s of it compile), or 0.76 s per question, giving about 3.1 h for
+     14,267 questions.
+   - Stage 0: 1.97 s per row on a 100-row spot check. The prompt is now about
+     106 tokens, and extraction still decodes 64 greedy tokens. With about 90 s
+     model load per 500-row shard, at most about 8,560 rows gives about 5 to
+     5.3 h and about 3.4 GB.
+   - The earlier chat-surface figures (1.53 s per question; 1.65 s per row)
+     are kept in the NOTEBOOK.
 9. **User prediction. CLOSED.** The PI's prediction was recorded verbatim on 2026-10-04 (Predictions scoreboard), and the PI confirmed the drafted thresholds the same day.
-10. **Labeling prompt surface vs Amendment Y's base-model rule. OPEN; PI
-    decision (found 2026-10-05).**
+10. **Labeling prompt surface vs Amendment Y's base-model rule. CLOSED by PI
+    decision (2026-10-04, before any PopQA labeling or outcome): base-mode
+    5-shot, per Amendment Y.** Implemented as `prompt.surface: base_kshot`
+    (Design / Labels). The affected pre-sign checks were re-run under the new
+    surface (NOTEBOOK 2026-10-05, run record
+    `dmcc-presign-base-surface-20261005`). What follows is the finding as it
+    was recorded before the decision.
     - The rule: Amendment Y (`experiments/pretrain-only-base-readout/AMENDMENT.md`
       section 6) pre-states that all pretrain-only base cells use the
       base-mode k-shot surface, not the chat template. This cell labels a

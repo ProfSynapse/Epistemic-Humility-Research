@@ -34,7 +34,7 @@ sys.path.insert(0, str(REPO / "experiments/common/knowledge_probe"))
 sys.path.insert(0, str(HERE))
 
 import yaml  # noqa: E402
-from backends import render_probe_prompt  # noqa: E402
+from backends import BASE_MODE_STOP, build_base_mode_prompt, render_probe_prompt, resolve_prompt_surface  # noqa: E402
 from smoke_questions import QUESTIONS  # noqa: E402
 
 
@@ -57,12 +57,17 @@ def main() -> int:
     tok = llm.get_tokenizer()
     rendered, modes = [], set()
     for q in QUESTIONS:
+        if resolve_prompt_surface(pc) == "base_kshot":
+            rendered.append(build_base_mode_prompt(q))
+            modes.add("base_kshot")
+            continue
         text, mode = render_probe_prompt(tok, pc["prompt"]["system"], q,
                                          enable_thinking=bool(pc["model"]["enable_thinking"]))
         rendered.append(text)
         modes.add(mode)
 
-    greedy = SamplingParams(n=1, temperature=0.0, top_p=1.0, max_tokens=s["max_new_tokens"], seed=0)
+    stop = {"stop": list(BASE_MODE_STOP)} if resolve_prompt_surface(pc) == "base_kshot" else {}
+    greedy = SamplingParams(n=1, temperature=0.0, top_p=1.0, max_tokens=s["max_new_tokens"], seed=0, **stop)
 
     def run(prompts, params):
         outs = llm.generate(prompts, params, use_tqdm=False)
@@ -76,7 +81,7 @@ def main() -> int:
     greedy_diff = [i for i in idx if not (a[i][1] == b_rev[i][1] == c_one[i][1])]
 
     def sampled_run():
-        return [run([rendered[i]], SamplingParams(n=8, temperature=s["temperature"], top_p=s["top_p"],
+        return [run([rendered[i]], SamplingParams(n=8, temperature=s["temperature"], top_p=s["top_p"], **stop,
                                                   max_tokens=s["max_new_tokens"], seed=1000 + i))[0][1]
                 for i in idx]
 

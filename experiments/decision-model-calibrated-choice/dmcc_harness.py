@@ -237,43 +237,70 @@ _RENDER_STATE: dict = {}
 
 
 def _render_state() -> dict:
+    """Labeling surface from probe.yaml (prompt.surface), resolved by the SAME
+    EH backends functions probe.py's VLLMBackend uses, so labeling and Stage 0
+    extraction render byte-identical prompts."""
     if not _RENDER_STATE:
         if str(KP_DIR) not in sys.path:
             sys.path.insert(0, str(KP_DIR))
-        from backends import render_probe_prompt  # EH shared render + thinking-off self-check
-        from transformers import AutoTokenizer
+        import backends
 
         pc = _yaml_load(HERE / "probe.yaml")
-        tok = AutoTokenizer.from_pretrained(pc["model"]["model_name"],
-                                            revision=pc["model"]["model_revision"])
-        _RENDER_STATE.update(render=render_probe_prompt, tok=tok, system=pc["prompt"]["system"],
-                             thinking=bool(pc["model"].get("enable_thinking", False)))
+        surface = backends.resolve_prompt_surface(pc)
+        _RENDER_STATE.update(backends=backends, surface=surface, pc=pc)
+        if surface == "chat":
+            from transformers import AutoTokenizer
+
+            _RENDER_STATE["tok"] = AutoTokenizer.from_pretrained(pc["model"]["model_name"],
+                                                                 revision=pc["model"]["model_revision"])
     return _RENDER_STATE
 
 
 def render(row: dict) -> str:
-    """Byte-identical to the labeling prompt: EH backends.render_probe_prompt
-    with probe.yaml's system prompt, the pinned tokenizer, thinking off."""
+    """Byte-identical to the labeling prompt. Under prompt.surface base_kshot
+    (this cell): Amendment Y's 5-shot block via backends.build_base_mode_prompt,
+    no chat template, no system prompt. Under chat: render_probe_prompt."""
     st = _render_state()
     question = row.get("question")
     if not question:
         raise KeyError(f"row {row.get('row_key')!r} has no question")
-    text, _mode = st["render"](st["tok"], st["system"], question, enable_thinking=st["thinking"])
+    if st["surface"] == "base_kshot":
+        return st["backends"].build_base_mode_prompt(question)
+    text, _mode = st["backends"].render_probe_prompt(
+        st["tok"], st["pc"]["prompt"]["system"], question,
+        enable_thinking=bool(st["pc"]["model"].get("enable_thinking", False)))
     return text
 
 
 def content_end(full_ids, prompt_len: int, tokenizer) -> int:
-    """Index of the last content token of the greedy answer: walk back from the
-    end past special tokens (EOS, <|im_end|>) and whitespace-only tokens.
+    """Index of the last content token of the greedy answer (the dial read).
 
-    If no content token remains, return prompt_len. extract only captures a row
-    when content_end >= prompt_len, so returning prompt_len keeps the anchor
-    (gate) capture for every row; such a row's answer_end tensor sits on a
-    non-content token and is EXCLUDED from every dial fit and dial statistic
-    (stage0-fit / stage0-validate drop rows whose decoded answer_text is empty).
+    base_kshot (this cell): Amendment Y's first-line rule, vendored from
+    amendment_x_cross_model_extract._first_line_content_end. Decode the
+    continuation token by token (skip_special_tokens) and stop before the first
+    token whose incremental decode introduces a newline, then trim trailing
+    specials. This is the same answer the labeler scores (the first line).
+    chat: the last non-special, non-whitespace token of the whole completion.
+
+    If no content token exists, return prompt_len. extract only captures a row
+    when content_end >= prompt_len, so the anchor (gate) capture is kept for
+    every row. Such a row's answer_end tensor sits on a non-content token and
+    is EXCLUDED from every dial fit and statistic (see _answered_keys).
     """
     ids = full_ids.tolist() if hasattr(full_ids, "tolist") else list(full_ids)
     special = set(getattr(tokenizer, "all_special_ids", []) or [])
+    if _render_state()["surface"] == "base_kshot":
+        n = len(ids)
+        end, prev = n - 1, ""
+        for i in range(prompt_len, n):
+            cur = tokenizer.decode(ids[prompt_len:i + 1], skip_special_tokens=True)
+            if "\n" in cur[len(prev):]:
+                end = i - 1
+                break
+            prev = cur
+        while end >= prompt_len and int(ids[end]) in special:
+            end -= 1
+        return end if end >= prompt_len else int(prompt_len)
     i = len(ids) - 1
     while i >= prompt_len:
         t = int(ids[i])
@@ -526,6 +553,17 @@ def stage_convert(c: dict, args) -> None:
                    c["labeler"]["label_map"][probe[q]["label"]] for q in probe
                    if not (probe[q].get("n_sampled_thinking_marker", 0) or probe[q].get("greedy_thinking_marker")))),
                "marker_summary": marker_summary(results),
+               # Pre-stated descriptive check (AMENDMENT "Labels"): the Amendment Y
+               # exemplar answer "Au" equals the PopQA alias "AU" (Australia) on 27
+               # country questions; count first-line answers that are exactly "au"
+               # on rows whose aliases include it (a possible exemplar echo scored
+               # correct).
+               "exemplar_echo_au": {
+                   "rows_with_alias_au": sum(1 for r in results if "au" in r["normalized_aliases"]),
+                   "greedy_answer_exactly_au": sum(1 for r in results if "au" in r["normalized_aliases"]
+                                                   and _normalize_answer()(r["greedy_answer"]) == "au"),
+                   "sampled_answers_exactly_au": sum(sum(_normalize_answer()(a) == "au" for a in r["sampled_answers"])
+                                                     for r in results if "au" in r["normalized_aliases"])},
                "knowledge_by_split": by,
                "per_relation": {p: dict(Counter(r["meta"]["knowledge"] for r in rows if r["meta"]["prop"] == p))
                                 for p in sorted({r["meta"]["prop"] for r in rows})}}
@@ -710,11 +748,15 @@ def stage0_fit(c: dict, args) -> None:
 
 
 def _answered_keys(ext_dir: Path) -> set[str]:
-    """Row keys whose greedy answer decoded to non-empty text (all shard manifests)."""
+    """Row keys whose greedy answer is non-empty under the labeling parse (the
+    first line under base_kshot, as the labeler scores it; the whole completion
+    under chat), across all shard manifests."""
+    first_line = _render_state()["surface"] == "base_kshot"
     keys: set[str] = set()
     for mf in sorted(ext_dir.glob("manifest_shard_*.json")):
         for r in json.loads(mf.read_text(encoding="utf-8"))["rows"]:
-            if str(r.get("answer_text", "")).strip():
+            text = str(r.get("answer_text", ""))
+            if (text.split("\n", 1)[0] if first_line else text).strip():
                 keys.add(str(r["row_key"]))
     return keys
 
