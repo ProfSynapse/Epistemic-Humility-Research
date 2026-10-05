@@ -71,6 +71,12 @@ choices:
   seed: 0
   # Ambiguous (EH `discard`) rows are excluded from the primary analysis file.
   include_ambiguous_in_primary: false
+  # Pre-registered exclusion (PI, 2026-10-05, before any PopQA labeling or
+  # outcome): rows whose normalized gold alias set contains a normalized
+  # base-mode exemplar answer are excluded from every primary analysis
+  # (labeled, then dropped BEFORE the FIT/CAL/TEST split). Rule:
+  # dmcc_harness.exemplar_collision_qids; count pinned in gates.yaml.
+  exclude_exemplar_answer_collisions: true
 
 # ---------------------------------------------------------------------------
 # Stage 0: base-model KU readout (extraction -> probe-fit -> freeze), run

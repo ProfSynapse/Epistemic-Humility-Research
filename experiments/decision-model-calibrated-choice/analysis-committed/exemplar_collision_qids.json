@@ -1,0 +1,48 @@
+{
+ "rule": "any normalized gold alias (possible_answers + obj, EH normalize_answer) == a normalized base-mode exemplar answer",
+ "exemplar_answers_normalized": [
+  "1945",
+  "au",
+  "jupiter",
+  "mount everest",
+  "six"
+ ],
+ "source": "akariasai/PopQA@098765c79ea10a2cb19c828324e33281b8336ec0 test.tsv",
+ "source_sha256": "9a5227f41bff0e4c331d4a774d946b12f95307892b58f860a9606ef356e6089b",
+ "n": 27,
+ "matched_by": {
+  "au": 27
+ },
+ "relations": [
+  "country"
+ ],
+ "qids": [
+  "popqa-5342543",
+  "popqa-6325849",
+  "popqa-654148",
+  "popqa-1311100",
+  "popqa-653099",
+  "popqa-3895236",
+  "popqa-3877353",
+  "popqa-4484472",
+  "popqa-6533248",
+  "popqa-2358616",
+  "popqa-4886491",
+  "popqa-5187649",
+  "popqa-1162532",
+  "popqa-5857608",
+  "popqa-212190",
+  "popqa-2218396",
+  "popqa-4012239",
+  "popqa-4997958",
+  "popqa-4968395",
+  "popqa-4012395",
+  "popqa-6404382",
+  "popqa-5184392",
+  "popqa-3004455",
+  "popqa-3957671",
+  "popqa-6211156",
+  "popqa-1701001",
+  "popqa-5049215"
+ ]
+}

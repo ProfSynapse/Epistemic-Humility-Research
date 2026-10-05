@@ -222,10 +222,28 @@ Added by the drafter:
       answer is a PopQA subject.
     - One coincidence: the exemplar answer "Au" (gold) normalizes to the
       PopQA alias "AU" (Australia) on 27 country questions.
-    - The exemplars stay byte-identical to Y's. A pre-stated descriptive check
-      in `convert` (`exemplar_echo_au`) counts first-line answers that are
-      exactly "Au" on those rows, so an exemplar echo scored correct is
-      visible.
+    - The exemplars stay byte-identical to Y's.
+  - **Pre-registered exclusion of exemplar-answer collisions.** PI decision,
+    2026-10-05, before any PopQA labeling or outcome.
+    - **Rule** (deterministic; `dmcc_harness.exemplar_collision_qids`): a
+      PopQA row is excluded from every primary analysis iff any of its
+      normalized gold aliases (EH `normalize_answer` over `possible_answers`,
+      plus `obj`) equals a normalized base-mode exemplar answer (`jupiter`,
+      `six`, `au`, `1945`, `mount everest`).
+    - **Matches.** On PopQA test.tsv @ `098765c7` (pre-sign, no model) the
+      rule matches exactly **27** rows, all via `au` (relation: country), which
+      are the 27 found by the overlap check and no others. The qids are in
+      `analysis-committed/exemplar_collision_qids.json`.
+      `gates.yaml g0_exemplar_collision_exclusion.expected_count: 27`, and
+      `convert` refuses if the rule matches any other count.
+    - **Scope.** These rows are still labeled (the probe pool is unchanged).
+      They are then dropped in `convert`, BEFORE the FIT/CAL/TEST split. So
+      they never enter the splits, the Stage 0 FIT/CAL fit and validation, or
+      Stage 1 TEST.
+    - **Reporting.** Sensitivity only: their label counts
+      (`exemplar_collision_excluded`) and the echo count (`exemplar_echo_au`:
+      first-line answers that are exactly "Au" on those rows).
+    - **Tests.** `tests/test_exemplar_collision_exclusion.py`.
 - Labels (EH bands): known = greedy correct AND p_correct >= 0.5 (>= 16/32);
   unknown = 0/32; everything else is EH `discard`, called ambiguous here, and
   is excluded from the primary analysis (counts reported).
@@ -411,7 +429,9 @@ EH's extraction -> probe-fit -> freeze pipeline, applied to the labeler.
 
 ### Sample size
 
-All 14,267 rows. The G0 floors require at least 150 known and 300 unknown TEST
+All 14,267 rows are labeled. 14,240 enter the primary population after the
+27-row exemplar-collision exclusion (0.19%; it does not change the power
+argument). The G0 floors require at least 150 known and 300 unknown TEST
 rows (derivation in Gates). If the known rate were near the preflight's 10%,
 TEST would hold roughly 0.4 x 0.10 x 14,267, about 570 known rows, clearing the
 floor with margin; a 3,000-question sample would give roughly 120 and could

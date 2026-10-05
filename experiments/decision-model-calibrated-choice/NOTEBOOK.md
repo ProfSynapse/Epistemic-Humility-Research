@@ -6,6 +6,30 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-05 (latest): exemplar-collision exclusion pre-registered
+
+- **PI decision** (via coordinator, before any PopQA labeling or outcome):
+  exclude the "Au"/"AU" collision rows from all primary analyses, and report
+  them in a sensitivity check only.
+- **Rule, implemented as `dmcc_harness.exemplar_collision_qids`:** a row is
+  excluded iff any normalized gold alias (`possible_answers` + `obj`, EH
+  `normalize_answer`) equals a normalized base-mode exemplar answer.
+- **Pre-sign application** (no model) to PopQA test.tsv @ `098765c7` (sha256
+  `9a5227f4...`): exactly 27 rows, all matched by `au`, all relation
+  `country`. These are the same 27 the overlap check found, and no others.
+  The qids are in `analysis-committed/exemplar_collision_qids.json`.
+- **Wiring:**
+  - `cell.yaml choices.exclude_exemplar_answer_collisions: true`.
+  - `gates.yaml g0_exemplar_collision_exclusion.expected_count: 27`; `convert`
+    refuses on any other count.
+  - The rows are dropped in `convert` before the split.
+  - The `convert` summary reports `exemplar_collision_excluded` (n, qids,
+    labels) alongside `exemplar_echo_au`.
+- **Tests:** `tests/test_exemplar_collision_exclusion.py`, 4 passed. They
+  cover the exact-match rule (with near-miss controls: `A.U.`, `AT`,
+  superstrings), exclusion before the split, and the committed list matching
+  the pinned count.
+
 ### 2026-10-05 (later): checklist item 10 closed. Base-mode 5-shot surface implemented and re-verified
 
 - **PI decision** (via coordinator, before any PopQA labeling or outcome):

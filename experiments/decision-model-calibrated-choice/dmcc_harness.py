@@ -472,8 +472,31 @@ def engine_split(rows: list[dict], fit: float, cal: float, seed: int):
     return fit_rows, cal_rows, test_rows
 
 
+def exemplar_answer_norms() -> set[str]:
+    """Normalized answers of the base-mode k-shot exemplars (EH backends.BASE_MODE_FEWSHOT)."""
+    if str(KP_DIR) not in sys.path:
+        sys.path.insert(0, str(KP_DIR))
+    from backends import BASE_MODE_FEWSHOT
+
+    norm = _normalize_answer()
+    return {norm(a) for _q, a in BASE_MODE_FEWSHOT if norm(a)}
+
+
+def exemplar_collision_qids(meta: list[dict]) -> list[str]:
+    """Pre-registered exclusion rule (PI, 2026-10-05; AMENDMENT "Labels"): a PopQA
+    row is excluded from every primary analysis iff any of its normalized gold
+    aliases (possible_answers, plus obj) equals a normalized exemplar answer. An
+    exemplar echo would otherwise be scored correct on such a row. Deterministic,
+    in PopQA file order."""
+    norm = _normalize_answer()
+    ex = exemplar_answer_norms()
+    return [m["qid"] for m in meta
+            if ({norm(a) for a in m["aliases"]} | {norm(m["obj"])}) & ex]
+
+
 def build_choice_rows(meta: list[dict], probe: dict[str, dict], ch: dict, label_map: dict,
-                      n_samples: int, cfg_sha: str) -> tuple[list[dict], Counter, Counter]:
+                      n_samples: int, cfg_sha: str,
+                      exclude_qids: set[str] | None = None) -> tuple[list[dict], Counter, Counter]:
     """Gold + (n_options-1) same-relation distractors whose normalized text
     matches no gold alias. Port of the tuner-side build_choice_rows; the only
     changes are EH's alias normalizer and EH label names."""
@@ -489,6 +512,9 @@ def build_choice_rows(meta: list[dict], probe: dict[str, dict], ch: dict, label_
         pr = probe[m["qid"]]
         knowledge = label_map[pr["label"]]
         counts[knowledge] += 1
+        if exclude_qids and m["qid"] in exclude_qids:
+            skipped["exemplar_answer_collision"] += 1
+            continue
         if knowledge == "ambiguous" and not ch["include_ambiguous_in_primary"]:
             skipped["ambiguous_excluded"] += 1
             continue
@@ -532,8 +558,14 @@ def stage_convert(c: dict, args) -> None:
     if len(shas) != 1:
         raise StageError(f"probe rows carry {len(shas)} probe_config_sha values: {sorted(shas)}")
     pc = _yaml_load(rp(c["labeler"]["probe_config"]))
+    excl = exemplar_collision_qids(meta) if c["choices"].get("exclude_exemplar_answer_collisions") else []
+    expected = _yaml_load(rp(c["scoring"]["gates"]))["g0_exemplar_collision_exclusion"]["expected_count"]
+    if len(excl) != int(expected):
+        raise StageError(f"exemplar-collision rule matched {len(excl)} rows, pre-registered {expected}; "
+                         "stop and consult the PI (no silent change to the primary population)")
     rows, counts, skipped = build_choice_rows(meta, probe, c["choices"], c["labeler"]["label_map"],
-                                              int(pc["sampling"]["n_samples"]), shas.pop())
+                                              int(pc["sampling"]["n_samples"]), shas.pop(),
+                                              exclude_qids=set(excl))
     rows_sha = write_jsonl_atomic(P["rows_primary"], rows)
     acfg = _yaml_load(rp(c["models"]["pointer"]["analysis_config"]))["data"]
     fit, cal, test = engine_split(rows, acfg["fit_fraction"], acfg["cal_fraction"], acfg["seed"])
@@ -553,6 +585,11 @@ def stage_convert(c: dict, args) -> None:
                    c["labeler"]["label_map"][probe[q]["label"]] for q in probe
                    if not (probe[q].get("n_sampled_thinking_marker", 0) or probe[q].get("greedy_thinking_marker")))),
                "marker_summary": marker_summary(results),
+               # Sensitivity-only report of the rows the exemplar-collision rule
+               # excluded from every primary analysis (labels from the same run).
+               "exemplar_collision_excluded": {
+                   "n": len(excl), "qids": excl,
+                   "labels": dict(Counter(c["labeler"]["label_map"][probe[q]["label"]] for q in excl))},
                # Pre-stated descriptive check (AMENDMENT "Labels"): the Amendment Y
                # exemplar answer "Au" equals the PopQA alias "AU" (Australia) on 27
                # country questions; count first-line answers that are exactly "au"

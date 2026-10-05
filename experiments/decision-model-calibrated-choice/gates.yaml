@@ -46,6 +46,19 @@ g0_integrity:
   ambiguous_excluded_from_engine_rows: true
   applies_to: [h_a, h_b, h_c, h_d1, h_d2, secondary]
 
+g0_exemplar_collision_exclusion:
+  # PI decision 2026-10-05, before any PopQA labeling or outcome. Rule: a row is
+  # excluded from every primary analysis (splits, Stage 0 FIT/CAL, Stage 1 TEST)
+  # iff any normalized gold alias (EH scoring.normalize_answer over
+  # possible_answers, plus obj) equals a normalized base-mode exemplar answer
+  # (backends.BASE_MODE_FEWSHOT: jupiter, six, au, 1945, mount everest).
+  # Applied in `convert` before the split. Pre-sign count on PopQA test.tsv @
+  # 098765c7 (no model): 27 rows, all via "au" (Australia); qids in
+  # analysis-committed/exemplar_collision_qids.json. convert refuses if the
+  # rule matches any other count.
+  expected_count: 27
+  reported_in: sensitivity only (labels of the excluded rows + exemplar_echo_au counts)
+
 g0_label_marker_bound:
   # count_wrong thinking-marker policy (PI 2026-10-04, pre-outcome). If the
   # observed marked rate over all label generations (sampled + greedy) exceeds
