@@ -6,6 +6,80 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-05: `</think>` emission diagnostic (lab-notebook; non-PopQA only)
+
+Requested by the PI via the coordinator before signing. Run record:
+`analysis-committed/run_records/dmcc-presign-think-diagnostic-20261005.json`.
+Script: `presign/diag_think_formats.py`, in three phases:
+- `sample`: WSL vLLM 0.27.1, GPU exclusive at 0.90, batch invariance off;
+- `probs`: runner `sha256:b4166dbd...`, HF transformers 5.17.0;
+- `report`.
+Plus `analysis/presign/diag/alt_scoring_A.py`. Questions: 140 non-PopQA with
+gold, made of the 20 smoke questions (hand gold) and 120 synthetic arithmetic
+and unit-conversion questions (computed gold). Each question got 1 greedy +
+32 samples (T = 1.0, top_p 0.9, 64 tokens, probe.py seeds). Generations stay in
+gitignored `analysis/presign/diag/`, per the containment rule.
+
+Formats:
+- **A**: EH chat template, `enable_thinking=False`. The assistant turn ends
+  `<|im_start|>assistant\n<think>\n\n</think>\n\n` (token ids ...248045,
+  74455, 198, 248068, 271, 248069, 271).
+- **B**: `enable_thinking=True`; the turn ends with an open `<think>\n`.
+- **C**: chat scaffolding with no think block. The template has no switch for
+  this (an undefined flag renders like A), so it was built by stripping A's
+  block.
+- **D**: Amendment Y base-mode 5-shot `Q:/A:`, scored on the first line.
+
+`<think>` (248068) and `</think>` (248069) are single added special tokens.
+
+| | A (current) | B | C | D (base-mode) |
+|---|---|---|---|---|
+| mean P(`</think>`) at 1st token | 1.0e-5 | 5.8e-7 | 7.5e-5 | 2.0e-7 |
+| mean P(`<think>`) at 1st token | 2.2e-3 | 8.8e-6 | 0.26 | 4.3e-7 |
+| marker rate, all generations | 1.93% | 10.5% (by design: closes its thought) | 30.5% | 0.11% |
+| markers at token 0 | 0 of 89 | 0 | 1,311 of 1,407 | 0 |
+| greedy accuracy | 0.586 | 0.250 | 0.429 | 0.750 |
+| mean sampled accuracy | 0.477 | 0.302 | 0.334 | 0.668 |
+| empty-answer rate (sampled) | 0 | 0.006 | 0 | 0 |
+| mean answer words (sampled) | 17.5 | 34.4 | 28.5 | 1.2 |
+| known / ambiguous / unknown | 68/43/29 | 30/50/60 | 52/72/16 | 95/33/12 |
+
+- **Label agreement:** A-C 0.75, A-D 0.66 (66 known in both, 29 known only
+  under D, 2 only under A), A-B 0.46, C-D 0.59, B-C 0.44, B-D 0.32.
+- **Where the marker appears in A:** never at the first token; 9 at tokens
+  1-4, 6 at 5-15, 74 beyond 15. Every one of the 10 inspected examples has the
+  same shape: the model writes a complete first answer, often with working,
+  ending in a newline, then emits `</think>\n\n` and restates the answer.
+  It treats its first pass as a think block and closes it. 75 of the 89 marked
+  generations contain the gold answer.
+- **Format A under alternative marker policies** (`alt_scoring_A.json`):
+  `count_wrong` and scoring the text after the final `</think>` give identical
+  labels on all 140 questions. Ignoring markers (raw text) changes 2 labels,
+  unknown to ambiguous.
+- **Hypothesis verdict: partly confirmed.**
+  - Confirmed: the base model has learned the think-block protocol. The
+    markers are single special tokens, and the chat scaffolding without a
+    block (C) opens one at the first token with P = 0.26.
+  - Not confirmed: the leak mechanism. With A's pre-filled empty block,
+    `</think>` almost never comes first (P about 1e-5; 0 of 89 marked samples).
+    It arrives after the model's first answer, as a reasoning-then-answer
+    pattern.
+  - Changing the thinking setting or the pre-fill does not bring the rate near
+    0: B is 10.5% and C is 30.5%.
+  - Only the base-mode prompt does (D, 0.11%, all past the first line that D
+    scores).
+- **Program rule found while checking comparability.** Amendment Y
+  (`experiments/pretrain-only-base-readout/AMENDMENT.md`, section 6)
+  pre-states that ALL pretrain-only base cells use the base-mode k-shot
+  surface, even where the checkpoint ships a chat template. That rule was
+  applied in `flavor-atlas-gemma-pt-confirmatory`. The EH TriviaQA probe
+  config's chat-template, thinking-off surface was built for Qwen3-4B (an
+  instruct/hybrid model). This cell's design (EH chat-template probe on a base
+  model) therefore departs from Amendment Y's rule. Recorded as AMENDMENT
+  pre-sign checklist item 10.
+- **Caveat:** 120 of the 140 questions are arithmetic and the D exemplars are
+  trivia. Format effects on PopQA entity questions may differ in size.
+
 ### 2026-10-04 (late): checklist 7 closed. `count_wrong` policy implemented; label timing complete
 
 - **PI decision** (via coordinator, before any PopQA labeling or outcome): a

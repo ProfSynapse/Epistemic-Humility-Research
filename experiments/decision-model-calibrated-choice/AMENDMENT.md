@@ -642,6 +642,28 @@ Results and IDs for each check are in the NOTEBOOK and in
      question including per-row scoring and fsync-appends on the host mount.
      That gives about 6 to 6.5 h for 14,267 questions.
 9. **User prediction. CLOSED.** The PI's prediction was recorded verbatim on 2026-10-04 (Predictions scoreboard), and the PI confirmed the drafted thresholds the same day.
+10. **Labeling prompt surface vs Amendment Y's base-model rule. OPEN; PI
+    decision (found 2026-10-05).**
+    - The rule: Amendment Y (`experiments/pretrain-only-base-readout/AMENDMENT.md`
+      section 6) pre-states that all pretrain-only base cells use the
+      base-mode k-shot surface, not the chat template. This cell labels a
+      pretrain-only base (Qwen3.5-2B-Base) through EH's chat-template probe.
+    - Evidence: the 2026-10-05 non-PopQA diagnostic (NOTEBOOK; run record
+      `dmcc-presign-think-diagnostic-20261005`).
+      - The chat surface (A) emits thinking markers in 1.9% of generations,
+        after a first answer, and gives 17-word answers.
+      - The base-mode surface (D) emits them in 0.11% of generations, gives
+        1.2-word answers, and has higher greedy accuracy (0.75 vs 0.59).
+      - Known/unknown labels differ between the two surfaces on 34% of
+        questions.
+    - Options:
+      - (a) keep the chat surface with `count_wrong` (current), recording a
+        named deviation from Amendment Y's rule;
+      - (b) switch labeling and Stage 0 to the base-mode k-shot surface. This
+        needs an opt-in base-mode render plus first-line parsing in the shared
+        EH probe, a Stage 0 render/content_end change, new probe.yaml and
+        stage0 configs, and a repeated render-identity, timing and
+        kill-resume check.
 
 ## Predictions scoreboard
 

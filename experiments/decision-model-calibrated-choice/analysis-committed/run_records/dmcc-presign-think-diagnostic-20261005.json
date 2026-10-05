@@ -1,0 +1,282 @@
+{
+  "run_id": "dmcc-presign-think-diagnostic-20261005",
+  "cell": "decision-model-calibrated-choice",
+  "tier": "lab-notebook (pre-sign diagnostic, exclusive GPU)",
+  "authorized_by": "PI via coordinator: diagnose </think> emission before signing; non-PopQA only",
+  "population": "140 non-PopQA questions with gold: 20 fixed smoke questions (hand gold) + 120 synthetic arithmetic/unit-conversion (computed gold, seed 20261005)",
+  "invocation": [
+    "presign/diag_think_formats.py sample (WSL vllm 0.27.1, gpu 0.90, batch invariance off)",
+    "presign/diag_think_formats.py probs (runner sha256:b4166dbd..., HF transformers 5.17.0)",
+    "presign/diag_think_formats.py report",
+    "analysis/presign/diag/alt_scoring_A.py"
+  ],
+  "formats": {
+    "A": "EH chat template, enable_thinking=False (empty think block prefilled)",
+    "B": "chat template, enable_thinking=True (open <think>)",
+    "C": "chat scaffolding, no think block",
+    "D": "Amendment Y base-mode 5-shot Q:/A:, first-line scoring"
+  },
+  "tokenizer": {
+    "ids": {
+      "<think>": 248068,
+      "</think>": 248069
+    },
+    "added_or_special": {
+      "<think>": true,
+      "</think>": true
+    },
+    "encode_as": {
+      "<think>": [
+        248068
+      ],
+      "</think>": [
+        248069
+      ]
+    },
+    "decode_back": {
+      "<think>": "<think>",
+      "</think>": "</think>"
+    }
+  },
+  "example_A_last14": [
+    [
+      248046,
+      "<|im_end|>"
+    ],
+    [
+      198,
+      "\n"
+    ],
+    [
+      248045,
+      "<|im_start|>"
+    ],
+    [
+      74455,
+      "assistant"
+    ],
+    [
+      198,
+      "\n"
+    ],
+    [
+      248068,
+      "<think>"
+    ],
+    [
+      271,
+      "\n\n"
+    ],
+    [
+      248069,
+      "</think>"
+    ],
+    [
+      271,
+      "\n\n"
+    ]
+  ],
+  "results": {
+    "A": {
+      "n_questions": 140,
+      "n_generations": 4620,
+      "marker_rate": 0.019264069264069265,
+      "marker_first_token_rate": 0.0,
+      "marker_position_counts": {
+        "5-15": 6,
+        ">15": 74,
+        "1-4": 9
+      },
+      "greedy_accuracy": 0.5857142857142857,
+      "mean_sampled_accuracy": 0.4767857142857143,
+      "empty_answer_rate_sampled": 0.0,
+      "mean_answer_words_sampled": 17.453125,
+      "labels": {
+        "known": 68,
+        "ambiguous": 43,
+        "unknown": 29
+      },
+      "mean_p_end_think_first_token": 1.0167598529164933e-05
+    },
+    "B": {
+      "n_questions": 140,
+      "n_generations": 4620,
+      "marker_rate": 0.10519480519480519,
+      "marker_first_token_rate": 0.0,
+      "marker_position_counts": {
+        ">15": 486
+      },
+      "greedy_accuracy": 0.25,
+      "mean_sampled_accuracy": 0.3020089285714286,
+      "empty_answer_rate_sampled": 0.005803571428571429,
+      "mean_answer_words_sampled": 34.39955357142857,
+      "labels": {
+        "known": 30,
+        "ambiguous": 50,
+        "unknown": 60
+      },
+      "mean_p_end_think_first_token": 5.76724758622709e-07
+    },
+    "C": {
+      "n_questions": 140,
+      "n_generations": 4620,
+      "marker_rate": 0.30454545454545456,
+      "marker_first_token_rate": 0.2837662337662338,
+      "marker_position_counts": {
+        "0": 1311,
+        ">15": 95,
+        "5-15": 1
+      },
+      "greedy_accuracy": 0.42857142857142855,
+      "mean_sampled_accuracy": 0.3341517857142857,
+      "empty_answer_rate_sampled": 0.0,
+      "mean_answer_words_sampled": 28.510714285714286,
+      "labels": {
+        "known": 52,
+        "ambiguous": 72,
+        "unknown": 16
+      },
+      "mean_p_end_think_first_token": 7.471593711280938e-05
+    },
+    "D": {
+      "n_questions": 140,
+      "n_generations": 4620,
+      "marker_rate": 0.0010822510822510823,
+      "marker_first_token_rate": 0.0,
+      "marker_position_counts": {
+        ">15": 5
+      },
+      "greedy_accuracy": 0.75,
+      "mean_sampled_accuracy": 0.6680803571428572,
+      "empty_answer_rate_sampled": 0.0,
+      "mean_answer_words_sampled": 1.2111607142857144,
+      "labels": {
+        "known": 95,
+        "ambiguous": 33,
+        "unknown": 12
+      },
+      "mean_p_end_think_first_token": 2.0258190219343434e-07
+    }
+  },
+  "label_agreement": {
+    "A-B": {
+      "label_agreement": 0.45714285714285713,
+      "known_both": 29,
+      "known_only_first": 39,
+      "known_only_second": 1
+    },
+    "A-C": {
+      "label_agreement": 0.75,
+      "known_both": 51,
+      "known_only_first": 17,
+      "known_only_second": 1
+    },
+    "A-D": {
+      "label_agreement": 0.6642857142857143,
+      "known_both": 66,
+      "known_only_first": 2,
+      "known_only_second": 29
+    },
+    "B-C": {
+      "label_agreement": 0.44285714285714284,
+      "known_both": 25,
+      "known_only_first": 5,
+      "known_only_second": 27
+    },
+    "B-D": {
+      "label_agreement": 0.32142857142857145,
+      "known_both": 29,
+      "known_only_first": 1,
+      "known_only_second": 66
+    },
+    "C-D": {
+      "label_agreement": 0.5928571428571429,
+      "known_both": 51,
+      "known_only_first": 1,
+      "known_only_second": 44
+    }
+  },
+  "format_A_alt_scoring": {
+    "marked_generations": 89,
+    "marked_containing_gold_raw": 75,
+    "label_counts": {
+      "count_wrong": {
+        "known": 68,
+        "ambiguous": 43,
+        "unknown": 29
+      },
+      "after_final_think": {
+        "known": 68,
+        "ambiguous": 43,
+        "unknown": 29
+      },
+      "ignore_marker_raw": {
+        "known": 68,
+        "ambiguous": 45,
+        "unknown": 27
+      }
+    },
+    "changed_vs_count_wrong": {
+      "count_wrong": 0,
+      "after_final_think": 0,
+      "ignore_marker_raw": 2
+    }
+  },
+  "outcome": {
+    "status": "completed",
+    "verified": false
+  },
+  "examples_A_location": "analysis/presign/diag/report.json (gitignored; generations are not committed per the cell containment rule)",
+  "examples_A_structure": [
+    {
+      "marker_token_index": 14,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 14,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 7,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 45,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 36,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 50,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 45,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 54,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 44,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    },
+    {
+      "marker_token_index": 58,
+      "before_ends_with_newline": true,
+      "after_starts": "</think>\n\n"
+    }
+  ]
+}
