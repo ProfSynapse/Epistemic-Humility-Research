@@ -69,7 +69,18 @@ instrument:
   engine_note: No generation anywhere in this cell. The recognition stage is one
     forward pass per prompt (next-token letter logits) under HF transformers 5.17.0
     in the pinned runner image, batch size 1. The decision-model stages are option-logit
-    forward passes inside the engine's analyze_confidence.py (unsloth image).
+    forward passes inside the engine's analyze_confidence.py (unsloth image). Letter
+    logits are projected in fp32 from the bf16 model's LM-head input (PI 2026-10-06).
+  engine_exception:
+    kind: parity-locked
+    reason: 'PI decision 2026-10-06 (pre-sign, before any outcome). No generation-bearing
+      step. Recognition is a scoring-only forward pass (next-token option-letter logits,
+      batch 1) on the pinned HF transformers 5.17.0 stack in dmcc''s pinned runner image
+      mechinterp-runner:dmcc-tf5.17.0 (sha256:b4166dbd...), the same stack and image as
+      dmcc''s Stage 0 forward passes. The decision-model passes are the tuner''s decision
+      engine (Trainers/decision/analyze_confidence.py, unsloth digest 0b8efd89...) that
+      produced dmcc''s registered outputs, re-run on the identical rows; the no-IDK arm
+      reproduces dmcc''s analysis under it.'
   runtime_image_digest: sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c
   runtime_image_digest_note: Recognition runtime. Local Image ID of mechinterp-runner:dmcc-tf5.17.0,
     built 2026-10-04 for dmcc Stage 0 from synaptic-tuner@29f7af0c docker/mechinterp-runner

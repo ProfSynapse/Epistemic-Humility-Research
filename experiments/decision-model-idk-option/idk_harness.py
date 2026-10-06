@@ -289,6 +289,28 @@ def letter_argmax(logits: list[float]) -> tuple[int, bool]:
     return idx[0], len(idx) > 1
 
 
+LETTER_LOGIT_PRECISIONS = ("fp32",)
+
+
+def fp32_letter_logits(hidden, weight_rows, bias_rows=None) -> list[float]:
+    """Option-letter logits with the final projection in fp32 (PI 2026-10-06).
+
+    `hidden` is the LM head's input at the scored position (the model runs in
+    bf16); `weight_rows` / `bias_rows` are the LM-head rows of the letter
+    tokens. Both are cast to fp32 before the matmul, so the four logits are
+    not rounded to bf16's step (0.125 at |logit| 16-32), which removed most
+    exact ties in the pre-sign diagnostic. The registered lowest-letter tie
+    rule still applies to any residual exact tie."""
+    import torch
+
+    h = hidden.detach().to(torch.float32).reshape(-1)
+    w = weight_rows.detach().to(torch.float32)
+    out = w @ h
+    if bias_rows is not None:
+        out = out + bias_rows.detach().to(torch.float32)
+    return [float(x) for x in out.cpu()]
+
+
 def recognition_group(c: int, n: int, rule: dict) -> str:
     if not 0 <= c <= n:
         raise ValueError(f"c={c} outside 0..{n}")
@@ -653,6 +675,10 @@ def stage_recognize_smoke(c: dict, args) -> None:
                "repeat_identical_logits": sum(a[k]["letter_logits"] == b[k]["letter_logits"] for k in a),
                "top1_in_letters": sum(r["top1_in_letters"] for r in outs[0]),
                "gold_picks": sum(r["pred_letter_index"] == r["gold_letter_index"] for r in outs[0]),
+               "argmax_ties_residual": sum(r["argmax_tie"] for r in outs[0]),
+               "bf16_letter_ties": sum(letter_argmax(r["letter_logits_bf16"])[1] for r in outs[0]),
+               "max_abs_fp32_minus_bf16": max(max(abs(x - y) for x, y in zip(r["letter_logits"], r["letter_logits_bf16"]))
+                                              for r in outs[0]),
                "seconds_per_prompt": [r.get("seconds") for r in outs[0]][:3]}
     write_json_atomic(P["presign"] / "recognize_smoke_summary.json", summary)
     print(json.dumps(summary, indent=2))
@@ -681,13 +707,24 @@ def stage_recognize_worker(c: dict, args) -> None:
         if len(ids) != 1:
             raise StageError(f"letter {L!r} encodes to {ids}, not one token")
         letter_ids.append(int(ids[0]))
+    precision = rc["letter_logit_precision"]
+    if precision not in LETTER_LOGIT_PRECISIONS:
+        raise StageError(f"recognition.letter_logit_precision {precision!r} not one of {LETTER_LOGIT_PRECISIONS}")
+    max_diff = float(rc["letter_logit_fp32_vs_bf16_max_abs_diff"])
     cls = getattr(transformers, rc["causal_lm_class"])
     model = cls.from_pretrained(rc["hf_id"], revision=rc["revision"],
                                 torch_dtype=getattr(torch, rc["torch_dtype"])).to("cuda").eval()
+    head = model.get_output_embeddings()
+    idx = torch.tensor(letter_ids, device=head.weight.device)
+    w_rows = head.weight.index_select(0, idx)
+    b_rows = head.bias.index_select(0, idx) if getattr(head, "bias", None) is not None else None
+    captured: dict = {}
+    head.register_forward_hook(lambda mod, inp, outp: captured.__setitem__("h", inp[0][0, -1]))
     print(json.dumps({"recognize_worker_provenance": {
         "image_digest": os.environ.get("IMAGE_DIGEST"), "transformers": transformers.__version__,
         "torch": torch.__version__, "hf_id": rc["hf_id"], "revision": rc["revision"],
-        "letter_ids": letter_ids, "n_items": len(items), "n_done": len(done)}}), flush=True)
+        "letter_ids": letter_ids, "letter_logit_precision": precision, "lm_head_bias": b_rows is not None,
+        "n_items": len(items), "n_done": len(done)}}), flush=True)
     with open(out, "a", encoding="utf-8") as fh, torch.no_grad():
         for it in items:
             key = (it["qid"], int(it["ordering"]))
@@ -695,12 +732,18 @@ def stage_recognize_worker(c: dict, args) -> None:
                 continue
             t0 = time.perf_counter()  # monotonic: the container wall clock can step backwards
             enc = tok(it["prompt"], return_tensors="pt", add_special_tokens=False).to("cuda")
-            logits = model(**enc, use_cache=False).logits[0, -1].float()
-            ll = [float(logits[i]) for i in letter_ids]
+            captured.clear()
+            logits = model(**enc, use_cache=False).logits[0, -1].float()  # bf16 head output (full vocab)
+            ll_bf16 = [float(logits[i]) for i in letter_ids]
+            ll = fp32_letter_logits(captured["h"], w_rows, b_rows)       # scored: fp32 projection
+            diff = max(abs(a - b) for a, b in zip(ll, ll_bf16))
+            if diff > max_diff:  # integrity: the hooked input must be the head input at the scored position
+                raise StageError(f"{key}: fp32 letter logits differ from the bf16 head by {diff:.4f} > {max_diff}")
             pred, tie = letter_argmax(ll)
             top1 = int(torch.argmax(logits))
             fh.write(json.dumps({"qid": it["qid"], "ordering": int(it["ordering"]),
                                  "gold_letter_index": int(it["gold_letter_index"]), "letter_logits": ll,
+                                 "letter_logits_bf16": ll_bf16, "letter_logit_precision": precision,
                                  "pred_letter_index": pred, "argmax_tie": tie, "top1_token_id": top1,
                                  "top1_in_letters": top1 in letter_ids, "n_prompt_tokens": int(enc["input_ids"].shape[1]),
                                  "seconds": round(time.perf_counter() - t0, 4)}) + "\n")
@@ -754,7 +797,9 @@ def stage_recognition_labels(c: dict, args) -> None:
                "valid": bool(v1_ok and v2_ok)},
         "groups_by_split": counts,
         "c_distribution": {f"{k}|c={c_}": v for (k, c_), v in sorted(cdist.items())},
-        "argmax_ties": sum(1 for x in allrec if x["argmax_tie"]),
+        "letter_logit_precision": rc["letter_logit_precision"],
+        "argmax_ties": sum(1 for x in allrec if x["argmax_tie"]),  # residual exact ties after fp32 scoring
+        "bf16_letter_ties_descriptive": sum(1 for x in allrec if letter_argmax(x["letter_logits_bf16"])[1]),
         "pred_letter_shares": {rc["letters"][i]: v / max(1, len(allrec)) for i, v in
                                sorted(Counter(x["pred_letter_index"] for x in allrec).items())},
         "chance_reference": gates["r0_chance_reference"],

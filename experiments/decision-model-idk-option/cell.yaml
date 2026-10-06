@@ -70,7 +70,8 @@ predecessor:
 # decision row's canonical option order. dmcc-known rows are the positive
 # control (gates.yaml v1); dmcc-unknown rows are split into unknown-true /
 # known-recognized / recognition-ambiguous. The base model's answer per
-# ordering is the argmax of its next-token logits over the 4 letter tokens.
+# ordering is the argmax of its next-token logits over the 4 letter tokens
+# (letter logits computed in fp32; see letter_logit_precision).
 # ---------------------------------------------------------------------------
 recognition:
   hf_id: Qwen/Qwen3.5-2B-Base
@@ -91,7 +92,20 @@ recognition:
     known_recognized_min: 3              # c >= 3 of 4
     unknown_true_max: 0                  # c == 0 of 4
     ambiguous: otherwise                 # c in {1, 2}; reported separately, excluded from primary
-  argmax_tie_rule: lowest_letter_index   # exact logit ties go to the lowest letter; ties are counted and reported
+  # Letter-logit precision (PI decision 2026-10-06, pre-sign, before any
+  # PopQA recognition scoring; mechanical instrument fix). The model runs in
+  # bf16, but the final projection to the 4 letter logits runs in fp32: the
+  # LM head's input at the scored position and the 4 letter rows of the LM
+  # head are cast to fp32 before the matmul (idk_harness.fp32_letter_logits).
+  # Reason: the bf16 head output rounds logits of magnitude 16-32 to steps of
+  # 0.125, which produced exact ties on 29 of 600 synthetic pre-sign prompts
+  # (NOTEBOOK 2026-10-06). The full-vocabulary top-1 (R0-V2) is still read
+  # from the model's own bf16 logits. Integrity: the worker refuses if any
+  # fp32 letter logit differs from the bf16 head's by more than the bound
+  # below (that would mean the hooked tensor is not the head input).
+  letter_logit_precision: fp32
+  letter_logit_fp32_vs_bf16_max_abs_diff: 0.5
+  argmax_tie_rule: lowest_letter_index   # fallback for any residual exact fp32 tie; residual ties are counted and reported
   # Amendment-Y base-mode 5-shot surface in multiple-choice form. The five
   # exemplar QUESTIONS and gold answers are Amendment Y's frozen exemplars,
   # byte-identical to experiments/common/readouts/amendment_x_cross_model_extract.py

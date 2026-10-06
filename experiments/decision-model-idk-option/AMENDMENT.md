@@ -110,10 +110,12 @@ checkpoint per arm, no seeds.
   any digest mismatch. Nothing in the EH rules read for this draft requires
   the predecessor to be merged first; the operator-discipline rule is that a
   file must be committed or copied before another worktree references it,
-  and this cell copies and hashes. One dependency is on uncommitted bytes:
-  dmcc's `analysis-committed/label_and_split_counts.json` (digest
-  `f347db21...`). If dmcc's commit changes those bytes, this cell's pin is
-  updated before sign.
+  and this cell copies and hashes. dmcc's
+  `analysis-committed/label_and_split_counts.json` was uncommitted at
+  drafting. It has since been committed in dmcc `fe0d0ee54`. Its committed
+  blob hashes to `f347db21...`, the same as the drafting-time pin. The file
+  is stored with `eol=lf`, so the checkout bytes that `import-dmcc` hashes
+  equal the blob (re-pinned 2026-10-06, unchanged).
 - The promotion rule (`experiments` skill) does not move anything to
   `experiments/common/` yet: the consumed artifacts are gitignored row-level
   data that may not be committed, and the shared code (EH `normalize_answer`,
@@ -210,6 +212,24 @@ one has measured.
 - **Answer per ordering.** The argmax of the next-token logits over the four
   tokens " A", " B", " C", " D" (each must encode to one token; the worker
   refuses otherwise). Exact ties go to the lowest letter and are counted.
+- **Letter-logit precision (PI decision 2026-10-06, pre-sign, before any
+  PopQA recognition scoring; a mechanical instrument fix).**
+  - The model runs in bf16, but the final projection to the four letter
+    logits runs in fp32. The LM head's input at the scored position and the
+    head's four letter rows are cast to fp32 before the matmul
+    (`fp32_letter_logits`; cell.yaml `letter_logit_precision: fp32`).
+  - Why: the bf16 head output rounds logits of magnitude 16 to 32 to steps of
+    0.125. In the pre-sign diagnostic this tied 29 of 600 synthetic prompts,
+    and the tie rule decided the recognition group of 10 of 150 questions.
+    With fp32 scoring, 0 of those 600 prompts tie (NOTEBOOK 2026-10-06).
+  - The lowest-letter rule stays as the fallback for any residual exact tie.
+    Residual ties are counted in the freeze marker, with the bf16 tie count
+    reported descriptively.
+  - R0-V2's full-vocabulary top-1 is still read from the model's bf16
+    logits.
+  - Integrity check: the worker refuses if any fp32 letter logit differs from
+    the bf16 head's by more than 0.5. In the pre-sign runs the largest
+    difference was 0.062, within bf16 rounding.
 - **Rule.** c = the number of orderings (of 4) whose argmax is the gold
   option. known-recognized: c >= 3; unknown-true: c = 0;
   recognition-ambiguous: c in {1, 2}.
@@ -342,16 +362,30 @@ engine `--dry-run` accepted a materialized position-3 config for both models
   `mechinterp-runner:dmcc-tf5.17.0` from WSL against the Docker Desktop
   daemon (`docker --context default`); engine runs in
   `unsloth/unsloth@sha256:0b8efd89...` via `py.exe -3.11 tuner.py local-run`
-  (dmcc's working launch path).
-- Estimates, to be replaced by the smoke's measurement:
-  - Recognition: 48,268 single forwards of roughly 250-token prompts on a
-    2B model, about 20 to 40 ms each, so about 15 to 35 min plus model load.
-  - Engine: 12 runs. dmcc's runs took 17 min each (2026-10-05, 12,067
-    four-option rows, all layers captured). The IDK runs add one short option
-    line, so assume about 17 to 20 min each: about 3.4 to 4 h for all 12
-    (5x the IDK decision passes of the one-slot draft), plus container
-    start-up per run.
-  - Total GPU time about 4 to 4.5 h, run as separate stages.
+  (dmcc's working launch path). Launch `local-run` from PowerShell: under
+  Git Bash, MSYS `tar` cannot unpack the artifacts to an `F:\` path.
+- **Engine policy (PI decision 2026-10-06): parity-locked engine
+  exception** (experiment.yaml `instrument.engine_exception`, per
+  `batched-generation.md`). No step generates text.
+  - Recognition is a scoring-only forward pass on the pinned HF stack in
+    dmcc's pinned runner image, like dmcc's Stage 0.
+  - The decision passes use the tuner's decision engine, which produced
+    dmcc's outputs.
+- **Timing, measured pre-sign (2026-10-06, non-PopQA and synthetic inputs;
+  NOTEBOOK and run record `dmio-presign-20261006`).** These replace the
+  drafting estimate of 15 to 35 min for recognition and 4 to 4.5 h in
+  total.
+  - Recognition: about 0.05 to 0.06 s per prompt with fp32 letter scoring
+    (fp32 mean 0.052 s; bf16 mean 0.062 s), plus 20 to 35 s of first-forward
+    warmup per launch. That makes about 45 to 50 min for 48,268 prompts.
+  - Engine: one decision pass per model on 2,400 synthetic 5-option rows
+    took 8.9 and 9.4 min from launch to finish. Steady capture was 12.6 ms
+    per row; the probe fits took about 300 s.
+    - Run cost is dominated by row-count-dependent probe fits, not by the
+      option count. dmcc's full-size runs on the same 12,067 rows took 16.7
+      and 16.8 min, and the IDK line adds under 10 s of capture.
+    - Estimate: about 17 min per run, or about 3.4 h for all 12.
+  - Total GPU time is about 4.2 to 4.3 h, run as separate stages.
 - Long stages are launched detached (a tool background task dies at 2 h).
   Each engine run is its own `analyze` invocation, well under 2 h, so a kill
   loses one run; the recognition append-log resumes after a kill.
@@ -361,7 +395,7 @@ engine `--dry-run` accepted a materialized position-3 config for both models
 Pinned at sign: `cell.yaml`, `gates.yaml`, `analysis_{idk,noidk}_{pointer,letter_logits}.yaml`
 (the two `idk` files are the position templates),
 `recipe_{idk,noidk}_{pointer,letter_logits}.yaml`, `idk_harness.py`. Tests:
-`tests/test_recognition_rule.py`, `tests/test_idk_insertion.py` (44 pass).
+`tests/test_recognition_rule.py`, `tests/test_idk_insertion.py` (48 pass).
 Materialized per-position recipes are written to gitignored
 `analysis/engine_recipes/` and their digests go in the run records.
 Containment: prompts, question and option text, recognition logs and
@@ -555,26 +589,46 @@ never rounded to a neighbor. H3 and H4 are read beside the matrix, not in it.
    load) accepted the IDK and no-IDK pointer configs with
    `export.cal_rows: true`; split counts FIT 4,829 / CAL 2,410 / TEST 4,828,
    equal to dmcc's.
-2. **IDK render check. OPEN.** Inside the pinned engine image, render staged
-   IDK rows at all 5 positions through the engine's own prompt path for both
-   models; confirm the `<marker>. I don't know` line at the intended
-   position, the pointer span is non-empty, and the 5 markers resolve to
-   single tokens for the letter-logit model. The host `--dry-run` of the
-   templates and of a materialized position-3 config already passed
-   (split counts equal dmcc's); repeat it inside the image on staged rows.
-3. **Recognition smoke on non-PopQA items. OPEN.** `recognize-smoke`:
-   letters single-token, V2-style format adherence on the smoke set, repeat
-   identity of logits, seconds per prompt.
-4. **Recognition kill-resume drill. OPEN.** Kill `recognize` after the first
-   lines; resume; no duplicate keys; pre-kill lines unchanged.
-5. **Timing estimate. OPEN.** Replace the Lane estimate (about 4 to 4.5 h:
-   12 engine runs plus recognition) with the smoke's measured recognition
-   rate and the first engine run's wall time.
-6. **Pins. PARTLY CLOSED.** dmcc input digests verified by `import-dmcc`
-   (2026-10-05). Open: runner Image ID equals `runtime_image_digest`
-   (`docker image inspect`); `bin/exp doctor decision-model-idk-option`
-   after staging (checkpoint tree digests); the dmcc
-   `label_and_split_counts.json` digest after dmcc's results commit.
+2. **IDK render check. CLOSED** (2026-10-06).
+   - Ran inside the pinned engine image through `local-run` of the template
+     recipe, using the engine's own `load_examples` and
+     `DecisionCollator(train=False)`.
+   - Coverage: all 12,067 rows at each of the 5 positions, for both models,
+     with 0 failures. Each row has the `<marker>. I don't know` line at
+     `meta.idk_slot`, the real options in dmcc's order, and the correct gold
+     shift. Otherwise the prompt equals the no-IDK prompt.
+   - `option_index` is the last token of each line and `answer_index` is at
+     `<answer>`. Nothing is truncated.
+   - Markers 1-5 and A-E are single tokens.
+   - In-image `--dry-run` of every materialized position config: 10 of 10
+     OK, with FIT 4,829 / CAL 2,410 / TEST 4,828.
+3. **Recognition smoke on non-PopQA items. CLOSED** (2026-10-06; re-run
+   after the fp32 change).
+   - Letters are single tokens.
+   - The full-vocabulary top-1 was a letter on 64 of 64 prompts.
+   - The pick equals the argmax over the letters, with 0 residual ties.
+   - Logits are repeat-identical (32 of 32), and 30 of 32 picks were gold.
+   - The fp32 letter logits are within 0.062 of the bf16 head's.
+4. **Recognition kill-resume drill. CLOSED** (2026-10-06).
+   - Ran the real `recognize` on 600 synthetic prompts and SIGKILLed the
+     launcher, leaving the container as an orphan.
+   - On resume, `docker rm -f` removed the orphan.
+   - Result: 600 of 600 unique keys, and the pre-kill lines are a
+     byte-identical prefix. It passed both before and after the fp32 change.
+5. **Timing estimate. CLOSED** (2026-10-06). The Lane section now gives the
+   measured recognition rate and the measured decision-pass timing, which
+   total about 4.2 to 4.3 h.
+6. **Pins. CLOSED** (2026-10-06).
+   - The runner Image ID equals `runtime_image_digest`.
+   - The engine image's repo digest equals `engine.image`.
+   - Both checkpoint tree digests, computed with `bin/exp`'s algorithm on the
+     sources and on staged copies, equal the pins.
+   - dmcc's `label_and_split_counts.json` is committed at `fe0d0ee54`; its
+     blob digest is unchanged.
+   - `bin/exp doctor` still lists the two `dmio-idk-p0-*` staged checkpoints
+     as missing. They can exist only after `stage-engine`, which refuses
+     until the post-sign recognition freeze marker exists. `stage-engine`
+     re-checks each tree digest when it stages them.
 7. **Feasibility probe. CLOSED** (NOTEBOOK 2026-10-05, no model):
    collision count 0; 48,268 recognition prompts over 12,067 rows; IDK rows
    built at all 5 positions, each with a ported split identical to dmcc's.
@@ -584,6 +638,15 @@ never rounded to a neighbor. H3 and H4 are read beside the matrix, not in it.
 9. **Design choices. CLOSED** (PI, 2026-10-05, before any outcome): H3
    cutoff fit on CAL; IDK at all five positions with the question as the
    unit of analysis; R0 floors 0.80 / 0.95 confirmed.
+10. **Engine policy and letter-logit precision. CLOSED** (PI, 2026-10-06,
+    pre-sign, before any PopQA recognition scoring).
+    - Parity-locked engine exception declared (Lane).
+    - Recognition letter logits are projected in fp32, with the
+      lowest-letter rule kept as the fallback for residual exact ties
+      (Recognition labeling).
+    - Tie diagnostic on the same 600 synthetic prompts: bf16 gave 29 ties,
+      and 10 of 150 questions' groups depended on the tie rule. fp32 gives 0
+      ties, and no question's group depends on the tie rule.
 
 ## Predictions scoreboard
 

@@ -118,3 +118,45 @@ def test_collision_rule_matches_alias_or_option_text_exactly():
 
 def test_registered_collision_count_is_zero():
     assert GATES["g0_exemplar_option_collision_exclusion"]["expected_count"] == 0
+
+
+# ---- fp32 letter-logit scoring (PI decision 2026-10-06) -------------------
+
+
+def test_cell_declares_fp32_letter_logits_with_tie_fallback():
+    assert RC["letter_logit_precision"] == "fp32"
+    assert RC["letter_logit_precision"] in H.LETTER_LOGIT_PRECISIONS
+    assert RC["argmax_tie_rule"] == "lowest_letter_index"
+    assert 0 < float(RC["letter_logit_fp32_vs_bf16_max_abs_diff"]) <= 1.0
+
+
+def test_fp32_letter_logits_equal_an_fp32_matmul_of_bf16_inputs():
+    torch = pytest.importorskip("torch")
+    g = torch.Generator().manual_seed(0)
+    h = torch.randn(64, generator=g).to(torch.bfloat16)
+    w = torch.randn(4, 64, generator=g).to(torch.bfloat16)
+    b = torch.randn(4, generator=g).to(torch.bfloat16)
+    got = H.fp32_letter_logits(h, w, b)
+    want = (w.double() @ h.double() + b.double()).tolist()
+    assert all(abs(x - y) < 1e-4 for x, y in zip(got, want))
+    assert got == H.fp32_letter_logits(h, w, b)  # deterministic
+    assert H.fp32_letter_logits(h, w) == [float(x) for x in (w.float() @ h.float())]
+
+
+def test_fp32_projection_breaks_a_tie_that_bf16_rounding_creates():
+    torch = pytest.importorskip("torch")
+    # Two letter rows whose true logits are 20.03 and 20.06: bf16 rounds both
+    # to 20.0 (step 0.125 in [16, 32)), fp32 keeps them apart.
+    h = torch.tensor([1.0, 1.0], dtype=torch.bfloat16)
+    w = torch.tensor([[20.0, 0.03125], [20.0, 0.0625], [10.0, 0.0], [5.0, 0.0]], dtype=torch.bfloat16)
+    bf16 = [float(x) for x in (w @ h).float()]
+    assert H.letter_argmax(bf16) == (0, True)
+    fp32 = H.fp32_letter_logits(h, w)
+    assert H.letter_argmax(fp32) == (1, False)
+
+
+def test_residual_exact_tie_still_uses_the_registered_rule():
+    torch = pytest.importorskip("torch")
+    h = torch.tensor([1.0], dtype=torch.bfloat16)
+    w = torch.tensor([[2.0], [3.0], [3.0], [1.0]], dtype=torch.bfloat16)
+    assert H.letter_argmax(H.fp32_letter_logits(h, w)) == (1, True)

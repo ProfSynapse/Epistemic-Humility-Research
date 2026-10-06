@@ -6,6 +6,78 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-06 (later): PI decisions applied (engine exception; fp32 letter logits); pre-sign closed out
+
+The PI decided both open items on 2026-10-06, before any outcome and before
+any PopQA recognition scoring. This is tier 3. Nothing was signed or
+committed. Run record: `analysis-committed/run_records/dmio-presign-fp32-20261006.json`.
+
+1. **Engine policy: parity-locked engine exception.**
+   - Added experiment.yaml `instrument.engine_exception {kind: parity-locked,
+     reason}`, the form `exp.py` `cmd_sign` and `batched-generation.md`
+     require. `readout-under-contract-crossing` and
+     `base-refusal-direction-under-contract` declare theirs the same way.
+   - The reason records that the cell has no generation. Recognition is a
+     scoring-only forward pass on the pinned HF transformers 5.17.0 stack in
+     dmcc's runner image (`sha256:b4166dbd...`), like dmcc's Stage 0. The
+     decision passes use the tuner's decision engine (unsloth `0b8efd89...`).
+   - `exp` has no dry-run mode for sign. Instead, `cmd_sign` ran on a
+     throwaway copy of the cell directory in the scratchpad: rc 0, status
+     signed, 11 pins. The copy was then deleted. The real manifest is still
+     `status: draft`.
+2. **Ties: option letters scored in fp32.**
+   - Harness: the new pure function `fp32_letter_logits`. The worker hooks
+     the LM head's input at the scored position, then casts it and the 4
+     letter rows (and the bias, if there is one) to fp32 before the matmul.
+     The model stays bf16.
+   - Each log line now carries `letter_logits` (fp32, scored) and
+     `letter_logits_bf16` (descriptive), plus `letter_logit_precision`.
+   - The worker refuses if `|fp32 - bf16|` exceeds 0.5 on any letter, as an
+     integrity check that the hook captured the head input.
+   - R0-V2's full-vocabulary top-1 still comes from the model's bf16 logits.
+   - The smoke summary and the freeze marker add residual-tie and bf16-tie
+     counts.
+   - cell.yaml: `letter_logit_precision: fp32` and
+     `letter_logit_fp32_vs_bf16_max_abs_diff: 0.5`, with comments
+     attributing the change to the PI on 2026-10-06. The lowest-letter
+     `argmax_tie_rule` is kept as the fallback for residual ties.
+   - AMENDMENT: the recognition section pre-registers the change.
+   - Tests: 4 new (fp32 equals an fp32 matmul; it breaks a tie that bf16
+     rounding creates; residual exact ties still use the registered rule; the
+     cell declares fp32). 48 pass.
+   - Smoke re-run on the same 8 non-PopQA items:
+     - top-1 was a letter on 64 of 64 prompts, with 0 residual ties and
+       0 bf16 ties;
+     - logits are repeat-identical, 32 of 32;
+     - 30 of 32 picks were gold, and c is unchanged (7 items at c = 4,
+       1 item at c = 2);
+     - max `|fp32 - bf16|` is 0.0624, within bf16's half-step of 0.0625.
+   - Tie diagnostic on the same 600 synthetic prompts (items sha
+     `15b2e08b...`), via the kill-resume drill re-run (PASS: 600 of 600
+     unique keys, byte-identical prefix, orphan removed):
+     - residual fp32 ties: 0 of 600, against 29 bf16 ties on the same
+       prompts;
+     - the bf16 logits reproduce the earlier run on 600 of 600 prompts;
+     - questions whose group depends on the tie rule: 0 of 150, against 10
+       of 150 under bf16;
+     - against the earlier bf16 run under the registered rule, 19 prompts
+       changed their pick, c changed on 10 questions, and the group changed
+       on 6;
+     - fp32 c distribution: 0:42, 1:44, 2:29, 3:24, 4:11;
+     - steady rate 0.052 s per prompt, so about 42 min for 48,268 prompts.
+   - Nothing in the fp32 change raised a further PI question.
+3. **Close-out.**
+   - AMENDMENT: checklist items 2 to 6 are CLOSED, with item 6 noting the
+     by-design doctor gap for the two staged checkpoints. New item 10 records
+     these decisions as CLOSED.
+   - The Lane estimate is replaced by the measured timing (about 4.2 to
+     4.3 h). The Lane section also records the engine policy and the
+     instruction to launch from PowerShell.
+   - The dmcc dependency paragraph now says the file is committed at
+     `fe0d0ee54` and the digest is unchanged.
+   - Tests, `validate`, `regen`/`regen --check` and the hooks were re-run
+     (results in the run record).
+
 ### 2026-10-06: pre-sign checks (checklist 2-6); two items need a PI decision before sign
 
 Tier 3, lab notebook. Run by a subagent for the orchestrator. Nothing was
