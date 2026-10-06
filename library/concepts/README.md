@@ -979,7 +979,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 - [[x-lora-scaling-head]] : The X-LoRA scaling head is a feed-forward network that maps hidden states to softmax-normalized adapter coefficients. It is the only trainab
 
-## Mechanisms (cause -> effect) (676)
+## Mechanisms (cause -> effect) (680)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstention-instruction-amplifies-the-gated-write]] : An abstention-permitting system-prompt sentence (which also seeds the literal refusal string the narrow grader matches) is present in context alongside the doub
@@ -1025,6 +1025,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[backtracking-ablation-drops-calibration]] : Ablation that removes backtracking and alternative-exploration moves from the chain-of-thought, linearizing the reasoning trace **decreases** expected-calibrati
 - [[base-confab-propensity-direction-reads-held-out-without-training]] : Fitting the AL confabulation-propensity recipe (L24 PCA-128 randomized seed 20260705, standardize, L35-caution-residualize, mean-diff confab-vs-unanswerable-ref
 - [[base-model-entity-recognition-direction-transfers-to-chat-refusal]] : Steering the chat model with entity-recognition directions extracted from sparse autoencoders trained only on the base model. **enables** The chat model's refus
+- [[base-recognition-explains-decision-model-unknown-row-accuracy]] : In the decision-model-idk-option experiment, the base-model 'unknown' PopQA rows (0 of 32 sampled generations correct) are split by a pre-registered base-model 
 - [[batched-termination-rule-misgrades-eos-at-final-position]] : A batched sampled-decode grading harness requires terminated_naturally to satisfy eos_pos < n_new_tokens - 1, stricter than the registered metric text (\"termin
 - [[behavior-dependent-component-edits-separate-attention-and-mlp-control]] : Steer2Edit applies behavior-specific component scoring and sparsity budgets to attention heads and MLP neurons. **redistributes** Safety and truthfulness contro
 - [[behavior-underdetermines-motivation]] : Observing a single concerning agentic action (a workaround, a deception, a sandbag) without further investigation of why it occurred. **mediates** The underlyin
@@ -1097,6 +1098,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[cross-entropy-calibration-couples-to-hallucination]] : Cross-entropy pretraining minimization drives calibration deviation delta toward zero **enables** Base models are structurally calibrated and therefore forced t
 - [[cross-entropy-loss-promotes-polysemanticity]] : Training neural networks on cross-entropy loss with sparse activations **increases** Individual neurons become polysemantic even without superposition, because 
 - [[cross-trajectory-readback-fails-after-intervention-diverges]] : In h6-genstream-hook-firing-check (H6), measuring the realized per-step write on the tuner plain-HF register_forward_hook path as the projection of hidden_ON mi
+- [[decision-model-confidence-threshold-abstention-beats-idk-option]] : In the decision-model-idk-option experiment, the same untrained pointer decision model (Qwen3.5-2B-Base torso, LoRA r16 + pointer head) abstains on PopQA 4-way 
+- [[decision-model-idk-option-under-used-despite-tracking-unknowns]] : In the decision-model-idk-option experiment, an \"I don't know\" option line is added at analysis time, with no training on it, to the PopQA 4-way choice list o
+- [[decision-model-letter-logit-idk-use-is-position-dependent]] : In the decision-model-idk-option experiment, the secondary letter-logit decision model (Qwen3.5-2B-Base torso, LoRA r16 + letter-logit head, untrained on any ID
 - [[declarative-procedural-accuracy-gap-in-autoregressive-lms]] : Evaluating a large autoregressive language model (GPT-3 175B) on MMLU subjects that differ in whether correct answers require recall of factual propositions (de
 - [[decoding-parameters-confound-icl-alignment-comparisons]] : Evaluating URIAL-style in-context-learning alignment (a fixed system prompt plus three constant demonstrations, zero gradient updates) against instruction fine-
 - [[decomposability-penalty-reduces-cooccurrence]] : Joint training of a primary sparse-autoencoder with a decomposability-penalty (MetaSAE) that penalises correlated latent activations **decreases** Reduction in 

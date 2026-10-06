@@ -160,4 +160,9 @@ verdict: 'Selective-IDK-use line falsified as registered: on TEST unknown-true q
   secondary letter-logit arm H1 FAIL (0.3254), H2 PASS (0.0230), H3 NOT-ADJUDICABLE
   (operating points not matched), with a flagged IDK position effect; exploratory,
   no training, single checkpoint per arm.'
-kg: []
+kg:
+- experiment:decision-model-idk-option
+- mechanism:decision-model-idk-option-under-used-despite-tracking-unknowns
+- mechanism:decision-model-confidence-threshold-abstention-beats-idk-option
+- mechanism:decision-model-letter-logit-idk-use-is-position-dependent
+- mechanism:base-recognition-explains-decision-model-unknown-row-accuracy

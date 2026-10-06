@@ -1552,7 +1552,13 @@
           "recognition": "mechinterp-runner:dmcc-tf5.17.0 (runtime_image_digest above)"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:decision-model-idk-option",
+        "mechanism:decision-model-idk-option-under-used-despite-tracking-unknowns",
+        "mechanism:decision-model-confidence-threshold-abstention-beats-idk-option",
+        "mechanism:decision-model-letter-logit-idk-use-is-position-dependent",
+        "mechanism:base-recognition-explains-decision-model-unknown-row-accuracy"
+      ],
       "posture": "exploratory",
       "prediction": "On dmcc TEST, with the recognition instrument valid (known-row positive control >= 0.80, letter-format adherence >= 0.95), and each question run with the IDK option at all 5 positions (question IDK rate = mean of its 5 pick-IDK indicators; CIs by question-level cluster bootstrap): H1 mean question IDK rate on unknown-true >= 0.50; H2 mean question IDK rate on known <= 0.10; H3 at the CAL-fit matched question-level over-abstention rate, IDK recall minus threshold recall on unknown-true questions has a paired question-level bootstrap CI above 0; H4 (descriptive) question-level IDK rate and answer accuracy on known-recognized reported without a gate.",
       "question": "Given an explicit \"I don't know\" option added at analysis time, and with no further training, do the existing PopQA decision models (Qwen3.5-2B-Base torso, pointer PRIMARY, letter-logit SECONDARY) pick it on questions the base torso truly does not know (dmcc unknown and unrecognized in 0 of 4 multiple-choice orderings) and not on questions it knows (dmcc known), and does the option beat a calibrated-confidence threshold at a matched over-abstention rate?",
