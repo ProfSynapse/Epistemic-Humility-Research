@@ -1,0 +1,53 @@
+{
+  "run_id": "dmcc-letter-logits-popqa",
+  "cell": "decision-model-calibrated-choice",
+  "role": "secondary_exploratory",
+  "method": "decision",
+  "engine_cli": "Trainers/decision/analyze_confidence.py",
+  "lane": "local",
+  "image": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397",
+  "source_recipe_in_engine": "Trainers/recipes/decision_qwen35_2b_letter_logits.yaml",
+  "materialized_recipe": "experiments/decision-model-calibrated-choice/recipe_letter_logits.yaml",
+  "materialized_recipe_sha256": "7457c5396171413445f8acce3a404382b4710e25a7d952aae9b8f56fd1143af4",
+  "analysis_config": "experiments/decision-model-calibrated-choice/analysis_letter_logits.yaml",
+  "analysis_config_sha256": "557fbd5e1a526835efd8d64188adedf526f70beddef23f1392c38fe98f275824",
+  "checkpoint": {
+    "source": "F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-letter-logits/20261004_152616/final_model",
+    "tree_sha256": "3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96",
+    "tuner_run": "decision-qwen35-2b-letter-logits"
+  },
+  "data": {
+    "source_data_file": "experiments/decision-model-calibrated-choice/analysis/decision_rows/decision_rows_primary.jsonl",
+    "staged_data_file": "scratch/eh_staging/dmcc-letter-logits-popqa/decision_rows_primary.jsonl",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "data_sha256": "abeef06247691b9d3c6dc9f23a6f861646fa9df5e94e1fa313a7db5649b1d012",
+  "research_repo_commit": "1387e92dfdadaa9656b6b4009e1ed41e1ff3a7c8",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "stage0_freeze_marker_sha256": "23324c1d6cc0f28f269c9d2440c9a42a0cb59f35aa27671b2a0a8b2e93194f84",
+  "tuner_invocation": [
+    "py.exe",
+    "-3.11",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:\\Code\\Epistemic-Humility-Research\\.worktrees\\amendment-decision-model-calibrated-choice\\experiments\\decision-model-calibrated-choice\\recipe_letter_logits.yaml",
+    "--yes"
+  ],
+  "staged_at": "2026-10-05T22:05:48Z",
+  "outcome": {
+    "status": "completed",
+    "launched_at": "2026-10-05T22:06:11Z",
+    "metrics_path": "experiments/decision-model-calibrated-choice/analysis/engine/dmcc-letter-logits-popqa/20261005_180612",
+    "verified": false,
+    "returncode": 0,
+    "finished_at": "2026-10-05T22:22:59Z",
+    "artifact_sha256": {
+      "analysis_config.json": "fc3d08008b55cbb1432194984a8863036d17c0d2c77a1f6e926edc96ed3a7417",
+      "confidence_report.json": "029dbf5e138546cdcd53d8f071ad1f7aecf25128811881ed212a4b7eb4f85b8b",
+      "test_rows.jsonl": "15e38740a901ab7ee4474db0f855d1f97db15b3314d0d8880fe5887fa296ddb7"
+    },
+    "collected_at": "2026-10-05T22:23:49Z"
+  }
+}

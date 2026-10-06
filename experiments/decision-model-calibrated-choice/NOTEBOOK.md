@@ -6,7 +6,124 @@ in `experiment.yaml`.
 
 ## Entries
 
-### 2026-10-05 (latest): exemplar-collision exclusion pre-registered
+### 2026-10-05 (late night): Outcome written for PI resolve
+
+- An agent wrote AMENDMENT.md `## Outcome` from the committed gate summaries,
+  `stage0_freeze.json`, `label_and_split_counts.json`, the run records and the
+  entry below. It also filled the frontmatter `outcome:`, corrected the stale
+  "draft (not signed)" header, and added a resolution line to the Predictions
+  scoreboard section.
+- Numbers were transcribed, not recomputed. The gate points and the H-D2 CI
+  were cross-checked against each arm's engine `confidence_report.json`, whose
+  hashes match the run records.
+- No pinned file changed. AMENDMENT.md and NOTEBOOK.md are not pinned.
+  `experiment.yaml` is untouched: its `status`, `verdict` and `kg` fields are
+  set by `bin/exp resolve` and KG ingest.
+- Left for the PI:
+  - the terminal status (`falsified` or `resolved`) and the verdict;
+  - the scoreboard scores (frontmatter `scoreboard:` and
+    `docs/prediction-scoreboard.md`);
+  - `outcome.verified` in the three run records;
+  - KG ingest.
+- The H-A note in the Outcome is labelled post-hoc and does not change the H-A
+  FAIL verdict.
+
+### 2026-10-05 (night): signed run executed end to end; operator handover mid-run
+
+Tier: execution of the signed protocol (HEAD `1387e92d`, engine `29f7af0c`).
+Every stage was run through `dmcc_harness.py` and logged to
+`analysis/run_logs/` (`status.log` holds UTC BEGIN/END lines and return codes).
+The run record is `analysis-committed/run_records/dmcc-run-20261005.json`.
+Before every stage, all 15 signed sha256 pins in `experiment.yaml` were
+re-checked and matched, and the `synaptic-tuner` HEAD was `29f7af0c`.
+
+- **Operator handover.**
+  - The first operator agent launched the chain from build-pool through
+    stage0-extract (12:52Z-14:18Z) and then died when its Claude session ended.
+  - The detached stage0-extract driver (Windows PIDs 8092 / 71556; WSL
+    `stage.sh`) kept running and was not touched.
+  - A second operator agent took over at about 16:37Z with shards 000-004
+    complete. It waited for the driver, then ran every later stage.
+  - Nothing was restarted, duplicated or re-run except the two refused or
+    failed attempts listed under Anomalies.
+  - The first operator wrote no NOTEBOOK entry for the labeling chain. Its
+    facts are reconstructed here from the logs and `label_run.json`.
+- **Labeling chain** (WSL, `stage.sh`).
+  - build-pool 14,267 rows.
+  - label rc 0, 12:52Z-14:17Z. Marked generations: 1 of 470,811 (rate
+    2.1e-6, bound 0.05, flag false).
+  - convert: known 1,316 / unknown 10,764 / ambiguous 2,187; 27 exemplar
+    collisions excluded (expected 27); 12,067 primary rows. TEST
+    known/unknown 514 / 4,314. All floors met.
+- **Stage 0.**
+  - stage0-extract rc 0, 14:18Z-21:24Z (about 7.1 h vs the 5-5.3 h
+    estimate). 15 of 15 shards; 7,239 of 7,239 rows with both families;
+    provenance line in every shard log. 8 rows have an empty first line, and
+    1 CAL row lacks a dial capture.
+  - Shard times climbed from 20 to 43 min for shards 004-007, then fell back
+    to 25-30 min. WSL load average was about 15 from another session's node
+    workloads (synaptic-platform, CPU-only). The GPU held only our shard
+    container.
+  - stage0-fit rc 0. Gate frozen at layer 14 (FIT CV 0.9838); dial at layer
+    12 (0.9837); permuted gate best layer 17 (0.5015). The layer-0 anchor
+    shows AUROC 0.5 with PCA zero-variance warnings, because the anchor token
+    is identical across rows.
+  - stage0-validate rc 0, freeze marker 21:44:25Z.
+    - Gate CAL AUROC 0.9792 [0.9728, 0.9853]: S0-G1 PASS.
+    - Permuted gate: FIT CV at layer 14 0.4951, CAL 0.4901: S0-G2 PASS.
+    - Dial CAL 0.9804 [0.9741, 0.9860].
+    - H-D1 is adjudicable.
+- **Stage 1** (Windows `py -3.11` via `run_logs/stage_win.ps1`).
+  - Before each analyze, `analyze_confidence.py --dry-run` ran on the staged
+    inputs in the pinned unsloth image (`run_logs/analyze_*_dryrun.log`): FIT
+    4,829 / CAL 2,410 / TEST 4,828, and the directions resolve at 14 / 17 / 12.
+  - Pointer: analyze 21:47Z-22:04Z rc 0.
+  - Letter-logit: analyze 22:06Z-22:23Z rc 0.
+  - collect and score rc 0 for both. G0 integrity and floors hold for both.
+  - Verdicts are in `analysis-committed/dmcc-{pointer,letter-logits}-popqa_gate_summary.json`.
+    Primary (pointer): H-A FAIL (a1 FAIL, a2 PASS), H-B PASS, H-C PASS,
+    H-D1 PASS, H-D2 PASS. The matrix cell is "readout confidence tracks the
+    base known-unknown axis". The secondary letter-logit arm has the same
+    verdict pattern.
+- **Anomalies.**
+  1. stage0-validate attempt 1 failed (rc 1, 21:41Z). The runner had written
+     all 14,479 extraction files as `root:root` mode 600, so the WSL harness
+     could not read them: `FileNotFoundError` from safetensors, with the
+     underlying cause `Permission denied`.
+     - Remedy, per experiment-runner `local-runtime.md` ("mechinterp-runner
+       writes root-owned files"): a throwaway container from the same pinned
+       image (`sha256:b4166dbd...`) ran `/bin/chmod -R a+rX` on
+       `analysis/stage0/extraction`. Only permission bits changed, no
+       content.
+     - Attempt 2 exited rc 0. Attempt 1 logs are kept as
+       `run_logs/stage0_validate.attempt1.*`.
+  2. stage-engine (pointer) attempt 1 from WSL was refused fail-closed (rc 1).
+     The cell.yaml `source_checkpoint` is a Windows `F:/` path that Linux
+     Python resolves as relative and missing, so the tree digest was the
+     empty-tree hash `e3b0c442...` and did not equal the pin. Nothing was
+     staged.
+     - Every Stage 1 stage was then run with Windows `py -3.11`, which is
+       consistent with the cell's `py.exe` local-run launcher.
+     - The checkpoint digest verified (`e0cc616d...`, `3aef07e2...`).
+     - The attempt 1 log is kept as `run_logs/stage_engine_pointer.attempt1_wsl.err.log`.
+  3. Every runner container (extract and probe-fit) printed "Installing
+     asciimatics for terminal animations..." at tuner CLI start-up. This is
+     an ephemeral install into a `--rm` container: a UI dependency, not a
+     numerical one.
+  4. The host-Python dry-run attempt failed on a missing `pandas` and was
+     re-run inside the pinned Stage 1 image.
+  5. Descriptive: the frozen PERMUTED gate direction (layer 17) scores TEST
+     decision `<answer>` states at AUROC 0.763 (pointer) and 0.813
+     (letter-logit). It is reported, not interpreted.
+- **Sensitivity.**
+  - Marker-affected questions: 1 TEST row. Recomputed H-A, H-B, H-C and
+    H-D1 statistics move by at most 1e-4 (`thinking_marker_sensitivity`).
+  - The 27 exemplar-collision ('Au') rows are labeled 9 known / 4 unknown /
+    14 ambiguous. Exact "Au" echoes: 0 greedy and 0 sampled.
+- Nothing was committed. `outcome.verified` is left false in the Stage 1 run
+  records for the PI.
+
+### 2026-10-05: exemplar-collision exclusion pre-registered
 
 - **PI decision** (via coordinator, before any PopQA labeling or outcome):
   exclude the "Au"/"AU" collision rows from all primary analyses, and report

@@ -1,0 +1,90 @@
+{
+  "frozen_at": "2026-10-05T21:44:25Z",
+  "research_repo_commit": "1387e92dfdadaa9656b6b4009e1ed41e1ff3a7c8",
+  "engine_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "direction_sha256": {
+    "gate": "f8c7e1c1b331be5c8c96c203521539bb6a7c84d8b8dcb10228cffa003d6e5cf7",
+    "dial": "03d647d04249d7005599db0aa254328b5aabc78421caace2b0b9875e74929c16",
+    "gate_permuted": "40e23d4061c34df2faeafc30cf1422cad8cb8e6a6d8fa6177bd9e94ffab31ab9"
+  },
+  "summary": {
+    "gate": {
+      "layer": 14,
+      "family": "anchor",
+      "cal_auroc": 0.9791657956715024,
+      "cal_auroc_ci95": [
+        0.9727614553284001,
+        0.9852683361901975
+      ],
+      "cal_rows_with_capture": 2410,
+      "cal_rows": 2410,
+      "fit_cv_auroc_at_layer": 0.9838048111662892,
+      "mu_norm": 6.165022495314665,
+      "sigma": 3.660732949613154,
+      "sha256": "f8c7e1c1b331be5c8c96c203521539bb6a7c84d8b8dcb10228cffa003d6e5cf7"
+    },
+    "dial": {
+      "layer": 12,
+      "family": "answer_end",
+      "cal_auroc": 0.9803760273829358,
+      "cal_auroc_ci95": [
+        0.9740737432640626,
+        0.985955265707892
+      ],
+      "cal_rows_with_capture": 2409,
+      "cal_rows": 2410,
+      "fit_cv_auroc_at_layer": 0.9837420137505688,
+      "mu_norm": 5.194460611096072,
+      "sigma": 4.115041387180548,
+      "sha256": "03d647d04249d7005599db0aa254328b5aabc78421caace2b0b9875e74929c16"
+    },
+    "gate_permuted": {
+      "layer": 17,
+      "family": "anchor",
+      "cal_auroc": 0.49009155901166435,
+      "cal_auroc_ci95": [
+        0.44862182435163117,
+        0.5336694068174532
+      ],
+      "cal_rows_with_capture": 2410,
+      "cal_rows": 2410,
+      "fit_cv_auroc_at_layer": 0.5014547276274851,
+      "mu_norm": 11.111683413157783,
+      "sigma": 0.5433251426391503,
+      "sha256": "40e23d4061c34df2faeafc30cf1422cad8cb8e6a6d8fa6177bd9e94ffab31ab9"
+    }
+  },
+  "gates": {
+    "s0_floors": {
+      "counts": {
+        "cal_known": 268,
+        "cal_unknown": 2142,
+        "fit_known": 525,
+        "fit_unknown": 4304
+      },
+      "met": true
+    },
+    "s0_extraction_integrity": {
+      "anchor_cal_coverage": 1.0,
+      "answer_end_cal_coverage": 0.9995850622406639,
+      "ok": true
+    },
+    "s0_g1_gate_validity": "PASS",
+    "s0_g2_permuted_control": {
+      "verdict": "PASS",
+      "fit_cv_auroc_at_gate_layer": 0.4950514416392385,
+      "cal_auroc": 0.49009155901166435
+    }
+  },
+  "h_d1_adjudicable": true,
+  "gate_calibration_descriptive": {
+    "ece_bins": 15,
+    "cal_ece_raw_sigmoid": 0.015936057214603543,
+    "cal_ece_platt": 0.017704379311030735,
+    "cal_ece_isotonic": 0.019032996475927443,
+    "platt": {
+      "a": 1.1809734785441162,
+      "b": 0.1106385408931515
+    }
+  }
+}

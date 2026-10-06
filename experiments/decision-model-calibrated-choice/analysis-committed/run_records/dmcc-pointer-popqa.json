@@ -1,0 +1,53 @@
+{
+  "run_id": "dmcc-pointer-popqa",
+  "cell": "decision-model-calibrated-choice",
+  "role": "primary",
+  "method": "decision",
+  "engine_cli": "Trainers/decision/analyze_confidence.py",
+  "lane": "local",
+  "image": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397",
+  "source_recipe_in_engine": "Trainers/recipes/decision_qwen35_2b_pointer.yaml",
+  "materialized_recipe": "experiments/decision-model-calibrated-choice/recipe_pointer.yaml",
+  "materialized_recipe_sha256": "b081ae7513c8bcb94745eb98ca1ce7c175033cb2d2c33fb0c698e23a4f4be696",
+  "analysis_config": "experiments/decision-model-calibrated-choice/analysis_pointer.yaml",
+  "analysis_config_sha256": "43e8cfea017c27dada9dc4a5edd653b38ac727169d23456123c19fc9b0983142",
+  "checkpoint": {
+    "source": "F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-pointer/20261004_122756/final_model",
+    "tree_sha256": "e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+    "tuner_run": "decision-qwen35-2b-pointer"
+  },
+  "data": {
+    "source_data_file": "experiments/decision-model-calibrated-choice/analysis/decision_rows/decision_rows_primary.jsonl",
+    "staged_data_file": "scratch/eh_staging/dmcc-pointer-popqa/decision_rows_primary.jsonl",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "data_sha256": "abeef06247691b9d3c6dc9f23a6f861646fa9df5e94e1fa313a7db5649b1d012",
+  "research_repo_commit": "1387e92dfdadaa9656b6b4009e1ed41e1ff3a7c8",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "stage0_freeze_marker_sha256": "23324c1d6cc0f28f269c9d2440c9a42a0cb59f35aa27671b2a0a8b2e93194f84",
+  "tuner_invocation": [
+    "py.exe",
+    "-3.11",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:\\Code\\Epistemic-Humility-Research\\.worktrees\\amendment-decision-model-calibrated-choice\\experiments\\decision-model-calibrated-choice\\recipe_pointer.yaml",
+    "--yes"
+  ],
+  "staged_at": "2026-10-05T21:46:20Z",
+  "outcome": {
+    "status": "completed",
+    "launched_at": "2026-10-05T21:47:22Z",
+    "metrics_path": "experiments/decision-model-calibrated-choice/analysis/engine/dmcc-pointer-popqa/20261005_174724",
+    "verified": false,
+    "returncode": 0,
+    "finished_at": "2026-10-05T22:04:04Z",
+    "artifact_sha256": {
+      "analysis_config.json": "39481fd91e0386edef616d18c1416acef711cf0d6433f36562303d8a27b1502c",
+      "confidence_report.json": "4a4cf5d99e22534390ac20a0fe3d1e0b8da3453e1d300770d462462514746256",
+      "test_rows.jsonl": "2a5eb0ffaa5df3a5c58de12e149794c9240840abcb99f89a7f9f111d0dfbaf21"
+    },
+    "collected_at": "2026-10-05T22:04:58Z"
+  }
+}

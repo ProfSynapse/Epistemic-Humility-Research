@@ -33,7 +33,13 @@ predictions:
       >= 0.75), but the readout lags: a probe beats the readout by >= 0.03
       (H-D2 passes). This is the EH "knows but doesn't say" result in a model
       that can't refuse.
-outcome: pending
+outcome: >-
+  Run complete 2026-10-05 (see "Outcome"). Primary pointer arm: H-A FAIL (a1
+  gap 0.1769 [0.1737, 0.1798] above the 0.10 cap; a2 PASS), H-B PASS, H-C PASS
+  (AUROC 0.9407 [0.9266, 0.9526]), H-D1 PASS (0.9762 [0.9718, 0.9805]), H-D2
+  PASS (+0.0509 [0.0393, 0.0639]); matrix cell "readout confidence tracks the
+  base known-unknown axis". Secondary letter-logit arm: same verdict pattern.
+  Terminal status and scores pending PI resolve.
 scoreboard:
   user: pending
   orchestrator: pending
@@ -41,8 +47,13 @@ scoreboard:
 
 # Decision-model calibrated choice: does a never-refusing readout track what the base torso knows?
 
-Status: draft (not signed; do not launch as confirmatory evidence). Drafted
-2026-10-04 by the orchestrator for the PI. Nothing in this cell has been run.
+Status: signed 2026-10-05 (commit `1387e92d`); signed run executed 2026-10-05.
+The Outcome section records the result; the terminal status and verdict live
+in `experiment.yaml`. This header read "draft (not signed; do not launch as
+confirmatory evidence) ... Nothing in this cell has been run" until
+2026-10-05; corrected to match the machine state (the
+gemma-4-e4b-family-atlas 2026-07-20 header-correction pattern). First written
+2026-10-04 by the orchestrator for the PI.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -769,7 +780,287 @@ Disclosure: the orchestrator call was recorded at first draft, before the
 2026-10-04 pre-sign check showed the LoRA moving generic-prompt states by a
 mean relative L2 of 0.10 to 0.50. That observation was not used to revise it.
 
+Resolution (2026-10-05): each call is compared with the outcome in Outcome /
+"Predictions vs outcome". The WIN / LOSS / TIE scores are the PI's to ratify
+and are not assigned in this document.
+
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Run executed 2026-10-05 under the signed instrument. This section was
+transcribed on 2026-10-05 from the committed artifacts for PI review. The
+terminal status and the one-sentence verdict are stamped by the PI with
+`bin/exp resolve` and live in `experiment.yaml`. Exploratory tier-2 evidence,
+single seed per arm, never pooled with the headline matrix. Confirmatory
+claims rest on the primary pointer arm alone.
+
+Proposed one-sentence summary (for the manifest `verdict:`; PI to confirm):
+Readout-tracks-knowledge line falsified on its H-A leg as registered: on TEST
+unknowns the pointer-arm calibrated confidence (R1) sits 0.1769
+[0.1737, 0.1798] above chance against a 0.10 cap (confident-wrong 0.0007
+passes), while H-B passes (0.0603), H-C passes (AUROC 0.9407
+[0.9266, 0.9526]), H-D1 passes (frozen base gate 0.9762 [0.9718, 0.9805]) and
+H-D2 passes (probe minus readout +0.0509 [0.0393, 0.0639]); matrix cell:
+readout confidence tracks the base known-unknown axis; secondary letter-logit
+arm shows the same pattern; exploratory, single seed.
+
+### Run provenance
+
+- Signed commit `1387e92d`, engine `29f7af0c`. All 15 sha256 pins were
+  re-checked and matched before every stage (NOTEBOOK, 2026-10-05 night).
+- Records: chain record `analysis-committed/run_records/dmcc-run-20261005.json`;
+  Stage 1 records `dmcc-pointer-popqa.json` (primary) and
+  `dmcc-letter-logits-popqa.json` (secondary). `outcome.verified` is `false` in
+  all three and is left for the PI.
+- Timeline (UTC, 2026-10-05): label 12:52-14:17; stage0-extract 14:18-21:24;
+  Stage 0 freeze 21:44:25; pointer analyze 21:47-22:04, scored 22:05:05;
+  letter-logit analyze 22:06-22:23, scored 22:23:51. Every stage exited rc 0
+  apart from the two refused or failed first attempts under Anomalies.
+- Number sources: `analysis-committed/dmcc-pointer-popqa_gate_summary.json`
+  (primary), `analysis-committed/dmcc-letter-logits-popqa_gate_summary.json`
+  (secondary), `analysis-committed/stage0_freeze.json` and
+  `analysis-committed/label_and_split_counts.json`. Values are transcribed, not
+  recomputed, and rounded to 4 decimal places; the files hold full precision.
+  The H-A, H-B, H-C and H-D2 points, the H-D2 engine CI and the frozen-direction
+  TEST AUROCs were checked equal to each arm's engine `confidence_report.json`,
+  whose sha256 is in the Stage 1 run record.
+
+### Labels, populations and G0
+
+- 14,267 rows labeled: known 1,316, unknown 10,764, ambiguous 2,187. Thinking
+  markers: 1 of 470,811 generations (rate 2.1e-6, bound 0.05, not flagged).
+- 27 exemplar-collision rows excluded, as pre-registered (expected 27).
+  Primary rows: 12,067.
+- Known / unknown by split: FIT 525 / 4,304, CAL 268 / 2,142, TEST 514 / 4,314.
+  The engine split (FIT 4,829, CAL 2,410, TEST 4,828) equals the harness split.
+- G0 integrity: PASS on both arms (split identity, ambiguous excluded, engine
+  commit, checkpoint digest). G0 floors: met (TEST known 514 against 150,
+  unknown 4,314 against 300). The cell is adjudicable.
+
+### Stage 0 (instrument validity; decides only H-D1 adjudicability)
+
+- S0 floors met (FIT 525 / 4,304, CAL 268 / 2,142). Extraction integrity: OK
+  (anchor CAL coverage 1.0, answer_end CAL coverage 0.9996 against the 0.95
+  minimum).
+- S0-G1: **PASS.** Frozen gate direction (anchor, layer 14) CAL AUROC 0.9792
+  [0.9728, 0.9853]; FIT out-of-fold AUROC at layer 14 0.9838.
+- S0-G2: **PASS.** Permuted gate FIT out-of-fold AUROC at the gate layer 14:
+  0.4951. CAL AUROC of the frozen permuted projection (its own sweep layer 17):
+  0.4901 [0.4486, 0.5337]. Both inside [0.40, 0.60].
+- Descriptive: dial direction (answer_end, layer 12) CAL AUROC 0.9804
+  [0.9741, 0.9860]. Gate CAL ECE: raw sigmoid 0.0159, Platt 0.0177, isotonic
+  0.0190.
+- H-D1 is adjudicable.
+
+### Stage 1 gate results (TEST)
+
+| Gate | Pointer (PRIMARY) | Letter-logit (SECONDARY, exploratory) |
+|---|---|---|
+| H-A a1: mean(R1 - 0.25), unknown | 0.1769 [0.1737, 0.1798]: **FAIL** | 0.1719 [0.1679, 0.1757]: **FAIL** |
+| H-A a2: confident-wrong, all unknown | 3 / 4,314 = 0.0007, Wilson [0.0002, 0.0020]: **PASS** | 5 / 4,314 = 0.0012, Wilson [0.0005, 0.0027]: **PASS** |
+| **H-A combined** | **FAIL** (a1 fails) | **FAIL** (a1 fails) |
+| H-B: underconfident-right, all known | 31 / 514 = 0.0603, Wilson [0.0428, 0.0843]: **PASS** | 22 / 514 = 0.0428, Wilson [0.0284, 0.0640]: **PASS** |
+| H-C: AUROC(R1 -> known) | 0.9407 [0.9266, 0.9526]: **PASS** | 0.9525 [0.9419, 0.9617]: **PASS** |
+| H-D1: frozen base gate, layer 14 | 0.9762 [0.9718, 0.9805]: **PASS** | 0.9736 [0.9671, 0.9793]: **PASS** |
+| H-D2: AUROC(KU probe) - AUROC(R1) | +0.0509 [0.0393, 0.0639]: **PASS** | +0.0408 [0.0322, 0.0500]: **PASS** |
+
+- H-A companions: unknown accuracy 0.3832, Wilson [0.3688, 0.3978]; mean R1 on
+  unknown 0.4269 (pointer). Letter-logit: 0.4077 [0.3932, 0.4225]; mean R1
+  0.4219.
+- H-B companions and precondition: known accuracy 0.9689 (pointer) and 0.9728
+  (letter-logit), both above the 0.50 diagnosticity floor, so H-B is
+  adjudicable. Mean R1 on known 0.7534 / 0.8441. Underconfident-right among
+  right known rows 0.0622 / 0.0440.
+- H-C: the in-cell point equals the engine point on both arms.
+- H-D2 detail: KU probe at layer 15, TEST AUROC 0.9916 [0.9886, 0.9941]
+  (pointer) and 0.9933 [0.9912, 0.9953] (letter-logit). Engine permuted-label
+  CV AUROC 0.4776 / 0.4871, inside [0.40, 0.60], so the precondition holds.
+  In-cell paired CI of the difference: [0.0397, 0.0647] / [0.0320, 0.0509].
+- H-D1 registered comparison with the readout, AUROC(D1) - AUROC(R1): pointer
+  +0.0355, engine CI [0.0245, 0.0482] (in-cell [0.0249, 0.0482]). That meets
+  the registered reading "+0.03 with CI lower bound > 0", so on the primary arm
+  the base axis carries more than the readout reports. Letter-logit +0.0211,
+  engine CI [0.0125, 0.0300] (in-cell [0.0126, 0.0308]): the CI excludes 0 but
+  the point is below +0.03, so the registered reading is not met on the
+  secondary arm.
+
+### Interpretation matrix
+
+Both arms: H-D1 PASS and H-C PASS, so the registered cell is **"readout
+confidence tracks the base known-unknown axis"**. The fresh probe reads
+0.9916 (pointer) and 0.9933 (letter-logit), above the 0.75 d2-high point. H-D2
+PASS adds that the decision state still carries more KU signal than R1
+expresses; on the primary arm the frozen base axis does too, by the registered
+margin. The matrix is indexed by H-D1 and H-C only. The H-A failure is a
+separate leg of the line falsifier (next subsection) and does not move the
+cell.
+
+### Falsifier adjudication (registered text applied; PI to confirm)
+
+- Readout-tracks-knowledge line ("falsified if H-C FAILS ... or H-A FAILS"):
+  the H-A condition is met. The a1 gap CI lower bound is 0.1737, above 0.10.
+  The H-C condition is not met. The line is therefore falsified on its
+  calibration leg (unknown-row confidence is not near chance), not on its
+  ranking leg: the readout separates known from unknown at AUROC 0.9407.
+- Residual-signal prediction: not falsified (H-D2 PASS).
+- Base-axis-transfer prediction: not falsified (H-D1 PASS, Stage 0 valid).
+- The terminal status (`falsified` or `resolved`) is the PI's call at
+  `bin/exp resolve`.
+
+### Sensitivity analyses (registered, descriptive; no verdict changes)
+
+- **Thinking-marker policy.** One TEST row (an unknown) had a marked
+  generation. With it dropped, the pointer arm reads: gap 0.1768,
+  confident-wrong 0.0007, underconfident-right 0.0603, H-C 0.9408, H-D1 0.9762.
+  The letter-logit arm reads 0.1719, 0.0012, 0.0428, 0.9525 and 0.9736. With
+  marker-affected questions dropped, the label counts are known 1,316, unknown
+  10,763 and ambiguous 2,187: one unknown fewer.
+- **Exemplar-collision rows.** The 27 excluded "AU" (Australia) rows are
+  labeled 9 known, 4 unknown and 14 ambiguous. Exact "Au" echoes: 0 greedy and
+  0 sampled. The rows were dropped before the split, so no gate population
+  contains them.
+
+### Secondary (registered descriptive; no gate)
+
+- **Recall vs recognition.** Unknown-row 4-way accuracy against chance 0.25:
+  pointer 0.3832 [0.3688, 0.3978]; letter-logit 0.4077 [0.3932, 0.4225].
+- **Conformal by knowledge** (pointer; letter-logit in brackets). At alpha 0.1,
+  known coverage is 0.9961 with mean set size 1.4397 [0.9981, 1.3035], and
+  unknown coverage is 0.8927 with mean set size 3.1034 [0.8922, 3.0306]. At
+  alpha 0.2, known is 0.9961 / 1.2840 [0.9903, 1.1537] and unknown is
+  0.7976 / 2.6136 [0.7821, 2.4817]. Sets widen on unknowns, as expected.
+  Unknown coverage sits slightly under nominal, and known coverage sits above
+  it.
+- **Popularity quartiles** (pointer, Q1 to Q4):
+  - accuracy 0.4705, 0.3863, 0.3828, 0.5427;
+  - mean confidence 0.4657, 0.4357, 0.4365, 0.5086;
+  - known share 0.1062, 0.0397, 0.0456, 0.2345.
+
+  The pattern is not monotone. The letter-logit block is in its summary.
+- **Per relation.** Among relations with at least 25 unknown TEST rows,
+  unknown-row accuracy runs from 0.2809 (director, n 776) to 0.8466 (father,
+  n 163) on the pointer arm. On the letter-logit arm it runs from 0.2857
+  (sport, n 28) to 0.8773 (father). Known TEST rows concentrate in capital
+  (139), country (141), sport (73) and capital of (41).
+- **Arms, all TEST rows** (pointer; letter-logit in brackets):
+  - option accuracy 0.4455 [0.4679];
+  - option ECE, R0 0.0891 vs R1 0.0814 [0.0943 vs 0.0500];
+  - correctness AUROC, R0 0.7190, R1 0.7202, P-dial 0.7612, S 0.7568
+    [0.7491, 0.7495, 0.7670, 0.7692].
+- **Frozen base dial on TEST decision states.** Taken from the engine
+  `directions.base_dial` block, not the committed summary: 0.9357 (pointer)
+  and 0.9679 (letter-logit).
+
+### Anomalies (run record and NOTEBOOK)
+
+None of these changed a pinned file, a registered constant, a population or a
+threshold.
+
+1. **Operator handover.** The first operator agent launched build-pool through
+   stage0-extract (12:52Z-14:18Z). Its session then ended while
+   stage0-extract ran detached.
+   - A second operator took over at about 16:37Z, with shards 000-004
+     complete and shard 005 running.
+   - It waited on the detached driver (Windows PIDs 8092 / 71556) without
+     touching it, then ran every later stage.
+   - Nothing was restarted or duplicated.
+   - The first operator left no NOTEBOOK entry. Its facts were reconstructed
+     from the logs and `label_run.json`.
+2. **Extraction slowdown.** stage0-extract took about 7.1 h against the
+   5-5.3 h estimate. Shard times climbed from 20 to 43 min for shards
+   004-007, then fell back to 25-30 min.
+   - This correlated with WSL CPU contention: a load average near 15 from
+     another session's CPU-only node workloads.
+   - The GPU held only the shard container.
+   - All 15 shards completed: 7,239 of 7,239 rows with both families, and a
+     provenance line in every shard log.
+3. **Permission fix (chmod).** stage0-validate attempt 1 exited rc 1. The
+   runner had written all 14,479 extraction files as `root:root` mode 600, so
+   the WSL harness could not read them.
+   - Remedy, per `local-runtime.md`: a throwaway container from the same
+     pinned image ran `chmod -R a+rX`. Only permission bits changed, no
+     content.
+   - Attempt 2 exited rc 0. The attempt 1 logs are kept.
+4. **Stage 1 run from Windows Python.** stage-engine (pointer) attempt 1 from
+   WSL was refused fail-closed. The Windows `F:/` `source_checkpoint` path
+   does not resolve from Linux Python, so the tree digest was the empty-tree
+   hash, which did not match the pin, and nothing was staged.
+   - Every Stage 1 stage then ran under Windows `py -3.11`, consistent with
+     the cell's `py.exe` local-run launcher.
+   - Both checkpoint digests verified (`e0cc616d...`, `3aef07e2...`).
+5. **asciimatics install.** The tuner CLI in the runner containers installs
+   asciimatics at start-up. It is an ephemeral install into a `--rm`
+   container: a UI dependency, not a numerical one.
+6. **Dry-run on host Python.** The host-Python engine dry-run failed on a
+   missing `pandas`. It was re-run inside the pinned Stage 1 image (rc 0).
+7. **Descriptive permuted-direction scores.** The frozen PERMUTED gate
+   direction (layer 17) scores TEST decision `<answer>` states at AUROC 0.7632
+   (pointer) and 0.8126 (letter-logit), against about 0.49 on base CAL.
+   - It is a descriptive control and does not enter any gate.
+   - H-D1 is registered against the 0.75 threshold and against R1, not against
+     this control, so no verdict changes.
+   - Post-hoc caution, not interpreted further: on decision-model states, a
+     direction fit to shuffled labels reads known vs unknown well above 0.5.
+     The H-D1 margin over arbitrary mid-depth directions is therefore smaller
+     than its margin over chance.
+8. **Minor Stage 0 notes.**
+   - 8 rows have an empty first line.
+   - 1 CAL row lacks a dial capture; answer_end coverage is 0.9996.
+   - The layer-0 anchor reads AUROC 0.5 with PCA zero-variance warnings,
+     because the anchor token is identical across rows.
+
+### Post-hoc descriptive note on H-A (not pre-registered; does not change the FAIL verdict)
+
+On TEST unknowns, the pointer model's accuracy is 0.383 (Wilson
+[0.369, 0.398]) against 0.25 chance, and its mean calibrated confidence is
+0.427. The accuracy figure is the registered recall-vs-recognition companion.
+The reading below is post-hoc.
+
+- **The H-A ideal conflates two failures.** H-A's pre-registered ideal, "near
+  chance on unknowns", treats a base-model unknown (0 of 32 sampled answers
+  correct) as a row the decision model should not be able to answer. But the
+  label measures recall failure: the base model cannot generate the answer.
+  On a 4-way choice the model can still recognize the answer or eliminate the
+  distractors, and on these rows it is right well above chance.
+- **Confidence against own accuracy.** Measured against its own unknown-row
+  accuracy rather than against 1/N, mean confidence exceeds accuracy by 0.044
+  (pointer). On the letter-logit arm, accuracy is 0.408 and mean R1 is 0.422.
+  That is arithmetic on the two reported companions, not a registered
+  statistic.
+- **Status of the FAIL.** None of this rescues H-A. The registered gate
+  compares confidence with chance, and it fails. The note only says what the
+  failure measures.
+- **Follow-up design.** A follow-up should separate the two: for example,
+  gate on an unknown-and-unrecognized subset (unknown rows the base torso also
+  fails to recognize under a recognition probe), or replace "near chance"
+  with a recognition-controlled criterion (unknown-row confidence against the
+  model's own unknown-row accuracy). Either needs its own registration.
+
+### Predictions vs outcome (primary pointer arm; scores for the PI to ratify)
+
+- **Orchestrator.** Frontmatter call: "S0 passes; H-C and H-D2 pass; H-A
+  fails on the gap leg; H-D1 passes". Every element was realized.
+  - Per-gate table:
+    - S0-G1 PASS: realized.
+    - H-A FAIL on a1 with a gap of about 0.15 to 0.20: realized, at 0.1769.
+    - a2 PASS: realized.
+    - H-B INCONCLUSIVE or FAIL: not realized; H-B PASSED at 0.0603, Wilson
+      upper 0.0843.
+    - H-C PASS or INCONCLUSIVE with a point of 0.75 to 0.85: PASS realized,
+      but the point, 0.9407, is above the stated range.
+    - H-D1 PASS and H-D2 PASS: realized.
+    - Matrix cell "readout tracks the base KU axis": realized.
+  - Mechanism: the call's basis was that a CAL-fit temperature would leave
+    unknown-row confidence near pooled 4-way accuracy rather than near 0.25.
+    That matches the companions, mean R1 0.4269 against unknown accuracy
+    0.3832.
+- **User (PI).** The call had two parts.
+  - Readout, "Blind to knowledge" (H-C fails): not realized. H-C PASSED, with
+    a CI lower bound of 0.9266 against 0.75. Under the recording notes'
+    registered falsifier of this call, H-C PASS contradicts it.
+  - Internal signal, "Knows but doesn't say": both halves realized. D1 is high
+    (H-D1 PASS, 0.9762), and the readout lags (H-D2 PASS, +0.0509, CI lower
+    bound 0.0393 > 0).
+  - The matrix cell the user's calls picked out (H-D1 PASS with H-C FAIL) was
+    not realized. The realized cell is H-D1 PASS with H-C PASS.
+- **Scores and ledger.** WIN / LOSS / TIE scores are not assigned here. The
+  PI ratifies them and records them in `docs/prediction-scoreboard.md`.
