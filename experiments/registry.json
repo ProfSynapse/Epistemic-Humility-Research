@@ -1558,12 +1558,12 @@
       "question": "Given an explicit \"I don't know\" option added at analysis time, and with no further training, do the existing PopQA decision models (Qwen3.5-2B-Base torso, pointer PRIMARY, letter-logit SECONDARY) pick it on questions the base torso truly does not know (dmcc unknown and unrecognized in 0 of 4 multiple-choice orderings) and not on questions it knows (dmcc known), and does the option beat a calibrated-confidence threshold at a matched over-abstention rate?",
       "registered": true,
       "slug": "decision-model-idk-option",
-      "status": "signed",
+      "status": "falsified",
       "text_capture": "not-applicable",
       "tier": 2,
       "title": "Decision-model IDK option: with no further training, do decision models pick an explicit I don't know when the base torso truly does not know?",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Selective-IDK-use line falsified as registered: on TEST unknown-true questions (base model neither recalls nor recognizes the answer, n 1,860) the pointer arm picks the added IDK option at a mean question rate of 0.0185 [0.0138, 0.0238] against the 0.50 threshold (H1 FAIL), while over-IDK on known questions is 0.0066 [0.0012, 0.0140] (H2 PASS); IDK-beats-threshold line also falsified: at matched over-abstention (TEST check diff 0.0031 [-0.0074, 0.0140]) a CAL-fit calibrated-confidence threshold (tau 0.3354) abstains on 0.1849 of unknown-true questions against 0.0185 for the IDK option, delta -0.1665 [-0.1848, -0.1480] (H3 THRESHOLD_BETTER); known-recognized IDK rate 0.0235 with answered accuracy 0.6391 (H4, descriptive); matrix cell: IDK under-used; recognition instrument valid (V1 0.9227 [0.9070, 0.9360], V2 1.0000); secondary letter-logit arm H1 FAIL (0.3254), H2 PASS (0.0230), H3 NOT-ADJUDICABLE (operating points not matched), with a flagged IDK position effect; exploratory, no training, single checkpoint per arm."
     },
     {
       "checkpoint": {
