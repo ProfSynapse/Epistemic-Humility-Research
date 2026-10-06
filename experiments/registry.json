@@ -1543,7 +1543,12 @@
           "stage1": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:decision-model-calibrated-choice",
+        "mechanism:decision-model-readout-tracks-base-known-unknown-axis",
+        "mechanism:decision-model-state-carries-more-ku-signal-than-its-readout",
+        "mechanism:decision-model-unknown-confidence-above-chance-reflects-recognition"
+      ],
       "posture": "exploratory",
       "prediction": "On TEST, with Stage 0 valid (frozen base gate direction CAL AUROC >= 0.80, permuted twin in [0.40, 0.60]): H-A unknown-row confidence-over-chance <= 0.10 and confident-wrong <= 5%; H-B known-row underconfident-right <= 10%; H-C AUROC(calibrated max-p -> known) >= 0.75; H-D1 the frozen base gate direction on decision <answer> states reads known vs unknown at AUROC >= 0.75; H-D2 a fresh KU probe on <answer> states beats the readout by >= 0.03 AUROC with the paired-bootstrap CI excluding 0.",
       "question": "Does a trained decision model (Qwen3.5-2B-Base torso, LoRA + pointer head), which always chooses and reports a temperature-calibrated distribution over options, give confidence on PopQA that tracks its base torso's prior known/unknown label (EH knowledge-probe protocol) without refusing, and does the base model's frozen known-unknown gate direction still read known vs unknown in the decision model's <answer> state?",

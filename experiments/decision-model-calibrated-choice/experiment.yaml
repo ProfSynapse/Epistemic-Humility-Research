@@ -142,4 +142,8 @@ verdict: 'Readout-tracks-knowledge line falsified on its H-A leg as registered: 
   0.9762 [0.9718, 0.9805]) and H-D2 passes (probe minus readout +0.0509 [0.0393, 0.0639]);
   matrix cell: readout confidence tracks the base known-unknown axis; secondary letter-logit
   arm shows the same pattern; exploratory, single seed.'
-kg: []
+kg:
+- experiment:decision-model-calibrated-choice
+- mechanism:decision-model-readout-tracks-base-known-unknown-axis
+- mechanism:decision-model-state-carries-more-ku-signal-than-its-readout
+- mechanism:decision-model-unknown-confidence-above-chance-reflects-recognition
