@@ -1,0 +1,69 @@
+{
+  "run_id": "dmio-presign-fp32-20261006",
+  "cell": "decision-model-idk-option",
+  "tier": "lab-notebook (pre-sign; applies the PI decisions of 2026-10-06 and re-runs the affected checks; nothing scored for a gate)",
+  "authorized_by": "PI decisions 2026-10-06 relayed by the coordinator: parity-locked engine exception; recognition option-letter logits projected in fp32 with the registered tie rule as fallback; close out pre-sign. No commit, no sign.",
+  "population": "cell.yaml recognition.smoke_items (8 non-PopQA questions x 4 orderings) and the same 600 synthetic arithmetic MC prompts as dmio-presign-20261006 (items sha256 15b2e08ba6760d237dc61781246ebdf6bea881e9cc29b0f7544d61528f53d9f3). No PopQA row scored.",
+  "research_repo_commit_base": "422b2d711b75f02f8376806754a5600232691688",
+  "submodule_commit": "e51a802b1229cc399a80163612638523ddeddbb6",
+  "lane": "local RTX 3090, exclusive",
+  "images": {"recognition": "mechinterp-runner:dmcc-tf5.17.0 sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c"},
+  "instrument_after_change": {
+    "idk_harness.py_sha256": "4e442da0a1233ba76b4c32dde0c1327b9867af87dfec91a06bb32cb71329df14",
+    "cell.yaml_sha256": "52def6c35302cdb79f92f51465610088abc45a1865d5141b877dbdbadebb1f28"
+  },
+  "changes": [
+    "experiment.yaml instrument.engine_exception {kind: parity-locked, reason} (PI 2026-10-06)",
+    "idk_harness.py: fp32_letter_logits (pure); recognize-worker hooks the LM-head input at the scored position and projects the 4 letter rows in fp32 (model stays bf16); logs letter_logits (fp32, scored) and letter_logits_bf16 (descriptive); refuses if |fp32 - bf16| > cell.yaml bound; smoke summary and freeze marker add residual-tie and bf16-tie counts",
+    "cell.yaml recognition.letter_logit_precision: fp32; letter_logit_fp32_vs_bf16_max_abs_diff: 0.5; argmax_tie_rule kept (fallback)",
+    "tests/test_recognition_rule.py: 4 fp32 tests (48 pass)",
+    "AMENDMENT.md: fp32 pre-registration (Recognition labeling), engine policy + measured timing (Lane), dmcc dependency now committed, checklist 2-6 CLOSED, new item 10 CLOSED"
+  ],
+  "checks": [
+    {
+      "name": "sign_gate_on_throwaway_copy",
+      "status": "PASS",
+      "invocation": "exp.py cmd_sign(root=<scratchpad copy of experiments/decision-model-idk-option>, slug) via importlib; copy deleted afterwards; real manifest still status: draft",
+      "result": {"rc": 0, "status_of_copy": "signed", "pins": 11}
+    },
+    {
+      "name": "recognition_smoke_fp32",
+      "status": "PASS (sanity; not a gate)",
+      "result": {
+        "n_prompts": 32, "top1_in_letters": "64 of 64", "argmax_ties_residual": 0, "bf16_letter_ties": 0,
+        "repeat_identical_logits": "32 of 32", "gold_picks": "30 of 32", "c_distribution_over_8_items": {"4": 7, "2": 1},
+        "max_abs_fp32_minus_bf16": 0.0624, "smoke_log_rep1_sha256": "beb05f1207d0075430742aa326b173251f774e6f30415ae72837e67ba05fb198"
+      }
+    },
+    {
+      "name": "tie_diagnostic_and_kill_resume_drill_fp32",
+      "status": "PASS",
+      "invocation": "WSL: presign/drill_recognize_resume.py --n-questions 150 --kill-after 40 (same seed, same 600 prompts)",
+      "result": {
+        "drill": {"killed_after_s": 33.3, "lines_at_kill_snapshot": 63, "orphan_removed": true, "resume_rc": 0,
+                  "unique_keys": 600, "coverage_complete": true, "prekill_prefix_byte_identical": true},
+        "residual_fp32_ties": "0 of 600",
+        "bf16_ties_same_prompts": "29 of 600 (bf16 logits reproduce the earlier run on 600 of 600)",
+        "questions_whose_group_depends_on_tie_rule": {"fp32": "0 of 150", "bf16_earlier": "10 of 150"},
+        "vs_earlier_bf16_registered_rule": {"prompts_pred_changed": 19, "questions_c_changed": 10, "questions_group_changed": 6},
+        "c_distribution_fp32": {"0": 42, "1": 44, "2": 29, "3": 24, "4": 11},
+        "max_abs_fp32_minus_bf16": 0.0624,
+        "steady_s_per_prompt_mean": 0.0523,
+        "extrapolation_48268_prompts_min": 42.1,
+        "recognition_log_sha256": "adab62f19988ba124d23b131f8b8bc51123c387cf9dc54f580f8c8824e3e6712"
+      }
+    },
+    {
+      "name": "repo_checks",
+      "status": "PASS",
+      "result": {
+        "cell_tests": "48 passed",
+        "exp_validate": "OK (135); this cell's only warnings are the two staged-checkpoint inputs (exist only after stage-engine)",
+        "exp_regen": "regenerated; regen --check up to date",
+        "hooks": "validate_kg (core.hooksPath=.githooks), check_retired_terms, research_session validate, task validate, build_todo_index --check, check_task_gate --staged, validate_kg_relationships: all rc 0"
+      }
+    }
+  ],
+  "open_for_pi": [],
+  "outcome": {"status": "completed", "verified": false}
+}

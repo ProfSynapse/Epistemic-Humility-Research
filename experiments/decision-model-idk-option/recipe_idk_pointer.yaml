@@ -1,0 +1,44 @@
+# Materialized tuner recipe: PRIMARY pointer decision model, idk arm.
+# Mirrors dmcc's recipe_pointer.yaml (itself mirroring the engine's
+# Trainers/recipes/decision_confidence_analysis_*.yaml) with this run's staged
+# paths. Launch only after explicit PI launch approval naming this run:
+#   py.exe -3.11 tuner.py local-run --job-config '<worktree>\experiments\decision-model-idk-option\analysis\engine_recipes\dmio-idk-p<k>-pointer.yaml' --yes
+# idk_harness.py `analyze --run idk_p<k>_pointer` (materialized recipe) builds exactly that argv.
+name: dmio-idk-p0-pointer
+description: EH decision-model-idk-option, pointer decision model, idk arm (TEMPLATE, IDK position 0; materialized per position by stage-engine), PopQA dmcc primary rows (read-only).
+target: local
+method: decision
+provider: local_docker
+
+job:
+  image: unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - transformers==5.17.0
+    - peft==0.21.2
+    - flash-linear-attention
+  copy:
+    - Trainers/decision
+    - shared
+    - MechInterp
+    - scratch/eh_staging/dmio-idk-p0-pointer
+
+run:
+  method: decision
+  trainer: Trainers/decision/analyze_confidence.py
+  command:
+    - python
+    - Trainers/decision/analyze_confidence.py
+    - --config
+    - scratch/eh_staging/dmio-idk-p0-pointer/analysis_idk_pointer.yaml
+    - --output-root
+    - scratch/eh_staging/dmio-idk-p0-pointer/output
+    - --run-timestamp
+    - "{timestamp}"
+
+artifacts:
+  host_path: scratch/eh_staging/dmio-idk-p0-pointer/output/{timestamp}

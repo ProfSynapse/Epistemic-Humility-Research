@@ -1,0 +1,44 @@
+# Materialized tuner recipe: SECONDARY (exploratory) letter_logits decision model, noidk arm.
+# Mirrors dmcc's recipe_letter_logits.yaml (itself mirroring the engine's
+# Trainers/recipes/decision_confidence_analysis_*.yaml) with this run's staged
+# paths. Launch only after explicit PI launch approval naming this run:
+#   py.exe -3.11 tuner.py local-run --job-config '<worktree>\experiments\decision-model-idk-option\recipe_noidk_letter_logits.yaml' --yes
+# idk_harness.py `analyze --run noidk_letter_logits` builds exactly that argv.
+name: dmio-noidk-letter-logits
+description: EH decision-model-idk-option, letter_logits decision model, noidk arm, PopQA dmcc primary rows (read-only).
+target: local
+method: decision
+provider: local_docker
+
+job:
+  image: unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - transformers==5.17.0
+    - peft==0.21.2
+    - flash-linear-attention
+  copy:
+    - Trainers/decision
+    - shared
+    - MechInterp
+    - scratch/eh_staging/dmio-noidk-letter-logits
+
+run:
+  method: decision
+  trainer: Trainers/decision/analyze_confidence.py
+  command:
+    - python
+    - Trainers/decision/analyze_confidence.py
+    - --config
+    - scratch/eh_staging/dmio-noidk-letter-logits/analysis_noidk_letter_logits.yaml
+    - --output-root
+    - scratch/eh_staging/dmio-noidk-letter-logits/output
+    - --run-timestamp
+    - "{timestamp}"
+
+artifacts:
+  host_path: scratch/eh_staging/dmio-noidk-letter-logits/output/{timestamp}

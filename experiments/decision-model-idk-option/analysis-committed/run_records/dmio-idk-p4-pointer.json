@@ -1,0 +1,60 @@
+{
+  "run_id": "dmio-idk-p4-pointer",
+  "cell": "decision-model-idk-option",
+  "run_key": "idk_p4_pointer",
+  "arm": "idk",
+  "idk_position": 4,
+  "model": "pointer",
+  "role": "primary",
+  "method": "decision",
+  "engine_cli": "Trainers/decision/analyze_confidence.py",
+  "lane": "local",
+  "image": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397",
+  "template_recipe": "experiments/decision-model-idk-option/recipe_idk_pointer.yaml",
+  "template_recipe_sha256": "8fcca5d8c27c4b1c7cf9b537cdc995d7ab3d35ee004d3df520c0edd298f1acdf",
+  "materialized_recipe": "experiments/decision-model-idk-option/analysis/engine_recipes/dmio-idk-p4-pointer.yaml",
+  "materialized_recipe_sha256": "f73b31f03f2f8112ef85f1fe176820782ec4991b70738ea75917c70f8e5105c9",
+  "template_analysis_config": "experiments/decision-model-idk-option/analysis_idk_pointer.yaml",
+  "template_analysis_config_sha256": "7624cd8fb28c7009d716f7923ce4256aa95d46eab0905b4061caa5374b65dc19",
+  "materialized_analysis_config_sha256": "58f8017853f0f8ef38ee92e5dfd568f966c0be8bb926fac0e4f577256a2c50cc",
+  "checkpoint": {
+    "source": "F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-pointer/20261004_122756/final_model",
+    "tree_sha256": "e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+    "tuner_run": "decision-qwen35-2b-pointer"
+  },
+  "data": {
+    "source_data_file": "experiments/decision-model-idk-option/analysis/decision_rows_idk/decision_rows_idk_p4.jsonl",
+    "staged_data_file": "scratch/eh_staging/dmio-idk-p4-pointer/decision_rows_idk.jsonl",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "data_sha256": "12817de3f307b4622507ae8c24d1ac11983038eddce9bff6aae1b8ba9ac1208d",
+  "research_repo_commit": "4e327158e1a5f203aed2d4aa69018b81f3a615fc",
+  "submodule_commit": "e51a802b1229cc399a80163612638523ddeddbb6",
+  "recognition_freeze_sha256": "0f1e0f2218d13ed75807a552d2b2e9e896693b97a751487d30ce570178bca10e",
+  "tuner_invocation": [
+    "py.exe",
+    "-3.11",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:\\Code\\Epistemic-Humility-Research\\.worktrees\\amendment-decision-model-idk-option\\experiments\\decision-model-idk-option\\analysis\\engine_recipes\\dmio-idk-p4-pointer.yaml",
+    "--yes"
+  ],
+  "staged_at": "2026-10-06T12:34:37Z",
+  "outcome": {
+    "status": "completed",
+    "launched_at": "2026-10-06T12:40:16Z",
+    "metrics_path": "experiments/decision-model-idk-option/analysis/engine/dmio-idk-p4-pointer/20261006_084018",
+    "verified": false,
+    "returncode": 0,
+    "finished_at": "2026-10-06T13:07:38Z",
+    "artifact_sha256": {
+      "analysis_config.json": "9f7471b1d318293cedec2a020b5aa74a6d3a9e38892beb9c17c8425febb5daf4",
+      "cal_rows.jsonl": "f1f075ec518d404ef532b81a3973ec444572bd6ee7df80d9f93e8778fe1b1710",
+      "confidence_report.json": "31dd912787a08c79780a086f053737bae209376fe4127ee2289644661f5a7c01",
+      "test_rows.jsonl": "a3fea36ffc00d8d4bdeeeeb3f09589906c420c7188fc524af60aa644023e5682"
+    },
+    "collected_at": "2026-10-06T13:07:42Z"
+  }
+}

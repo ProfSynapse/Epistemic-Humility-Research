@@ -1439,6 +1439,140 @@
     },
     {
       "checkpoint": {
+        "adapter": "unchanged dmcc decision models: pointer decision-qwen35-2b-pointer/20261004_122756 final_model (tree sha256 e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc); letter-logit decision-qwen35-2b-letter-logits/20261004_152616 final_model (tree sha256 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96)",
+        "engine": "synaptic-tuner e51a802b1229cc399a80163612638523ddeddbb6 (29f7af0c, dmcc's pin, plus export.cal_rows / export.fit_rows)",
+        "repo": "Qwen/Qwen3.5-2B-Base",
+        "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c"
+      },
+      "created_at": "2026-10-05T23:06:58Z",
+      "falsifier": "The selective-IDK-use line is falsified if H1 FAILS (cluster-bootstrap CI upper bound of the mean question IDK rate on unknown-true < 0.50) or H2 FAILS (CI lower bound of the mean question IDK rate on known > 0.10); the IDK-beats-threshold line is falsified if H3, adjudicable with matched operating points, is THRESHOLD_BETTER (paired CI upper bound < 0). A CI that contains its threshold (for H3, contains 0) is INCONCLUSIVE.",
+      "inputs": [
+        "experiments/common/readouts/amendment_x_cross_model_extract.py",
+        "experiments/common/knowledge_probe/scoring.py",
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/decision_rows_primary.jsonl",
+          "sha256": "abeef06247691b9d3c6dc9f23a6f861646fa9df5e94e1fa313a7db5649b1d012",
+          "source": "decision-model-calibrated-choice (signed 1387e92d) convert output analysis/decision_rows/decision_rows_primary.jsonl, copied by idk_harness.py import-dmcc"
+        },
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/splits.json",
+          "sha256": "82392bcf7076bf5db484e618837bde16311329168383786539a28e041be32979",
+          "source": "decision-model-calibrated-choice convert output analysis/decision_rows/splits.json, copied by import-dmcc"
+        },
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/popqa_meta.jsonl",
+          "sha256": "ca70ddd5a6f68a9d4b88ff1bd42e145cfbbbaa8baa0f3db6660f6f7e66be1008",
+          "source": "decision-model-calibrated-choice build-pool output from akariasai/PopQA@098765c79ea10a2cb19c828324e33281b8336ec0 test.tsv, copied by import-dmcc"
+        },
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/label_and_split_counts.json",
+          "sha256": "f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562",
+          "source": "decision-model-calibrated-choice analysis-committed/label_and_split_counts.json (committed in dmcc fe0d0ee54; digest = the committed blob, unchanged from the drafting-time working-tree pin), copied by import-dmcc"
+        },
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/dmcc_test_rows_pointer.jsonl",
+          "sha256": "2a5eb0ffaa5df3a5c58de12e149794c9240840abcb99f89a7f9f111d0dfbaf21",
+          "source": "decision-model-calibrated-choice engine output dmcc-pointer-popqa/20261005_174724/test_rows.jsonl (reproduction check only), copied by import-dmcc"
+        },
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/dmcc_test_rows_letter_logits.jsonl",
+          "sha256": "15e38740a901ab7ee4474db0f855d1f97db15b3314d0d8880fe5887fa296ddb7",
+          "source": "decision-model-calibrated-choice engine output dmcc-letter-logits-popqa/20261005_180612/test_rows.jsonl (reproduction check only), copied by import-dmcc"
+        },
+        {
+          "availability": "local",
+          "path": "synaptic-tuner/scratch/eh_staging/dmio-idk-p0-pointer/final_model",
+          "sha256": "e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+          "source": "tuner decision run decision-qwen35-2b-pointer/20261004_122756/final_model (Toolset-Training worktree jev-models-tuner-training-b55d92), staged by idk_harness.py stage-engine (same bytes for dmio-idk-p1..p4-pointer and dmio-noidk-pointer)"
+        },
+        {
+          "availability": "local",
+          "path": "synaptic-tuner/scratch/eh_staging/dmio-idk-p0-letter-logits/final_model",
+          "sha256": "3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96",
+          "source": "tuner decision run decision-qwen35-2b-letter-logits/20261004_152616/final_model (secondary arm), staged by idk_harness.py stage-engine (same bytes for dmio-idk-p1..p4-letter-logits and dmio-noidk-letter-logits)"
+        }
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "analysis_idk_pointer.yaml",
+          "recipe_idk_pointer.yaml",
+          "analysis_noidk_pointer.yaml",
+          "recipe_noidk_pointer.yaml",
+          "analysis_idk_letter_logits.yaml",
+          "recipe_idk_letter_logits.yaml",
+          "analysis_noidk_letter_logits.yaml",
+          "recipe_noidk_letter_logits.yaml"
+        ],
+        "engine": {
+          "name": "hf-transformers",
+          "version": "5.17.0"
+        },
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "PI decision 2026-10-06 (pre-sign, before any outcome). No generation-bearing step. Recognition is a scoring-only forward pass (next-token option-letter logits, batch 1) on the pinned HF transformers 5.17.0 stack in dmcc's pinned runner image mechinterp-runner:dmcc-tf5.17.0 (sha256:b4166dbd...), the same stack and image as dmcc's Stage 0 forward passes. The decision-model passes are the tuner's decision engine (Trainers/decision/analyze_confidence.py, unsloth digest 0b8efd89...) that produced dmcc's registered outputs, re-run on the identical rows; the no-IDK arm reproduces dmcc's analysis under it."
+        },
+        "engine_note": "No generation anywhere in this cell. The recognition stage is one forward pass per prompt (next-token letter logits) under HF transformers 5.17.0 in the pinned runner image, batch size 1. The decision-model stages are option-logit forward passes inside the engine's analyze_confidence.py (unsloth image). Letter logits are projected in fp32 from the bf16 model's LM-head input (PI 2026-10-06).",
+        "lane": "local_3090",
+        "modules": [
+          "idk_harness.py"
+        ],
+        "persistence": {
+          "idk_harness.py": {
+            "checkpoint_path": "experiments/decision-model-idk-option/analysis/recognition/recognition_log.jsonl",
+            "note": "recognize appends and flushes one JSON line per (qid, ordering) and skips keys already present on restart; each of the 12 engine analyze runs (5 IDK positions + 1 no-IDK, per model) is one read-only tuner local-run invocation, re-runnable from its staged inputs; import-dmcc, build-recognition, recognition-labels, build-idk-rows, stage-engine, collect and score are short CPU passes with atomic writes. Kill-resume drill of recognize is a pre-sign checklist item.",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "analysis_idk_letter_logits.yaml": "141de9757d68368e2251301b6497e45b3d07f75954174fa766f1943d963f1f9f",
+          "analysis_idk_pointer.yaml": "7624cd8fb28c7009d716f7923ce4256aa95d46eab0905b4061caa5374b65dc19",
+          "analysis_noidk_letter_logits.yaml": "abe3df036e979a6ea2664b46e3f196099e7f5a2ff0049d6855ee9c46780a5d12",
+          "analysis_noidk_pointer.yaml": "bdfdbd5cede468b53b4e1e596aac1e76ac6527b1b755c389af4467f2b7d44ec9",
+          "cell.yaml": "52def6c35302cdb79f92f51465610088abc45a1865d5141b877dbdbadebb1f28",
+          "gates.yaml": "544df872367d2765f5b1e36333596b1d926f16a538bbd0d7bfacfb094622e4ff",
+          "idk_harness.py": "4e442da0a1233ba76b4c32dde0c1327b9867af87dfec91a06bb32cb71329df14",
+          "recipe_idk_letter_logits.yaml": "6a44baec29b52a2930d5b7c2b8b793f9b69104c99d7fa5c4212d2eb42f4834fa",
+          "recipe_idk_pointer.yaml": "8fcca5d8c27c4b1c7cf9b537cdc995d7ab3d35ee004d3df520c0edd298f1acdf",
+          "recipe_noidk_letter_logits.yaml": "d0cbee98964e60bddeb9c06c98a1a73519e92ace754f382010a4707aaff86a77",
+          "recipe_noidk_pointer.yaml": "6449794697eb28467ecb326f3cb46561a7a81c04cc5499f103e1b4b30a2af302"
+        },
+        "runtime_image_digest": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
+        "runtime_image_digest_note": "Recognition runtime. Local Image ID of mechinterp-runner:dmcc-tf5.17.0, built 2026-10-04 for dmcc Stage 0 from synaptic-tuner@29f7af0c docker/mechinterp-runner with TRANSFORMERS_VERSION=5.17.0 (Docker Desktop daemon, context default). Engine runs use the unsloth digest under runtimes.engine.",
+        "runtimes": {
+          "engine": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397",
+          "recognition": "mechinterp-runner:dmcc-tf5.17.0 (runtime_image_digest above)"
+        }
+      },
+      "kg": [
+        "experiment:decision-model-idk-option",
+        "mechanism:decision-model-idk-option-under-used-despite-tracking-unknowns",
+        "mechanism:decision-model-confidence-threshold-abstention-beats-idk-option",
+        "mechanism:decision-model-letter-logit-idk-use-is-position-dependent",
+        "mechanism:base-recognition-explains-decision-model-unknown-row-accuracy"
+      ],
+      "posture": "exploratory",
+      "prediction": "On dmcc TEST, with the recognition instrument valid (known-row positive control >= 0.80, letter-format adherence >= 0.95), and each question run with the IDK option at all 5 positions (question IDK rate = mean of its 5 pick-IDK indicators; CIs by question-level cluster bootstrap): H1 mean question IDK rate on unknown-true >= 0.50; H2 mean question IDK rate on known <= 0.10; H3 at the CAL-fit matched question-level over-abstention rate, IDK recall minus threshold recall on unknown-true questions has a paired question-level bootstrap CI above 0; H4 (descriptive) question-level IDK rate and answer accuracy on known-recognized reported without a gate.",
+      "question": "Given an explicit \"I don't know\" option added at analysis time, and with no further training, do the existing PopQA decision models (Qwen3.5-2B-Base torso, pointer PRIMARY, letter-logit SECONDARY) pick it on questions the base torso truly does not know (dmcc unknown and unrecognized in 0 of 4 multiple-choice orderings) and not on questions it knows (dmcc known), and does the option beat a calibrated-confidence threshold at a matched over-abstention rate?",
+      "registered": true,
+      "slug": "decision-model-idk-option",
+      "status": "falsified",
+      "text_capture": "not-applicable",
+      "tier": 2,
+      "title": "Decision-model IDK option: with no further training, do decision models pick an explicit I don't know when the base torso truly does not know?",
+      "type": "eval",
+      "verdict": "Selective-IDK-use line falsified as registered: on TEST unknown-true questions (base model neither recalls nor recognizes the answer, n 1,860) the pointer arm picks the added IDK option at a mean question rate of 0.0185 [0.0138, 0.0238] against the 0.50 threshold (H1 FAIL), while over-IDK on known questions is 0.0066 [0.0012, 0.0140] (H2 PASS); IDK-beats-threshold line also falsified: at matched over-abstention (TEST check diff 0.0031 [-0.0074, 0.0140]) a CAL-fit calibrated-confidence threshold (tau 0.3354) abstains on 0.1849 of unknown-true questions against 0.0185 for the IDK option, delta -0.1665 [-0.1848, -0.1480] (H3 THRESHOLD_BETTER); known-recognized IDK rate 0.0235 with answered accuracy 0.6391 (H4, descriptive); matrix cell: IDK under-used; recognition instrument valid (V1 0.9227 [0.9070, 0.9360], V2 1.0000); secondary letter-logit arm H1 FAIL (0.3254), H2 PASS (0.0230), H3 NOT-ADJUDICABLE (operating points not matched), with a flagged IDK position effect; exploratory, no training, single checkpoint per arm."
+    },
+    {
+      "checkpoint": {
         "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
         "revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
       },

@@ -1,0 +1,72 @@
+{
+  "frozen_at": "2026-10-06T11:11:37Z",
+  "labels_sha256": "900b280e1e5601d86b17ab6f29f26e781bd35c8565e5ae3cbf278650b2eae053",
+  "recognition_log_sha256": "6c80975970d2822610eee23b8a9e6ca57477abca82d2195dbc80b077b95693b9",
+  "items_sha256": "761060dcc4db898321c5c9169e1c724dadf7f75528e94ccc8bdf33b863b1f243",
+  "r0": {
+    "v1_positive_control": {
+      "k": 1206,
+      "n": 1307,
+      "rate": 0.9227237949502678,
+      "wilson95": [
+        0.9069765513895898,
+        0.9359934298880237
+      ],
+      "threshold": 0.8,
+      "pass": true
+    },
+    "v2_format_adherence": {
+      "rate": 1.0,
+      "n": 48268,
+      "threshold": 0.95,
+      "pass": true
+    },
+    "valid": true
+  },
+  "groups_by_split": {
+    "fit": {
+      "unknown_true": 1883,
+      "known": 525,
+      "known_recognized": 1286,
+      "recognition_ambiguous": 1135
+    },
+    "cal": {
+      "recognition_ambiguous": 576,
+      "unknown_true": 948,
+      "known_recognized": 618,
+      "known": 268
+    },
+    "test": {
+      "known_recognized": 1283,
+      "recognition_ambiguous": 1171,
+      "unknown_true": 1860,
+      "known": 514
+    }
+  },
+  "c_distribution": {
+    "known|c=0": 27,
+    "known|c=1": 30,
+    "known|c=2": 44,
+    "known|c=3": 59,
+    "known|c=4": 1147,
+    "unknown|c=0": 4691,
+    "unknown|c=1": 1757,
+    "unknown|c=2": 1125,
+    "unknown|c=3": 1114,
+    "unknown|c=4": 2073
+  },
+  "letter_logit_precision": "fp32",
+  "argmax_ties": 1,
+  "bf16_letter_ties_descriptive": 3284,
+  "pred_letter_shares": {
+    "A": 0.32244965608684845,
+    "B": 0.23199635369188695,
+    "C": 0.25718902792740533,
+    "D": 0.1883649622938593
+  },
+  "chance_reference": {
+    "p_c_ge_3": 0.05078125,
+    "p_c_eq_0": 0.31640625,
+    "p_c_1_or_2": 0.6328125
+  }
+}

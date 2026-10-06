@@ -1,0 +1,141 @@
+{
+  "run_id": "dmio-presign-20261006",
+  "cell": "decision-model-idk-option",
+  "tier": "lab-notebook (pre-sign checks; no confirmatory stage, nothing scored for a gate)",
+  "authorized_by": "orchestrator task 2026-10-06 relaying the pre-sign checklist (AMENDMENT items 2-6): checks only, on non-PopQA or throwaway inputs; no commit, sign, or protocol change",
+  "population": "recognition: cell.yaml recognition.smoke_items (8 non-PopQA questions x 4 orderings) and 150 synthetic arithmetic 4-way MC questions x 4 orderings (presign/drill_recognize_resume.py, seed 20261006). Engine forward passes: 2,400 synthetic arithmetic 5-option rows (presign/prep_engine_presign.py, seed 20261006). PopQA IDK rows were only tokenised (render check) and split (--dry-run); no PopQA row was forwarded through any model.",
+  "research_repo_commit_base": "46084a0b8decbc6659688c85b75c4cf0a8e0bf2f",
+  "submodule_commit": "e51a802b1229cc399a80163612638523ddeddbb6",
+  "lane": "local RTX 3090, exclusive (0 MiB used at start), one GPU job at a time",
+  "images": {
+    "recognition": "mechinterp-runner:dmcc-tf5.17.0 Image ID sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c (== experiment.yaml instrument.runtime_image_digest; torch 2.9.1+cu128, transformers 5.17.0, python 3.10.12, image_git_revision 29f7af0c)",
+    "engine": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397 (+ recipe pip set: transformers 5.17.0, peft 0.21.2, flash-linear-attention 0.5.2)"
+  },
+  "harness_changes": [
+    "idk_harness.py recognize-worker: per-prompt `seconds` timer time.time() -> time.perf_counter(). The first smoke recorded negative durations (-0.72 s, -1.01 s: the container wall clock stepped backwards). Diagnostic field only; no label, gate or scored quantity reads it. Letter logits were identical across the launches before and after the change (32 of 32)."
+  ],
+  "checks": [
+    {
+      "name": "1_idk_render_engine_image",
+      "status": "PASS",
+      "invocation": "tuner.py local-run of analysis/presign/engine/dmio-presign-{pointer,letter-logits}.yaml (pinned template recipe; sandbox paths): presign/check_engine_render.py (engine load_examples + DecisionCollator train=False with each checkpoint's decision_config and tokenizer; no weights), then analyze_confidence.py --dry-run on the stage-engine materialization of the template for each position 0..4 (only the staging prefix moved)",
+      "result": {
+        "pointer": {"marker_style": "numbers", "positions_pass": [0, 1, 2, 3, 4], "rows_per_position": 12067, "failures": 0, "batch_vs_single_mismatch_first400": 0, "prompt_tokens_min_max": [76, 124], "max_length": 4096, "marker_ids_1_to_5": [16, 17, 18, 19, 20]},
+        "letter_logits": {"marker_style": "letters", "positions_pass": [0, 1, 2, 3, 4], "rows_per_position": 12067, "failures": 0, "batch_vs_single_mismatch_first400": 0, "prompt_tokens_min_max": [76, 124], "max_length": 4096, "marker_ids_A_to_E": [32, 33, 34, 35, 36], "all_single_token": true},
+        "per_row_checks": "canonical order rendered; IDK at meta.idk_slot == k; IDK line exactly '<marker>. I don't know'; 4 real options in dmcc relative order; gold name unchanged and label shift correct; IDK prompt == no-IDK prompt + one inserted line with markers renumbered (nothing else differs); option_index = last token of each option line (offset ends at line end, next token starts after it, strictly increasing); answer_index = last token, prompt ends at '<answer>'; no truncation",
+        "dry_run": "10 of 10 'Dry run OK' (5 positions x 2 models); every one FIT 4,829 / CAL 2,410 / TEST 4,828 (== dmcc splits.json counts)",
+        "synthetic_example_render_pointer_p2": "1. 64\\n2. 54\\n3. I don't know\\n4. 74\\n5. 62"
+      }
+    },
+    {
+      "name": "2_recognition_smoke_non_popqa",
+      "status": "PASS (sanity; not a gate)",
+      "invocation": "WSL: idk_harness.py recognize-smoke --i-know-this-runs-on-gpu (twice; second run after the timer fix)",
+      "result": {
+        "n_prompts": 32,
+        "letter_token_ids_space_A_to_D": [357, 417, 351, 414],
+        "letters_single_token": true,
+        "top1_in_letters": "64 of 64 (1.000; R0-V2 floor 0.95)",
+        "pred_equals_argmax_over_letter_logits": "64 of 64",
+        "argmax_ties": 0,
+        "repeat_identical_logits": "32 of 32 within a run; 32 of 32 across the two launches",
+        "gold_picks": "30 of 32",
+        "c_distribution_over_8_items": {"4": 7, "2": 1},
+        "share_c_ge_3": "7 of 8 (R0-V1 floor 0.80 is on dmcc-known PopQA rows; this is a sanity reading only)",
+        "pred_letter_shares": {"A": 7, "B": 9, "C": 9, "D": 7},
+        "prompt_tokens_min_max": [211, 226],
+        "smoke_log_rep1_sha256": "9da3934ca8f83fb04571971b9ead4067ace7647840c9a35e6034c6aa98ae321d",
+        "smoke_items_sha256": "446d11a05972961c2cad31cd8ce89eeb37540742d9a450a30a3f8d065ad7d95e"
+      },
+      "exemplar_collision": {
+        "harness_rule_on_12067_primary_rows": 0,
+        "exemplar_question_equals_any_popqa_question": 0,
+        "exemplar_option_texts_equal_to_any_popqa_gold_alias_all_14267_rows": "27 (all 'au' = alias AU; the 27 rows dmcc excluded before its split; 0 in the primary rows)",
+        "exemplar_gold_answer_equals_a_popqa_subject": 0,
+        "exemplar_distractor_equals_a_popqa_subject": ["five", "seven"],
+        "smoke_question_equals_a_primary_row_question": 0
+      }
+    },
+    {
+      "name": "4_recognition_kill_resume_drill",
+      "status": "PASS",
+      "invocation": "WSL: presign/drill_recognize_resume.py --n-questions 150 --kill-after 40 (real stage_recognize with cfg() patched to a sandbox under analysis/presign/drill_recognize/)",
+      "result": {
+        "n_items": 600,
+        "items_sha256": "15b2e08ba6760d237dc61781246ebdf6bea881e9cc29b0f7544d61528f53d9f3",
+        "kill": "SIGKILL to the launcher process group after 49.6 s (61 lines at snapshot); the dmio-recognize container kept running (orphan)",
+        "resume_rc": 0,
+        "resume_wall_s": 68.5,
+        "orphan_removed_by_resume_docker_rm_f": true,
+        "lines_after": 600,
+        "unique_keys": 600,
+        "coverage_complete": true,
+        "prekill_prefix_byte_identical": true,
+        "top1_in_letters": "600 of 600",
+        "argmax_ties": "29 of 600 (bf16 logits; 19 resolved to A, 8 to B, 2 to C); gold among the tied letters in 17; 16 of 150 questions have a gold-involving tie, 10 of 150 would change recognition group under a different tie rule",
+        "gold_picks": "218 of 600",
+        "c_distribution": {"0": 44, "1": 43, "2": 26, "3": 25, "4": 12},
+        "pred_letter_shares": {"A": 229, "B": 203, "C": 110, "D": 58}
+      }
+    },
+    {
+      "name": "3_timing",
+      "status": "MEASURED",
+      "recognition": {
+        "steady_s_per_prompt": "mean 0.0619, median 0.0603, p99 0.0886 (598 prompts, drill); smoke 0.053-0.055",
+        "first_forward_warmup_s": "23-34 per launch; container start + model load about 20 s",
+        "extrapolation_48268_prompts": "about 50 min + about 1 min start/warmup (AMENDMENT estimate was 15-35 min)"
+      },
+      "engine_decision_pass_2400_synthetic_rows": {
+        "pointer": {"host_launch_to_finish_s": 563, "main_total_s": 499.5, "capture_s": {"fit_960_incl_warmup": 50.9, "cal_480": 5.6, "test_960": 12.1}, "run_probes_s": [153.2, 151.6], "analysis_rc": 0},
+        "letter_logits": {"host_launch_to_finish_s": 532, "main_total_s": 482.2, "capture_s": {"fit_960_incl_warmup": 48.4, "cal_480": 5.6, "test_960": 12.1}, "run_probes_s": [154.6, 148.9], "analysis_rc": 0},
+        "steady_capture_ms_per_5option_row": 12.6
+      },
+      "extrapolation": "Per-run cost is dominated by the row-count-dependent probe fits, not by the option count. Anchor: dmcc's two full-size runs on the same 12,067 rows took 16.7 and 16.8 min launch to finish (run records dmcc-pointer-popqa / dmcc-letter-logits-popqa). The IDK option adds one short line (prompt 76-124 tokens), at most about 5% of capture (about 151 s at 12.6 ms/row), i.e. under 10 s per run. Estimate about 17 min per engine run, 12 runs about 3.4 h; plus recognition about 0.85 h; total about 4.3 h of GPU in separate stages (AMENDMENT estimate 4-4.5 h). Every engine run stays far below the 2 h tool limit."
+    },
+    {
+      "name": "5_digests_and_doctor",
+      "status": "PASS with the by-design gap",
+      "result": {
+        "runner_image_id": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c == runtime_image_digest (also checked by _check_image at every worker launch)",
+        "engine_image": "local repo digest unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397 == cell.yaml engine.image",
+        "checkpoint_tree_sha256_bin_exp_algorithm": {
+          "pointer_source": "e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+          "pointer_staged_presign_copy": "e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+          "letter_logits_source": "3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96",
+          "letter_logits_staged_presign_copy": "3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96"
+        },
+        "exp_doctor": "FAILED 2 of 10 by design: 8 OK; MISSING synaptic-tuner/scratch/eh_staging/dmio-idk-p0-{pointer,letter-logits}/final_model, which only stage-engine creates, and stage-engine refuses before the recognition freeze marker (after sign)",
+        "import_dmcc": "6 of 6 artifacts verified against cell.yaml digests (2026-10-06T00:20:18Z)"
+      }
+    },
+    {
+      "name": "6_dmcc_digest_pin_refresh",
+      "status": "PASS (mechanical; no protocol change)",
+      "result": {
+        "file": "dmcc analysis-committed/label_and_split_counts.json",
+        "committed_in": "fe0d0ee54 (dmcc: run results and Outcome)",
+        "old_pin_working_tree": "f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562",
+        "new_pin_committed_blob": "f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562",
+        "changed": false,
+        "why_identical": "the path has gitattributes text=auto eol=lf, so the checkout bytes equal the LF blob (core.autocrlf=true does not apply); import-dmcc hashes the checkout, so run-time verification reads the same bytes",
+        "other_pinned_dmcc_artifacts": "5 others are gitignored row-level files (never committed); their working-copy pins are unchanged and verified"
+      }
+    },
+    {
+      "name": "repo_checks",
+      "status": "PASS",
+      "result": {
+        "cell_tests": "44 passed",
+        "exp_validate": "OK (135 experiments); this cell's only warnings are the two staged-checkpoint inputs",
+        "exp_regen": "registry.json regenerated (one input `source` string changed); regen --check up to date",
+        "hooks": "validate_kg (core.hooksPath=.githooks), check_retired_terms, exp validate, regen --check, task validate, build_todo_index --check, check_task_gate --staged (nothing staged), research_session validate, validate_kg_relationships: all rc 0"
+      }
+    }
+  ],
+  "open_for_pi": [
+    "Generation-engine sign gate: `bin/exp sign` refuses type eval unless instrument.engine is vllm or instrument.engine_exception (parity-locked | intervention) is declared; this cell declares hf-transformers 5.17.0 and no exception.",
+    "bf16 letter-logit ties in recognition: 29 of 600 synthetic prompts (0 of 64 smoke prompts) tied exactly; ties resolve to the lowest letter by the registered rule."
+  ],
+  "outcome": {"status": "completed", "verified": false}
+}
