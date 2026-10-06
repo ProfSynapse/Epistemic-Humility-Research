@@ -1,0 +1,4 @@
+# Fitted directions and other large local data for this experiment.
+directions/
+# Local analysis scratch; keep untracked, promote real outputs deliberately.
+analysis/

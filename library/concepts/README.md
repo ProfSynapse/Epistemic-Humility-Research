@@ -979,7 +979,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 - [[x-lora-scaling-head]] : The X-LoRA scaling head is a feed-forward network that maps hidden states to softmax-normalized adapter coefficients. It is the only trainab
 
-## Mechanisms (cause -> effect) (676)
+## Mechanisms (cause -> effect) (679)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstention-instruction-amplifies-the-gated-write]] : An abstention-permitting system-prompt sentence (which also seeds the literal refusal string the narrow grader matches) is present in context alongside the doub
@@ -1097,6 +1097,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[cross-entropy-calibration-couples-to-hallucination]] : Cross-entropy pretraining minimization drives calibration deviation delta toward zero **enables** Base models are structurally calibrated and therefore forced t
 - [[cross-entropy-loss-promotes-polysemanticity]] : Training neural networks on cross-entropy loss with sparse activations **increases** Individual neurons become polysemantic even without superposition, because 
 - [[cross-trajectory-readback-fails-after-intervention-diverges]] : In h6-genstream-hook-firing-check (H6), measuring the realized per-step write on the tuner plain-HF register_forward_hook path as the projection of hidden_ON mi
+- [[decision-model-readout-tracks-base-known-unknown-axis]] : In the decision-model-calibrated-choice experiment, a decision model (Qwen3.5-2B-Base torso, LoRA r16 + pointer head) that never refuses reports a CAL-temperatu
+- [[decision-model-state-carries-more-ku-signal-than-its-readout]] : In the decision-model-calibrated-choice experiment, a fresh known-unknown linear probe (PCA then logistic, layer sweep on FIT) is fit on the decision model's ow
+- [[decision-model-unknown-confidence-above-chance-reflects-recognition]] : In the decision-model-calibrated-choice experiment, a never-refusing decision model (Qwen3.5-2B-Base torso, LoRA r16 + pointer head) answers PopQA 4-way multipl
 - [[declarative-procedural-accuracy-gap-in-autoregressive-lms]] : Evaluating a large autoregressive language model (GPT-3 175B) on MMLU subjects that differ in whether correct answers require recall of factual propositions (de
 - [[decoding-parameters-confound-icl-alignment-comparisons]] : Evaluating URIAL-style in-context-learning alignment (a fixed system prompt plus three constant demonstrations, zero gradient updates) against instruction fine-
 - [[decomposability-penalty-reduces-cooccurrence]] : Joint training of a primary sparse-autoencoder with a decomposability-penalty (MetaSAE) that penalises correlated latent activations **decreases** Reduction in 

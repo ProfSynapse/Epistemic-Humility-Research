@@ -1,0 +1,149 @@
+{
+  "converted_at": "2026-10-05T14:17:31Z",
+  "n_rows_primary": 12067,
+  "label_counts_all": {
+    "ambiguous": 2187,
+    "unknown": 10764,
+    "known": 1316
+  },
+  "skipped": {
+    "ambiguous_excluded": 2173,
+    "exemplar_answer_collision": 27
+  },
+  "label_counts_drop_marker_affected": {
+    "ambiguous": 2187,
+    "unknown": 10763,
+    "known": 1316
+  },
+  "marker_summary": {
+    "n_questions": 14267,
+    "n_questions_affected": 1,
+    "n_sampled_marked": 1,
+    "n_greedy_marked": 0,
+    "n_generations": 470811,
+    "marked_rate": 2.1239945540779633e-06
+  },
+  "exemplar_collision_excluded": {
+    "n": 27,
+    "qids": [
+      "popqa-5342543",
+      "popqa-6325849",
+      "popqa-654148",
+      "popqa-1311100",
+      "popqa-653099",
+      "popqa-3895236",
+      "popqa-3877353",
+      "popqa-4484472",
+      "popqa-6533248",
+      "popqa-2358616",
+      "popqa-4886491",
+      "popqa-5187649",
+      "popqa-1162532",
+      "popqa-5857608",
+      "popqa-212190",
+      "popqa-2218396",
+      "popqa-4012239",
+      "popqa-4997958",
+      "popqa-4968395",
+      "popqa-4012395",
+      "popqa-6404382",
+      "popqa-5184392",
+      "popqa-3004455",
+      "popqa-3957671",
+      "popqa-6211156",
+      "popqa-1701001",
+      "popqa-5049215"
+    ],
+    "labels": {
+      "ambiguous": 14,
+      "known": 9,
+      "unknown": 4
+    }
+  },
+  "exemplar_echo_au": {
+    "rows_with_alias_au": 27,
+    "greedy_answer_exactly_au": 0,
+    "sampled_answers_exactly_au": 0
+  },
+  "knowledge_by_split": {
+    "fit": {
+      "known": 525,
+      "unknown": 4304
+    },
+    "cal": {
+      "unknown": 2142,
+      "known": 268
+    },
+    "test": {
+      "unknown": 4314,
+      "known": 514
+    }
+  },
+  "per_relation": {
+    "author": {
+      "unknown": 1394,
+      "known": 41
+    },
+    "capital": {
+      "unknown": 155,
+      "known": 356
+    },
+    "capital of": {
+      "known": 115,
+      "unknown": 207
+    },
+    "color": {
+      "known": 15,
+      "unknown": 2
+    },
+    "composer": {
+      "unknown": 884,
+      "known": 18
+    },
+    "country": {
+      "known": 349,
+      "unknown": 168
+    },
+    "director": {
+      "unknown": 1938,
+      "known": 14
+    },
+    "father": {
+      "unknown": 401,
+      "known": 27
+    },
+    "genre": {
+      "unknown": 1198,
+      "known": 54
+    },
+    "mother": {
+      "unknown": 151,
+      "known": 4
+    },
+    "occupation": {
+      "unknown": 237,
+      "known": 27
+    },
+    "place of birth": {
+      "unknown": 406,
+      "known": 26
+    },
+    "producer": {
+      "unknown": 1445,
+      "known": 12
+    },
+    "religion": {
+      "unknown": 199,
+      "known": 48
+    },
+    "screenwriter": {
+      "unknown": 1903,
+      "known": 21
+    },
+    "sport": {
+      "known": 180,
+      "unknown": 72
+    }
+  },
+  "rows_sha256": "abeef06247691b9d3c6dc9f23a6f861646fa9df5e94e1fa313a7db5649b1d012"
+}

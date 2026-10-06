@@ -1,0 +1,211 @@
+# Pre-stated gates for decision-model-calibrated-choice.
+# Fixed at signing; never retuned after any result (AMENDMENT "Gates").
+# Consumed by dmcc_harness.py `stage0-validate` (S0 gates) and `score` (G0, H-*).
+#
+# Universal three-way rule for every primary gate (the INCONCLUSIVE rule):
+#   PASS          the whole 95% CI sits on the passing side of the threshold
+#   FAIL          the whole 95% CI sits on the failing side
+#   INCONCLUSIVE  the 95% CI contains the threshold
+# NOT-ADJUDICABLE (distinct from all three): a registered precondition failed
+# (a floor, an integrity check, or a validity gate). Reported with the reason.
+#
+# CI methods (fixed): rates use the Wilson 95% interval; means and AUROCs use a
+# nonparametric row bootstrap, 2000 reps, seed 0, percentile 95% interval
+# (AUROC bootstraps are stratified by class); AUROC DIFFERENCES use a paired
+# bootstrap over the same rows (same reps/seed). Every number is on TEST
+# unless the gate says CAL (Stage 0) or FIT.
+
+ci:
+  level: 0.95
+  rate_method: wilson
+  bootstrap_reps: 2000
+  bootstrap_seed: 0
+  auroc_bootstrap: stratified_by_class
+  diff_bootstrap: paired
+
+populations:
+  known: TEST rows with meta.knowledge == known   # EH probe: greedy correct AND >= 16/32 sampled correct
+  unknown: TEST rows with meta.knowledge == unknown # EH probe: 0/32 sampled correct
+  ambiguous: excluded from every gate; counts reported only
+  confidence: R1 = per-kind temperature-calibrated max option probability (engine arm R1_calibrated; temperature fit on CAL)
+  chance: 1 / n_options (= 0.25 on every row)
+
+# ---------------------------------------------------------------------------
+# G0: integrity and adjudicability (pre-outcome stop). Any failure makes the
+# named downstream gates NOT-ADJUDICABLE; nothing is retried to pass.
+# ---------------------------------------------------------------------------
+g0_integrity:
+  popqa_file_sha256: 9a5227f41bff0e4c331d4a774d946b12f95307892b58f860a9606ef356e6089b
+  popqa_rows: 14267
+  probe_rows_must_equal: 14267            # every pool row probed (probe.py append-log complete)
+  probe_config_sha_single_value: true     # one probe_config_sha across all rows
+  pointer_checkpoint_tree_sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
+  letter_logits_checkpoint_tree_sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96   # secondary arm
+  engine_commit: 29f7af0c35e3c825d96f770b62f46c60ac4db2b7
+  engine_split_must_match_harness_split: true   # TEST qid set and FIT/CAL/TEST counts identical
+  ambiguous_excluded_from_engine_rows: true
+  applies_to: [h_a, h_b, h_c, h_d1, h_d2, secondary]
+
+g0_exemplar_collision_exclusion:
+  # PI decision 2026-10-05, before any PopQA labeling or outcome. Rule: a row is
+  # excluded from every primary analysis (splits, Stage 0 FIT/CAL, Stage 1 TEST)
+  # iff any normalized gold alias (EH scoring.normalize_answer over
+  # possible_answers, plus obj) equals a normalized base-mode exemplar answer
+  # (backends.BASE_MODE_FEWSHOT: jupiter, six, au, 1945, mount everest).
+  # Applied in `convert` before the split. Pre-sign count on PopQA test.tsv @
+  # 098765c7 (no model): 27 rows, all via "au" (Australia); qids in
+  # analysis-committed/exemplar_collision_qids.json. convert refuses if the
+  # rule matches any other count.
+  expected_count: 27
+  reported_in: sensitivity only (labels of the excluded rows + exemplar_echo_au counts)
+
+g0_label_marker_bound:
+  # count_wrong thinking-marker policy (PI 2026-10-04, pre-outcome). If the
+  # observed marked rate over all label generations (sampled + greedy) exceeds
+  # this bound, labeling is FLAGGED and the PI is consulted before Stage 0 or
+  # Stage 1 proceeds (dmcc_harness convert refuses until the decision is
+  # recorded in analysis-committed/pi_marker_rate_ack.json).
+  max_marked_rate: 0.05
+  sensitivity: label counts and the H-A/H-B/H-C (and H-D1) statistics recomputed with every question that had any marked generation dropped; descriptive, reported beside the primary
+
+g0_floors:
+  # Derivation (gate-diagnosticity.md arithmetic floor): a Wilson-upper cap c is
+  # unsatisfiable at 0 events below N = z^2 (1-c)/c: N >= 35 for c = 0.10 and
+  # N >= 73 for c = 0.05. Practical floors are set so a point rate at HALF the
+  # cap still clears it: 0.05 at N = 150 has Wilson upper 0.0975 < 0.10;
+  # 0.025 at N = 300 has Wilson upper 0.0496 < 0.05.
+  min_test_known: 150
+  min_test_unknown: 300
+  below_floor: the whole cell is NOT-ADJUDICABLE; every quantity is reported descriptively
+
+# ---------------------------------------------------------------------------
+# Stage 0: base-model KU readout (instrument validation; decides only whether
+# H-D1 is adjudicable). Fit on FIT, validated on CAL, never touches TEST.
+# ---------------------------------------------------------------------------
+s0_floors:
+  # Hanley-McNeil at AUROC 0.85 with 60 positives and ~3000 negatives gives a
+  # 95% half-width of about 0.06, small enough to adjudicate a 0.80 floor.
+  min_cal_known: 60
+  min_cal_unknown: 60
+  min_fit_known: 100
+  min_fit_unknown: 100
+  below_floor: S0 NOT-ADJUDICABLE, therefore H-D1 NOT-ADJUDICABLE
+
+s0_extraction_integrity:
+  # Every FIT+CAL known/unknown row extracted with both families present.
+  rows_must_equal: fit_plus_cal_known_unknown
+  anchor_family_coverage_min: 1.0     # the gate position needs no generated content
+  answer_end_family_coverage_min: 0.95 # rows with no usable greedy content are counted, not imputed
+  runtime_provenance_line_required: true
+
+s0_g1_gate_validity:
+  direction: direction_gate.json (family anchor = last prompt token; layer chosen by FIT out-of-fold AUROC sweep)
+  statistic: CAL AUROC(known vs unknown) of the frozen projection x . v at the frozen layer
+  threshold: 0.80
+  pass: CI lower bound >= 0.80
+  fail: CI upper bound < 0.80
+  inconclusive: otherwise
+  consequence_if_not_pass: H-D1 is NOT-ADJUDICABLE (reported descriptively); H-A, H-B, H-C, H-D2 unaffected
+
+s0_g2_permuted_control:
+  direction: direction_gate_permuted.json (same recipe, FIT labels permuted with seed 0)
+  statistic: FIT out-of-fold AUROC at the frozen gate layer (probe-fit provenance) AND CAL AUROC of its projection
+  pass_band: [0.40, 0.60]   # both statistics must sit inside
+  consequence_if_not_pass: H-D1 NOT-ADJUDICABLE (the fit recipe finds structure in shuffled labels)
+
+s0_descriptive:
+  - dial direction (answer_end family) FIT sweep surface, CAL AUROC with CI
+  - gate FIT sweep surface (auroc_by_layer) and frozen mu / sigma / class-conditioned stats
+  - Platt and isotonic maps fitted on FIT in-sample probe scores, CAL ECE (15 bins) raw-sigmoid vs Platt vs isotonic
+
+# ---------------------------------------------------------------------------
+# Stage 1 hypotheses (pointer model = PRIMARY, confirmatory; letter-logit model =
+# SECONDARY: identical gates, exploratory label, no confirmatory claim, no
+# multiplicity correction). PI confirmed these thresholds 2026-10-04, before any outcome.
+# ---------------------------------------------------------------------------
+h_a_unknowns_near_chance:
+  a1_confidence_over_chance:
+    statistic: mean over unknown rows of (R1 - 1/n_options)   # engine key knowledge.groups.unknown.humility_gap
+    threshold: 0.10
+    direction: at_most
+    ci: bootstrap
+  a2_confident_wrong:
+    statistic: share of ALL unknown rows that are wrong with R1 >= 0.8   # engine knowledge.groups.unknown.confident_wrong_rate
+    denominator: every unknown TEST row (fixed by the prior label; not shrinkable by the model)
+    threshold: 0.05
+    direction: at_most
+    ci: wilson
+  combine: PASS iff a1 PASS and a2 PASS; FAIL iff a1 FAIL or a2 FAIL; else INCONCLUSIVE
+  companions_reported: [unknown accuracy (Wilson), mean R1 on unknown, share with R1 >= 0.8, R0 raw equivalents]
+
+h_b_knowns_confident:
+  statistic: share of ALL known rows that are right with R1 < 0.5   # engine knowledge.groups.known.underconfident_right_rate
+  denominator: every known TEST row
+  threshold: 0.10
+  direction: at_most
+  ci: wilson
+  diagnosticity_precondition:
+    # A model that is mostly wrong on knowns cannot be often underconfident-right,
+    # so the cap would pass vacuously (gate-diagnosticity.md).
+    known_accuracy_point_min: 0.50
+    below: NOT-ADJUDICABLE
+  companions_reported: [known accuracy (Wilson), mean R1 on known, underconfident-right among right known rows (conditional, descriptive)]
+
+h_c_readout_separates:
+  statistic: AUROC(R1 -> known), known vs unknown TEST rows   # engine knowledge.readout_auroc_known_vs_unknown
+  threshold: 0.75
+  direction: at_least
+  ci: bootstrap (stratified)
+
+h_d1_base_axis_transfer:
+  precondition: [s0_g1_gate_validity PASS, s0_g2_permuted_control PASS, engine directions.base_gate present and scored at the frozen layer]
+  engine_direction: base_gate              # analysis_*.yaml directions[].name -> direction_gate.json (frozen Stage 0)
+  control_direction: base_gate_permuted    # descriptive control, same scoring
+  statistic: AUROC(s_i -> known) on TEST, s_i = h_L @ coef + intercept (the frozen base gate's own logistic decision value; engine directions.base_gate.auroc_known_vs_unknown, per-row direction_scores.base_gate), h_L = decision-model <answer> hidden state at the frozen gate layer index L (no refit, no layer override)
+  threshold: 0.75
+  direction: at_least
+  ci: bootstrap (stratified) over per-row direction_scores; the in-cell point must equal the engine point
+  comparison_with_readout:
+    statistic: AUROC(D1) - AUROC(R1) on the same TEST rows (engine auroc_known_vs_unknown_minus_r1; in-cell paired bootstrap reported alongside)
+    ci: paired bootstrap
+    reported_as: registered comparison (feeds the interpretation matrix); margin +0.03 with CI lower bound > 0 is read as "the base axis carries more than the readout reports"
+  engine_missing_or_layer_mismatch: NOT-ADJUDICABLE (the engine fails loudly on a missing file, schema, hidden-size or uncaptured layer)
+
+h_d2_fresh_probe_beats_readout:
+  statistic: AUROC(KU probe) - AUROC(R1) on TEST known+unknown rows   # engine knowledge.ku_probe_minus_readout
+  probe: MechInterp PCA(128) -> logistic, 5-fold layer sweep on FIT known+unknown rows, refit at best layer
+  ci: paired bootstrap (engine bootstrap.n_boot 2000, seed 0)
+  pass_margin: 0.03
+  pass: diff >= pass_margin AND CI lower bound > 0
+  fail: CI upper bound < pass_margin
+  inconclusive: otherwise
+  permuted_band: [0.40, 0.60]
+  precondition: engine permuted_label_cv_auroc at the KU probe's best layer inside permuted_band, else NOT-ADJUDICABLE
+  d2_high_threshold: 0.75   # engine ku_probe.test_auroc_known_vs_unknown (point); interpretation matrix only
+
+interpretation_matrix:
+  # Fixed reading of the joint outcome. INCONCLUSIVE in any input leaves that
+  # cell unresolved; it is never rounded to a neighbor.
+  d1_pass_and_hc_pass: readout confidence tracks the base known-unknown axis
+  d1_pass_and_hc_fail: KU signal present in the decision state but not expressed by the readout (the decision-model analog of paper 3's represented-but-not-reported finding, in a model that cannot refuse)
+  d1_fail_and_d2_high: the decision fine-tune re-encoded the axis (a fresh probe recovers it; the frozen base direction does not)
+  d1_fail_and_d2_low: no linearly recoverable KU signal at <answer>
+
+secondary_descriptive:
+  conformal_by_knowledge: split-conformal LAC sets, alpha in {0.1, 0.2}, q-hat from CAL (engine qhat_by_kind.choice); coverage and mean set size on known vs unknown TEST rows from per-row probs_r1
+  popularity_quartiles: engine knowledge.by_popularity_quartile
+  recall_vs_recognition: unknown-row 4-way accuracy with Wilson CI against chance 0.25 (unknown-but-correct rate), reported, never hidden
+  per_relation: accuracy and mean R1 per popqa relation, known vs unknown
+  arms_descriptive: R0_raw, P_dial, S_stacked blocks as the engine emits them
+  letter_logit_model: SECONDARY arm; every gate evaluated identically and reported as exploratory; never a confirmatory claim; no multiplicity correction
+
+line_falsifiers:
+  readout_tracks_knowledge: H-C FAIL, or H-A FAIL
+  residual_signal: "H-D2 FAIL, read as: the readout already carries the KU signal a fresh probe finds"
+
+no_goalpost_movement:
+  rule: >-
+    Thresholds, CI methods, populations, splits, floors and the interpretation
+    matrix are fixed at signing. No layer, position, temperature scheme,
+    threshold or population is substituted after any Stage 0 or Stage 1 number
+    exists. An INCONCLUSIVE or NOT-ADJUDICABLE result is reported as such.

@@ -1,0 +1,40 @@
+{
+  "run_id": "dmcc-presign-label-timing-countwrong-20261005",
+  "cell": "decision-model-calibrated-choice",
+  "tier": "lab-notebook (pre-sign timing, exclusive GPU)",
+  "authorized_by": "PI via coordinator 2026-10-04: implement count_wrong, re-run the short labeling timing on non-PopQA prompts",
+  "population": "200 deterministic synthetic arithmetic/unit-conversion questions (presign/smoke_questions.py synthetic(seed=20261004)); never scored against gold",
+  "invocation": "presign/drill_resume.py --snapshot <b1485b2f snapshot> --gpu-mem 0.90 --timing 200 0 --only label --sandbox timing_label_cw (real dmcc_harness label -> EH probe.py, scoring.generated_thinking_policy=count_wrong)",
+  "runtime": "WSL vllm 0.27.1, VLLM_BATCH_INVARIANT=0, Linux-only PATH, RTX 3090 exclusive",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "result": {
+    "timing": {
+      "stage": "label",
+      "rc": 0,
+      "wall_s": 740.8,
+      "rows": 200
+    },
+    "launched_at": "2026-10-05T00:31:53Z",
+    "finished_at": "2026-10-05T00:44:13Z",
+    "engine_init_s": 376.49,
+    "compile_s": 325.38,
+    "post_init_s_per_question": 1.53,
+    "generated_thinking": {
+      "policy": "count_wrong",
+      "n_questions": 200,
+      "n_questions_affected": 58,
+      "n_sampled_marked": 120,
+      "n_greedy_marked": 0,
+      "n_generations": 6600,
+      "marked_rate": 0.01818181818181818,
+      "sampled_marked_rate": 0.01875
+    },
+    "marker_rate_bound": 0.05,
+    "marker_rate_flag": false
+  },
+  "estimate": "14,267 questions ~= 6-6.5 h incl. engine init",
+  "outcome": {
+    "status": "completed",
+    "verified": false
+  }
+}

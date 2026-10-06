@@ -1,0 +1,119 @@
+{
+  "run_id": "dmcc-presign-base-surface-20261005",
+  "cell": "decision-model-calibrated-choice",
+  "tier": "lab-notebook (pre-sign re-verification after the prompt-surface change, exclusive GPU)",
+  "authorized_by": "PI via coordinator 2026-10-05: base-mode 5-shot per Amendment Y; re-run affected pre-sign checks on non-PopQA prompts",
+  "population": "20 fixed non-PopQA smoke questions; 200 + 100 deterministic synthetic arithmetic/unit-conversion questions; nothing scored against PopQA",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "surface": {
+    "name": "base_kshot",
+    "kshot_sha": "00638f1a900f2add",
+    "source": "experiments/common/readouts/amendment_x_cross_model_extract.py (_BASE_MODE_FEWSHOT, build_base_mode_prompt, first-line parse); Amendment Y section 6"
+  },
+  "runtimes": {
+    "label": "WSL vllm 0.27.1, VLLM_BATCH_INVARIANT=0, gpu 0.90, Linux-only PATH",
+    "stage0": "mechinterp-runner:dmcc-tf5.17.0 sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c"
+  },
+  "checks": {
+    "tests": {
+      "new": "tests/test_base_kshot_surface.py (9)",
+      "runner_full_suite": "12 failed / 456 passed; failure set identical to pre-change baseline"
+    },
+    "render_identity": {
+      "check": "render_identity",
+      "n_rows": 20,
+      "same_row_set": true,
+      "prompt_bytes_mismatch_rows": [],
+      "prompt_token_id_mismatch_rows": [],
+      "label_side": {
+        "vllm": "0.27.1"
+      },
+      "extract_side": {
+        "transformers": "5.17.0"
+      },
+      "pass": true
+    },
+    "vllm_repeat_reorder": {
+      "check": "vllm_label_path_smoke",
+      "vllm_version": "0.27.1",
+      "env": {
+        "VLLM_BATCH_INVARIANT": "0",
+        "VLLM_WSL2_ENABLE_PIN_MEMORY": "1"
+      },
+      "snapshot": "/home/profsynapse/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+      "gpu_memory_utilization_override": 0.9,
+      "engine_load_seconds": 544.7,
+      "render_modes": [
+        "base_kshot"
+      ],
+      "greedy_invariant_across_batch_orders": true,
+      "greedy_mismatch_rows": [],
+      "sampled_repeat_identical": true,
+      "detail": {
+        "greedy_rows_batched_vs_reversed_differ": [],
+        "greedy_rows_batched_vs_single_differ": [],
+        "greedy_rows_single_repeat_differ": [],
+        "sampled_completions_identical": 160,
+        "sampled_completions_total": 160,
+        "sampled_rows_with_any_difference": []
+      },
+      "prompt_ids_consistent_across_regimes": true
+    },
+    "label_kill_resume": {
+      "stage": "label",
+      "killed_after_s": 499.0,
+      "rows_before_kill": 1,
+      "resume_rc": 0,
+      "resume_wall_s": 521.6,
+      "rows_after": 6,
+      "unique_keys": 6,
+      "prekill_rows_unchanged": true,
+      "pass": true
+    },
+    "label_timing": {
+      "stage": "label",
+      "rc": 0,
+      "wall_s": 565.6,
+      "rows": 200,
+      "engine_init_s": 363.85,
+      "compile_s": 328.05,
+      "post_init_s_per_question": 0.76,
+      "generated_thinking": {
+        "policy": "count_wrong",
+        "n_questions": 200,
+        "n_questions_affected": 0,
+        "n_sampled_marked": 0,
+        "n_greedy_marked": 0,
+        "n_generations": 6600,
+        "marked_rate": 0.0,
+        "sampled_marked_rate": 0.0
+      },
+      "empty_sampled_rate": 0.0,
+      "mean_answer_words": 1.18
+    },
+    "stage0_spot_check": {
+      "stage": "stage0-extract",
+      "rc": 0,
+      "wall_s": 259.8,
+      "rows": 100,
+      "s_per_row": 1.97,
+      "answered": 100,
+      "first_line_nonempty": 100,
+      "mean_prompt_len": 106.05,
+      "n_hidden_states": 25
+    },
+    "exemplar_popqa_overlap": {
+      "exemplar_question_in_popqa": 0,
+      "exemplar_answer_as_popqa_subject": 0,
+      "note": "exemplar answer 'Au' equals normalized alias 'au' (Australia) on 27 PopQA country questions; echo count pre-stated in convert"
+    }
+  },
+  "estimates": {
+    "label_full": "~3.1 h for 14,267 questions",
+    "stage0_full": "<= ~5-5.3 h for <= ~8,560 rows, ~3.4 GB"
+  },
+  "outcome": {
+    "status": "completed",
+    "verified": false
+  }
+}

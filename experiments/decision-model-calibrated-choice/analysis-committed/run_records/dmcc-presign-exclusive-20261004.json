@@ -1,0 +1,145 @@
+{
+  "run_id": "dmcc-presign-exclusive-20261004",
+  "cell": "decision-model-calibrated-choice",
+  "tier": "lab-notebook (pre-sign infrastructure checks, exclusive GPU)",
+  "authorized_by": "PI via coordinator 2026-10-04: exclusive-GPU pre-sign checks; non-PopQA smoke prompts / throwaway outputs only",
+  "population": "20 fixed non-PopQA smoke questions + deterministic synthetic arithmetic/unit-conversion questions (presign/smoke_questions.py synthetic(seed=20261004)); nothing scored",
+  "research_repo_commit_base": "6d686ca650fc90a554e9c4730e95f944824437f5",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "lane": "local RTX 3090, exclusive (13 MiB used at start, no local-run containers)",
+  "runtimes": {
+    "label": "WSL venv vllm 0.27.1 (torch 2.13.0+cu130, transformers 5.15.0), VLLM_BATCH_INVARIANT=0, gpu_memory_utilization 0.90, Linux-only PATH",
+    "stage0": "mechinterp-runner:dmcc-tf5.17.0 sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c"
+  },
+  "checks": [
+    {
+      "name": "a_vllm_repeat_reorder_smoke",
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": "FAILED (environment)",
+          "result": "torch inductor compile: PermissionError 'nvcc' (WSL interop appended a Windows CUDA toolkit dir to PATH); fixed by a Linux-only PATH in cell.yaml labeler.env"
+        },
+        {
+          "attempt": 2,
+          "status": "completed",
+          "result": {
+            "check": "vllm_label_path_smoke",
+            "vllm_version": "0.27.1",
+            "env": {
+              "VLLM_BATCH_INVARIANT": "0",
+              "VLLM_WSL2_ENABLE_PIN_MEMORY": "1"
+            },
+            "snapshot": "/home/profsynapse/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+            "gpu_memory_utilization_override": 0.9,
+            "engine_load_seconds": 801.7,
+            "render_modes": [
+              "direct"
+            ],
+            "greedy_invariant_across_batch_orders": false,
+            "greedy_mismatch_rows": [
+              15,
+              16
+            ],
+            "sampled_repeat_identical": false,
+            "prompt_ids_consistent_across_regimes": true
+          }
+        },
+        {
+          "attempt": 3,
+          "status": "completed (detail)",
+          "result": {
+            "check": "vllm_label_path_smoke",
+            "vllm_version": "0.27.1",
+            "env": {
+              "VLLM_BATCH_INVARIANT": "0",
+              "VLLM_WSL2_ENABLE_PIN_MEMORY": "1"
+            },
+            "snapshot": "/home/profsynapse/.cache/huggingface/hub/models--Qwen--Qwen3.5-2B-Base/snapshots/b1485b2fa6dfa1287294f269f5fb618e03d52d7c",
+            "gpu_memory_utilization_override": 0.9,
+            "engine_load_seconds": 505.9,
+            "render_modes": [
+              "direct"
+            ],
+            "greedy_invariant_across_batch_orders": false,
+            "greedy_mismatch_rows": [
+              15,
+              16
+            ],
+            "sampled_repeat_identical": false,
+            "detail": {
+              "greedy_rows_batched_vs_reversed_differ": [
+                16
+              ],
+              "greedy_rows_batched_vs_single_differ": [
+                15,
+                16
+              ],
+              "greedy_rows_single_repeat_differ": [],
+              "sampled_completions_identical": 158,
+              "sampled_completions_total": 160,
+              "sampled_rows_with_any_difference": [
+                0,
+                17
+              ]
+            },
+            "prompt_ids_consistent_across_regimes": true
+          }
+        }
+      ],
+      "status": "PASS for the probe.py regime / disclosed non-bit-reproducibility",
+      "summary": "engine-observed prompt token ids == runner render on 20/20; single-request greedy (probe.py regime) repeats 20/20; batched-vs-single greedy differs on 2/20 and batched greedy differs across processes on 1/20 (not the probe.py regime); seeded sampled n=8 repeats on 158/160 completions (2 rows with one differing completion each); engine load 506-802 s (first run includes a 364 s torch.compile, now cached)"
+    },
+    {
+      "name": "b_label_kill_resume_drill",
+      "status": "PASS",
+      "invocation": "presign/drill_resume.py --only label --gpu-mem 0.90 --sandbox drill_label2 (real dmcc_harness label -> EH probe.py)",
+      "result": {
+        "stage": "label",
+        "killed_after_s": 568.5,
+        "rows_before_kill": 1,
+        "resume_rc": 0,
+        "resume_wall_s": 606.7,
+        "rows_after": 6,
+        "unique_keys": 6,
+        "prekill_rows_unchanged": true,
+        "pass": true
+      },
+      "defects_found_and_fixed": [
+        "attempt 1: harness git_head failed under WSL (worktree .git points to F:/...); added a pure-Python HEAD resolver fallback",
+        "attempt 1: vLLM nvcc PATH failure (see check a)"
+      ]
+    },
+    {
+      "name": "c_label_timing",
+      "status": "BLOCKED (instrument abort)",
+      "result": {
+        "stage": "label",
+        "rc": 1,
+        "wall_s": 595.3,
+        "rows": 3
+      },
+      "summary": "EH probe.py aborted at synthetic question 4/200: sampled[16] contained '</think>' (base model generates thinking markers under T=1.0 with thinking off; probe.py's assert_no_generated_thinking hard-aborts). Throughput before the abort: greedy ~0.02 s, sampled n=32 0.12-0.42 s per question after engine load."
+    },
+    {
+      "name": "c_stage0_500_row_shard",
+      "status": "PASS (timing)",
+      "result": {
+        "stage": "stage0-extract",
+        "rc": 0,
+        "wall_s": 912.2,
+        "rows": 500
+      },
+      "summary": "500 synthetic rows, one shard, real dmcc_harness stage0-extract path: 912 s wall incl. model load; first-to-last tensor 824 s = 1.65 s/row; 500/500 answered, both families, 25 states x 2048; 200 MB on disk (0.4 MB/row)"
+    }
+  ],
+  "estimates": {
+    "label_full_run": "14,267 questions x ~0.3-0.5 s + ~10 min engine load ~= 1.5-2.5 h IF the thinking-marker abort is resolved",
+    "stage0_full_run": "<= ~8,560 FIT+CAL known/unknown rows (upper bound, ambiguous excluded reduces it) x 1.65 s + ~18 shard loads x ~90 s ~= 4-4.5 h, ~3.4 GB",
+    "caveat": "synthetic arithmetic prompts; PopQA answer lengths may differ"
+  },
+  "outcome": {
+    "status": "completed",
+    "verified": false
+  }
+}

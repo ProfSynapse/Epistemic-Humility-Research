@@ -1,0 +1,17 @@
+# Stage 0b readout fit: DIAL direction (answer_end = last content token of the
+# base model's greedy answer). Same recipe as stage0_probe_fit_gate.yaml; only
+# the position family and output differ. Descriptive in this amendment (no
+# Stage 1 hypothesis consumes it); frozen for future cells.
+activations_path: experiments/decision-model-calibrated-choice/analysis/stage0/extraction
+# labels_fit_dial.jsonl = labels_fit.jsonl restricted to rows whose greedy
+# answer decoded to non-empty text (written by `stage0-fit` before this fit).
+labels_path: experiments/decision-model-calibrated-choice/analysis/stage0/labels_fit_dial.jsonl
+position_family: answer_end
+n_components: 128
+n_splits: 5
+seed: 0
+solver: saga
+tol: 0.001
+C: 1.0
+output_direction: experiments/decision-model-calibrated-choice/directions/qwen35-2b-base/direction_dial.json
+normalize: true

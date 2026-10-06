@@ -1,0 +1,466 @@
+{
+  "run_id": "dmcc-letter-logits-popqa",
+  "role": "secondary_exploratory",
+  "scored_at": "2026-10-05T22:23:51Z",
+  "g0": {
+    "integrity": {
+      "split_identity": true,
+      "ambiguous_excluded": true,
+      "engine_commit": true,
+      "checkpoint_digest": true
+    },
+    "floors": {
+      "test_known": 514,
+      "test_unknown": 4314,
+      "met": true
+    },
+    "adjudicable": true
+  },
+  "gates": {
+    "h_a": {
+      "verdict": "FAIL",
+      "a1": {
+        "gap": 0.17192002045918053,
+        "ci95": [
+          0.1678806379494734,
+          0.17570628468188368
+        ],
+        "verdict": "FAIL"
+      },
+      "a2": {
+        "rate": 0.0011590171534538712,
+        "k": 5,
+        "n": 4314,
+        "wilson95": [
+          0.0004951612730962535,
+          0.0027104818596357574
+        ],
+        "verdict": "PASS"
+      },
+      "companions": {
+        "unknown_accuracy": 0.40774223458507186,
+        "unknown_accuracy_wilson95": [
+          0.3931664801175022,
+          0.4224821471905029
+        ],
+        "mean_r1_unknown": 0.42192002045918053
+      }
+    },
+    "h_b": {
+      "verdict": "PASS",
+      "rate": 0.042801556420233464,
+      "k": 22,
+      "n": 514,
+      "wilson95": [
+        0.028432970402284072,
+        0.06395333433593799
+      ],
+      "companions": {
+        "known_accuracy": 0.9727626459143969,
+        "mean_r1_known": 0.8441309411331502,
+        "underconfident_among_right": 0.044
+      }
+    },
+    "h_c": {
+      "verdict": "PASS",
+      "auroc": 0.9525136691867397,
+      "ci95": [
+        0.9419494871461841,
+        0.9616761507642297
+      ],
+      "engine_point": 0.9525136691867397
+    },
+    "h_d2": {
+      "verdict": "PASS",
+      "engine": {
+        "diff": 0.04082175669118193,
+        "ci95": [
+          0.03224718504962894,
+          0.050034814466515615
+        ],
+        "n_boot_used": 2000
+      },
+      "permuted_label_cv_auroc": 0.4870649544748888,
+      "ku_probe_test_auroc": 0.9933354258779217,
+      "best_layer": 15,
+      "in_cell_auroc_ci95": [
+        0.9911662598832144,
+        0.9952647835569289
+      ],
+      "in_cell_minus_readout": {
+        "diff": 0.04082175669118193,
+        "ci95": [
+          0.03199665283061752,
+          0.05088634371127214
+        ]
+      }
+    },
+    "h_d1": {
+      "verdict": "PASS",
+      "layer": 14,
+      "auroc": 0.9735951539553602,
+      "ci95": [
+        0.967055828097462,
+        0.979289840425436
+      ],
+      "minus_readout_engine": {
+        "diff": 0.021081484768620484,
+        "ci95": [
+          0.012515103363228485,
+          0.03003825387147186
+        ],
+        "n_boot_used": 2000
+      },
+      "minus_readout_in_cell": {
+        "diff": 0.021081484768620484,
+        "ci95": [
+          0.012591830687887901,
+          0.030806766134691375
+        ]
+      },
+      "by_knowledge": {
+        "known": {
+          "n": 514,
+          "mean": 0.9784631707316188,
+          "std": 1.397798664958638
+        },
+        "unknown": {
+          "n": 4314,
+          "mean": -3.3280609984828082,
+          "std": 1.2579075078539808
+        }
+      },
+      "permuted_control_auroc_descriptive": 0.8125986517518747
+    }
+  },
+  "interpretation": {
+    "cell": "readout confidence tracks the base known-unknown axis",
+    "d2_high_point": true
+  },
+  "secondary": {
+    "popularity_quartiles": {
+      "q1": {
+        "n": 1205,
+        "s_pop_range": [
+          2.0,
+          255.0
+        ],
+        "accuracy": 0.4987551867219917,
+        "mean_confidence": 0.4674583891551253,
+        "known_share": 0.10622406639004149
+      },
+      "q2": {
+        "n": 1209,
+        "s_pop_range": [
+          256.0,
+          961.0
+        ],
+        "accuracy": 0.4110835401157982,
+        "mean_confidence": 0.4330149337822261,
+        "known_share": 0.03970223325062035
+      },
+      "q3": {
+        "n": 1207,
+        "s_pop_range": [
+          963.0,
+          4978.0
+        ],
+        "accuracy": 0.38939519469759737,
+        "mean_confidence": 0.4317789712199887,
+        "known_share": 0.045567522783761395
+      },
+      "q4": {
+        "n": 1207,
+        "s_pop_range": [
+          4979.0,
+          15101521.0
+        ],
+        "accuracy": 0.5724937862468932,
+        "mean_confidence": 0.5352830487706548,
+        "known_share": 0.23446561723280862
+      }
+    },
+    "recall_vs_recognition": {
+      "unknown_correct_rate": 0.40774223458507186,
+      "wilson95": [
+        0.3931664801175022,
+        0.4224821471905029
+      ],
+      "chance": 0.25
+    },
+    "arms": {
+      "R0_raw": {
+        "auroc": 0.7491347701189532,
+        "aurc": 0.30624495694617115,
+        "confident_wrong_rate": 0.01284175642087821,
+        "underconfident_right_rate": 0.1615575807787904,
+        "mean_confidence": 0.5597795980819897,
+        "auroc_ci_lb": 0.7353082024621757,
+        "auroc_se": 0.007093211932196635,
+        "option_accuracy": 0.46789560894780446,
+        "option_nll": 1.1903442196027796,
+        "option_brier": 0.62449682437623,
+        "option_ece": 0.0942786407145202
+      },
+      "R1_calibrated": {
+        "auroc": 0.7495081737838233,
+        "aurc": 0.3057657308576474,
+        "confident_wrong_rate": 0.001035625517812759,
+        "underconfident_right_rate": 0.24585749792874897,
+        "mean_confidence": 0.4668695675234764,
+        "auroc_ci_lb": 0.7358024834499749,
+        "auroc_se": 0.007089182322823884,
+        "option_accuracy": 0.46789560894780446,
+        "option_nll": 1.1411382879391725,
+        "option_brier": 0.6100036841595887,
+        "option_ece": 0.049955953296485826
+      },
+      "P_dial": {
+        "auroc": 0.7670434993730368,
+        "aurc": 0.2944119069135276,
+        "confident_wrong_rate": 0.009942004971002486,
+        "underconfident_right_rate": 0.20857497928748964,
+        "mean_confidence": 0.4602824948268407,
+        "auroc_ci_lb": 0.754066410855331,
+        "auroc_se": 0.00689127178723605,
+        "ece_binary": 0.023562985305672832
+      },
+      "S_stacked": {
+        "auroc": 0.7692298148782837,
+        "aurc": 0.29301256391536123,
+        "confident_wrong_rate": 0.006628003314001657,
+        "underconfident_right_rate": 0.21251035625517814,
+        "mean_confidence": 0.45907881970616365,
+        "auroc_ci_lb": 0.7561270422519528,
+        "auroc_se": 0.0068653802173169525,
+        "ece_binary": 0.021939195707488333
+      }
+    },
+    "per_relation": {
+      "author": {
+        "known": {
+          "n": 14,
+          "accuracy": 1.0,
+          "mean_r1": 0.8307276759226621
+        },
+        "unknown": {
+          "n": 560,
+          "accuracy": 0.34285714285714286,
+          "mean_r1": 0.4142558362240219
+        }
+      },
+      "capital": {
+        "known": {
+          "n": 139,
+          "accuracy": 0.9928057553956835,
+          "mean_r1": 0.9395766543520148
+        },
+        "unknown": {
+          "n": 66,
+          "accuracy": 0.7272727272727273,
+          "mean_r1": 0.6485088599731661
+        }
+      },
+      "capital of": {
+        "known": {
+          "n": 41,
+          "accuracy": 0.9512195121951219,
+          "mean_r1": 0.8288329706203222
+        },
+        "unknown": {
+          "n": 88,
+          "accuracy": 0.625,
+          "mean_r1": 0.5707687922674279
+        }
+      },
+      "color": {
+        "known": {
+          "n": 6,
+          "accuracy": 1.0,
+          "mean_r1": 0.6712649689023844
+        },
+        "unknown": {
+          "n": 1,
+          "accuracy": 0.0,
+          "mean_r1": 0.42158920898426105
+        }
+      },
+      "composer": {
+        "known": {
+          "n": 5,
+          "accuracy": 1.0,
+          "mean_r1": 0.7397132653932526
+        },
+        "unknown": {
+          "n": 356,
+          "accuracy": 0.36235955056179775,
+          "mean_r1": 0.4015155836151236
+        }
+      },
+      "country": {
+        "known": {
+          "n": 141,
+          "accuracy": 1.0,
+          "mean_r1": 0.8459952530714198
+        },
+        "unknown": {
+          "n": 66,
+          "accuracy": 0.5454545454545454,
+          "mean_r1": 0.4872487640306137
+        }
+      },
+      "director": {
+        "known": {
+          "n": 5,
+          "accuracy": 0.6,
+          "mean_r1": 0.6587463624961623
+        },
+        "unknown": {
+          "n": 776,
+          "accuracy": 0.31829896907216493,
+          "mean_r1": 0.35177576013044437
+        }
+      },
+      "father": {
+        "known": {
+          "n": 8,
+          "accuracy": 1.0,
+          "mean_r1": 0.8471905113831626
+        },
+        "unknown": {
+          "n": 163,
+          "accuracy": 0.8773006134969326,
+          "mean_r1": 0.6432673272209956
+        }
+      },
+      "genre": {
+        "known": {
+          "n": 26,
+          "accuracy": 0.9615384615384616,
+          "mean_r1": 0.8360824685311735
+        },
+        "unknown": {
+          "n": 475,
+          "accuracy": 0.5389473684210526,
+          "mean_r1": 0.5001436075473157
+        }
+      },
+      "mother": {
+        "known": {
+          "n": 1,
+          "accuracy": 1.0,
+          "mean_r1": 0.9764129096626583
+        },
+        "unknown": {
+          "n": 61,
+          "accuracy": 0.7540983606557377,
+          "mean_r1": 0.5867321170511745
+        }
+      },
+      "occupation": {
+        "known": {
+          "n": 14,
+          "accuracy": 0.8571428571428571,
+          "mean_r1": 0.7436493755820056
+        },
+        "unknown": {
+          "n": 91,
+          "accuracy": 0.45054945054945056,
+          "mean_r1": 0.44190083555316384
+        }
+      },
+      "place of birth": {
+        "known": {
+          "n": 11,
+          "accuracy": 1.0,
+          "mean_r1": 0.799516521493813
+        },
+        "unknown": {
+          "n": 162,
+          "accuracy": 0.6296296296296297,
+          "mean_r1": 0.47638985713263715
+        }
+      },
+      "producer": {
+        "known": {
+          "n": 2,
+          "accuracy": 1.0,
+          "mean_r1": 0.8700114322974954
+        },
+        "unknown": {
+          "n": 581,
+          "accuracy": 0.3029259896729776,
+          "mean_r1": 0.3768614044813455
+        }
+      },
+      "religion": {
+        "known": {
+          "n": 18,
+          "accuracy": 0.9444444444444444,
+          "mean_r1": 0.7613706278645627
+        },
+        "unknown": {
+          "n": 81,
+          "accuracy": 0.6172839506172839,
+          "mean_r1": 0.5278331528475557
+        }
+      },
+      "screenwriter": {
+        "known": {
+          "n": 10,
+          "accuracy": 0.6,
+          "mean_r1": 0.44469359540943676
+        },
+        "unknown": {
+          "n": 759,
+          "accuracy": 0.30303030303030304,
+          "mean_r1": 0.36352460710721163
+        }
+      },
+      "sport": {
+        "known": {
+          "n": 73,
+          "accuracy": 0.9863013698630136,
+          "mean_r1": 0.805138446518591
+        },
+        "unknown": {
+          "n": 28,
+          "accuracy": 0.2857142857142857,
+          "mean_r1": 0.4795427893873221
+        }
+      }
+    },
+    "conformal_by_knowledge": {
+      "alpha_0.1": {
+        "known": {
+          "coverage": 0.9980544747081712,
+          "mean_set_size": 1.3035019455252919
+        },
+        "unknown": {
+          "coverage": 0.89221140472879,
+          "mean_set_size": 3.030598052851182
+        }
+      },
+      "alpha_0.2": {
+        "known": {
+          "coverage": 0.9902723735408561,
+          "mean_set_size": 1.1536964980544746
+        },
+        "unknown": {
+          "coverage": 0.7821047751506722,
+          "mean_set_size": 2.4816875289754288
+        }
+      }
+    },
+    "thinking_marker_sensitivity": {
+      "n_test_affected": 1,
+      "n_known_kept": 514,
+      "n_unknown_kept": 4313,
+      "h_a_gap": 0.17186448965354717,
+      "h_a_confident_wrong": 0.001159285879897983,
+      "h_b_underconfident_right": 0.042801556420233464,
+      "h_c_auroc": 0.9525360393561768,
+      "h_d1_auroc": 0.973601211070323
+    }
+  }
+}

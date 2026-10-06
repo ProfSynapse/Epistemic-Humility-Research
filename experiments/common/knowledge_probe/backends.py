@@ -45,6 +45,90 @@ from typing import Protocol
 # prompt despite enable_thinking=False. The </think> close token is 151668;
 # its text form plus the open tag are the textual tripwires.
 THINK_TAG_MARKERS = ("<think>", "</think>")
+
+# Policy for GENERATED outputs that contain a thinking marker while thinking is
+# OFF (config key scoring.generated_thinking_policy; absent = "abort").
+#   abort        historical behaviour: raise before writing any probe row
+#                (assert_no_generated_thinking). Default; existing configs and
+#                their probe_config_sha are unchanged.
+#   count_wrong  the affected generation is scored INCORRECT (never matched
+#                against the gold aliases) and the run continues; probe.py
+#                records per-question and run-level counts. Detection uses the
+#                same THINK_TAG_MARKERS substring test as the abort path.
+# Added 2026-10-04 for experiments/decision-model-calibrated-choice (a base
+# model that emits '</think>' under T=1.0 sampling); see that AMENDMENT.
+GENERATED_THINKING_POLICIES = ("abort", "count_wrong")
+
+
+def resolve_generated_thinking_policy(config: dict) -> str:
+    """The configured policy, validated; "abort" when the key is absent."""
+    policy = (config.get("scoring") or {}).get("generated_thinking_policy", "abort")
+    if policy not in GENERATED_THINKING_POLICIES:
+        raise ValueError(
+            f"scoring.generated_thinking_policy must be one of "
+            f"{GENERATED_THINKING_POLICIES}, got {policy!r}"
+        )
+    return policy
+
+
+def has_generated_thinking(text: str) -> bool:
+    """True iff the generation contains a thinking marker (the abort-path test)."""
+    return any(marker in text for marker in THINK_TAG_MARKERS)
+
+
+# Prompting surface (config key prompt.surface; absent = "chat").
+#   chat        historical behaviour: system prompt + chat template via
+#               render_probe_prompt with the thinking-off self-check. Default;
+#               existing configs and their probe_config_sha are unchanged.
+#   base_kshot  Amendment Y's pre-stated surface for PRETRAIN-ONLY base models
+#               (experiments/pretrain-only-base-readout/AMENDMENT.md section 6):
+#               a fixed 5-shot "Q: ...\nA: ...\n\n" completion block, no chat
+#               template, no system prompt; the answer is the FIRST LINE of the
+#               completion. Exemplars and parse are vendored byte-identical from
+#               experiments/common/readouts/amendment_x_cross_model_extract.py
+#               (_BASE_MODE_FEWSHOT, build_base_mode_prompt, and its
+#               `cont.split("\n", 1)[0].strip()` first-line parse), as
+#               flavor-atlas-gemma-pt-confirmatory did; a test pins the
+#               exemplars to that source. Generation stops at the first "\n"
+#               (vLLM stop string): the first line is all the parse reads, so
+#               stopping changes no scored answer and skips the babble.
+# Added 2026-10-04/05 for experiments/decision-model-calibrated-choice.
+PROMPT_SURFACES = ("chat", "base_kshot")
+BASE_MODE_FEWSHOT: tuple[tuple[str, str], ...] = (
+    ("What is the largest planet in our solar system?", "Jupiter"),
+    ("How many sides does a hexagon have?", "Six"),
+    ("What is the chemical symbol for gold?", "Au"),
+    ("In what year did the Second World War end?", "1945"),
+    ("What is the tallest mountain on Earth?", "Mount Everest"),
+)
+BASE_MODE_STOP = ["\n"]
+
+
+def resolve_prompt_surface(config: dict) -> str:
+    """The configured prompting surface, validated; "chat" when absent."""
+    surface = (config.get("prompt") or {}).get("surface", "chat")
+    if surface not in PROMPT_SURFACES:
+        raise ValueError(f"prompt.surface must be one of {PROMPT_SURFACES}, got {surface!r}")
+    if surface == "base_kshot" and (config.get("model") or {}).get("enable_thinking", False):
+        raise ValueError("prompt.surface base_kshot requires model.enable_thinking: false")
+    return surface
+
+
+def build_base_mode_prompt(question: str) -> str:
+    """Amendment Y's fixed 5-shot QA completion block for one target question."""
+    block = "".join(f"Q: {q}\nA: {a}\n\n" for q, a in BASE_MODE_FEWSHOT)
+    return f"{block}Q: {question}\nA:"
+
+
+def base_mode_kshot_sha() -> str:
+    """Same 16-hex sha of the exemplar block Amendment Y records as kshot_sha."""
+    block = "".join(f"Q: {q}\nA: {a}\n\n" for q, a in BASE_MODE_FEWSHOT)
+    return hashlib.sha256(block.encode("utf-8")).hexdigest()[:16]
+
+
+def base_mode_first_line(text: str) -> str:
+    """Amendment Y's base-mode answer parse: the first line of the completion."""
+    return text.split("\n", 1)[0].strip()
 EMPTY_THINK_OFF_MARKER_RE = re.compile(r"<think>\s*</think>")
 
 
@@ -222,13 +306,22 @@ class VLLMBackend:
     """Real GPU backend. vLLM imported lazily so this file loads without it."""
 
     def __init__(self, model_name: str, enable_thinking: bool, system_prompt: str,
-                 vllm_opts: dict | None = None):
+                 vllm_opts: dict | None = None, generated_thinking_policy: str = "abort",
+                 prompt_surface: str = "chat"):
         # Lazy import: keeps the module importable on CPU-only / no-vLLM hosts.
         from vllm import LLM  # noqa: PLC0415
 
         self.model_name = model_name
         self.enable_thinking = enable_thinking
         self.system_prompt = system_prompt
+        if generated_thinking_policy not in GENERATED_THINKING_POLICIES:
+            raise ValueError(f"unknown generated_thinking_policy {generated_thinking_policy!r}")
+        # Only "abort" asserts here; under "count_wrong" probe.py flags and
+        # scores the affected generations instead.
+        self._abort_on_generated_thinking = generated_thinking_policy == "abort"
+        if prompt_surface not in PROMPT_SURFACES:
+            raise ValueError(f"unknown prompt_surface {prompt_surface!r}")
+        self.prompt_surface = prompt_surface
         self._chat_template_mode: str | None = None
         opts = vllm_opts or {}
         self.llm = LLM(
@@ -252,6 +345,8 @@ class VLLMBackend:
         single-call render surface. The shared helper owns the actual render +
         self-check so VLLMBackend and the hidden-state harness cannot drift.
         """
+        if getattr(self, "prompt_surface", "chat") == "base_kshot":
+            return build_base_mode_prompt(question)  # no chat template, no system prompt
         rendered, resolved_mode = render_probe_prompt(
             self.tokenizer, self.system_prompt, question,
             enable_thinking=self.enable_thinking,
@@ -262,7 +357,7 @@ class VLLMBackend:
         return rendered
 
     def _self_check_thinking_off(self) -> None:
-        if self.enable_thinking:
+        if self.enable_thinking or getattr(self, "prompt_surface", "chat") == "base_kshot":
             return
         rendered = self._render_prompt("Who wrote Paradise Lost?")
         assert_no_think_scaffolding(rendered)
@@ -271,9 +366,12 @@ class VLLMBackend:
                          max_new_tokens: int, seed: int):
         from vllm import SamplingParams  # noqa: PLC0415
 
+        extra = {}
+        if getattr(self, "prompt_surface", "chat") == "base_kshot":
+            extra["stop"] = list(BASE_MODE_STOP)
         return SamplingParams(
             n=n, temperature=temperature, top_p=top_p,
-            max_tokens=max_new_tokens, seed=seed,
+            max_tokens=max_new_tokens, seed=seed, **extra,
         )
 
     def generate_batch(self, question, n_samples, temperature, top_p,
@@ -285,7 +383,7 @@ class VLLMBackend:
             n_samples, temperature, top_p, max_new_tokens, seed)
         out = self.llm.generate([rendered], params)
         texts = [o.text for o in out[0].outputs]
-        if not self.enable_thinking:
+        if not self.enable_thinking and getattr(self, "_abort_on_generated_thinking", True):
             assert_no_generated_thinking_batch(
                 texts, question=question, generation_kind="sampled"
             )
@@ -299,7 +397,7 @@ class VLLMBackend:
             1, 0.0, 1.0, max_new_tokens, seed=0)
         out = self.llm.generate([rendered], params)
         text = out[0].outputs[0].text
-        if not self.enable_thinking:
+        if not self.enable_thinking and getattr(self, "_abort_on_generated_thinking", True):
             assert_no_generated_thinking(
                 text, question=question, generation_kind="greedy"
             )
@@ -364,6 +462,8 @@ def build_backend(config: dict, system_prompt: str) -> ProbeBackend:
             enable_thinking=config["model"]["enable_thinking"],
             system_prompt=system_prompt,
             vllm_opts=config["runtime"].get("vllm", {}),
+            generated_thinking_policy=resolve_generated_thinking_policy(config),
+            prompt_surface=resolve_prompt_surface(config),
         )
     if backend == "stub":
         raise ValueError(

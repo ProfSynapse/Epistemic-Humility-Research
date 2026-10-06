@@ -1,0 +1,92 @@
+{
+  "run_id": "dmcc-run-20261005",
+  "cell": "decision-model-calibrated-choice",
+  "tier": "signed-protocol execution (operator chain record; per-arm Stage 1 records are dmcc-pointer-popqa.json and dmcc-letter-logits-popqa.json)",
+  "research_repo_commit": "1387e92dfdadaa9656b6b4009e1ed41e1ff3a7c8",
+  "submodule_commit": "29f7af0c35e3c825d96f770b62f46c60ac4db2b7",
+  "pins_verified_before_each_stage": true,
+  "runtimes": {
+    "label": "WSL /home/profsynapse/.venvs/vllm (vllm 0.27.1)",
+    "stage0": "mechinterp-runner:dmcc-tf5.17.0 sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
+    "stage1": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397 via py.exe -3.11 tuner.py local-run"
+  },
+  "launchers": {
+    "wsl": "analysis/run_logs/stage.sh (build-pool .. stage0-validate)",
+    "windows": "analysis/run_logs/stage_win.ps1 (stage-engine, analyze, collect, score)"
+  },
+  "status_log": [
+    "2026-10-05T12:52:05Z BEGIN build_pool: build-pool gpu=0 MiB",
+    "2026-10-05T12:52:07Z END build_pool rc=0",
+    "2026-10-05T12:52:12Z BEGIN stage_model: stage-model gpu=0 MiB",
+    "2026-10-05T12:52:13Z END stage_model rc=0",
+    "2026-10-05T12:52:21Z BEGIN label: label --i-know-this-runs-on-gpu gpu=0 MiB",
+    "2026-10-05T14:17:03Z END label rc=0",
+    "2026-10-05T14:17:19Z BEGIN convert: convert gpu=0 MiB",
+    "2026-10-05T14:17:31Z END convert rc=0",
+    "2026-10-05T14:17:50Z BEGIN stage0_rows: stage0-rows gpu=0 MiB",
+    "2026-10-05T14:17:52Z END stage0_rows rc=0",
+    "2026-10-05T14:18:01Z BEGIN stage0_extract: stage0-extract --i-know-this-runs-on-gpu gpu=0 MiB",
+    "2026-10-05T21:24:03Z END stage0_extract rc=0",
+    "2026-10-05T21:24:33Z BEGIN stage0_fit: stage0-fit gpu=0 MiB",
+    "2026-10-05T21:40:31Z END stage0_fit rc=0",
+    "2026-10-05T21:41:34Z BEGIN stage0_validate: stage0-validate gpu=0 MiB",
+    "2026-10-05T21:41:35Z END stage0_validate rc=1",
+    "2026-10-05T21:43:11Z BEGIN stage0_validate: stage0-validate gpu=0 MiB",
+    "2026-10-05T21:44:25Z END stage0_validate rc=0",
+    "2026-10-05T21:45:38Z BEGIN stage_engine_pointer: stage-engine --model pointer gpu=0 MiB",
+    "2026-10-05T21:45:38Z END stage_engine_pointer rc=1",
+    "2026-10-05T21:46:19Z BEGIN stage_engine_pointer (win py -3.11): stage-engine --model pointer gpu=0 MiB",
+    "2026-10-05T21:46:20Z END stage_engine_pointer rc=0",
+    "2026-10-05T21:47:21Z BEGIN analyze_pointer (win py -3.11): analyze --model pointer --i-know-this-runs-on-gpu gpu=0 MiB",
+    "2026-10-05T22:04:04Z END analyze_pointer rc=0",
+    "2026-10-05T22:04:58Z BEGIN collect_pointer (win py -3.11): collect --model pointer gpu=0 MiB",
+    "2026-10-05T22:04:59Z END collect_pointer rc=0",
+    "2026-10-05T22:05:04Z BEGIN score_pointer (win py -3.11): score --model pointer gpu=0 MiB",
+    "2026-10-05T22:05:33Z END score_pointer rc=0",
+    "2026-10-05T22:05:47Z BEGIN stage_engine_letter_logits (win py -3.11): stage-engine --model letter_logits gpu=0 MiB",
+    "2026-10-05T22:05:48Z END stage_engine_letter_logits rc=0",
+    "2026-10-05T22:06:10Z BEGIN analyze_letter_logits (win py -3.11): analyze --model letter_logits --i-know-this-runs-on-gpu gpu=0 MiB",
+    "2026-10-05T22:22:59Z END analyze_letter_logits rc=0",
+    "2026-10-05T22:23:48Z BEGIN collect_letter_logits (win py -3.11): collect --model letter_logits gpu=0 MiB",
+    "2026-10-05T22:23:49Z END collect_letter_logits rc=0",
+    "2026-10-05T22:23:50Z BEGIN score_letter_logits (win py -3.11): score --model letter_logits gpu=0 MiB",
+    "2026-10-05T22:24:18Z END score_letter_logits rc=0"
+  ],
+  "operator_handover": {
+    "operator_1": "launched build-pool through stage0-extract (2026-10-05T12:52Z-14:18Z); session ended while stage0-extract ran detached",
+    "operator_2_took_over_at": "2026-10-05T16:37Z (shards 000-004 complete, shard 005 running)",
+    "actions": "waited on the detached driver (Windows PIDs 8092/71556) without touching it; ran stage0-fit, stage0-validate, then stage-engine/analyze/collect/score for pointer (primary) and letter_logits (secondary)",
+    "nothing_restarted_or_duplicated": true
+  },
+  "anomalies": [
+    "stage0-extract took ~7.1 h vs ~5-5.3 h estimate; shard times 20-43 min, correlated with high WSL CPU load from another session's CPU-only node workloads; GPU held only the shard container",
+    "stage0-validate attempt 1 rc=1: runner-written extraction files root:root 0600 unreadable by the WSL harness; remedied per local-runtime.md with a throwaway pinned-image container running chmod -R a+rX (bits only, no content); attempt 2 rc=0",
+    "stage-engine pointer attempt 1 (WSL) refused fail-closed: Windows F:/ source_checkpoint unresolvable from Linux Python (empty-tree digest e3b0c442...); Stage 1 stages then run with Windows py -3.11; digests verified",
+    "tuner CLI in runner containers installs asciimatics at start-up (ephemeral, --rm, UI-only)",
+    "host-Python engine dry-run failed on missing pandas; re-run inside the pinned Stage 1 image (rc 0)",
+    "descriptive: frozen permuted gate direction scores TEST decision <answer> states at AUROC 0.763 (pointer) / 0.813 (letter-logit)"
+  ],
+  "smokes": {
+    "analyze_dry_run": [
+      "analysis/run_logs/analyze_pointer_dryrun.log",
+      "analysis/run_logs/analyze_letter_logits_dryrun.log"
+    ],
+    "engine_split": {
+      "fit": 4829,
+      "cal": 2410,
+      "test": 4828
+    }
+  },
+  "outputs": [
+    "analysis-committed/label_and_split_counts.json",
+    "analysis-committed/stage0_freeze.json",
+    "analysis-committed/dmcc-pointer-popqa_gate_summary.json",
+    "analysis-committed/dmcc-letter-logits-popqa_gate_summary.json",
+    "analysis-committed/run_records/dmcc-pointer-popqa.json",
+    "analysis-committed/run_records/dmcc-letter-logits-popqa.json"
+  ],
+  "outcome": {
+    "status": "completed",
+    "verified": false
+  }
+}

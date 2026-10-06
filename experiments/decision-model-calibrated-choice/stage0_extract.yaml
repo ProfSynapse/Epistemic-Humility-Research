@@ -1,0 +1,39 @@
+# Stage 0a extraction recipe: base-model known/unknown activations.
+#
+# Schema: synaptic-tuner MechInterp.config.ExtractConfig (engine 29f7af0c).
+# Verb:   tuner.py mechinterp extract (model and revision are CLI args:
+#         --model Qwen/Qwen3.5-2B-Base --model-revision b1485b2f..., no --adapter).
+# Runtime: inside the pinned mechinterp-runner image (mechinterp-cells
+#         "Local GPU runs execute in a pinned container"); dmcc_harness.py
+#         `stage0-extract` builds the docker argv from cell.yaml stage0.runtime.
+#
+# This file is the TEMPLATE for every shard. dmcc_harness.py `stage0-extract`
+# writes one materialized copy per shard under analysis/stage0/shards/ with
+# rows_path swapped to that shard's rows file; every other field is copied
+# verbatim. All shards write into the same output_dir; the harness renames
+# each shard's manifest.json to manifest_shard_<k>.json, which is also the
+# shard's resume marker (the verb itself is not resumable).
+#
+# Rows: FIT + CAL known/unknown PopQA rows only (never TEST), keyed by
+# row_key = popqa-<id>, carrying `question`.
+# Positions (EH dual read): anchor = last prompt token (the gate read);
+# answer_end = last content token of the model's own greedy answer (the dial
+# read). layers: null = every hidden state (0 = embeddings).
+# Prompt: dmcc_harness:render is byte-identical to the labeling prompt: under
+# probe.yaml prompt.surface base_kshot, Amendment Y's 5-shot block
+# (backends.build_base_mode_prompt; no chat template, no system prompt).
+# answer_end = last content token of the FIRST LINE of the greedy completion
+# (dmcc_harness:content_end, Amendment Y's _first_line_content_end rule), the
+# same first line the labeler scores. max_new_tokens 64 = probe.yaml; text past
+# the first line never enters the forward pass that is read (causal).
+
+rows_path: experiments/decision-model-calibrated-choice/analysis/stage0/rows_fitcal.jsonl
+output_dir: experiments/decision-model-calibrated-choice/analysis/stage0/extraction
+families:
+  - anchor
+  - answer_end
+every_k: 4
+layers: null
+max_new_tokens: 64          # = probe.yaml sampling.max_new_tokens
+render_fn: dmcc_harness:render
+content_end_fn: dmcc_harness:content_end

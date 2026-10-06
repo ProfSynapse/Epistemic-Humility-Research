@@ -1,0 +1,19 @@
+# Stage 0b readout fit: GATE direction (anchor = last prompt token).
+# Schema: synaptic-tuner MechInterp.config.ProbeFitConfig (engine 29f7af0c).
+# Verb:   tuner.py mechinterp probe-fit --mi-config <this file>   (CPU)
+# Fits on FIT rows ONLY (labels_fit.jsonl: row_key + label, known=1 unknown=0,
+# ambiguous absent). Sweeps every extracted layer by 5-fold out-of-fold AUROC,
+# refits at the best layer, and freezes a mechinterp-direction/v1 JSON
+# (layer, unit vector, mu, sigma, class-conditioned calibration stats, recipe,
+# provenance incl. auroc_by_layer). directions/ is gitignored.
+activations_path: experiments/decision-model-calibrated-choice/analysis/stage0/extraction
+labels_path: experiments/decision-model-calibrated-choice/analysis/stage0/labels_fit.jsonl
+position_family: anchor
+n_components: 128
+n_splits: 5
+seed: 0
+solver: saga
+tol: 0.001
+C: 1.0
+output_direction: experiments/decision-model-calibrated-choice/directions/qwen35-2b-base/direction_gate.json
+normalize: true

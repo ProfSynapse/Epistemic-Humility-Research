@@ -1439,6 +1439,130 @@
     },
     {
       "checkpoint": {
+        "adapter": "tuner run decision-qwen35-2b-pointer/20261004_122756 final_model (LoRA r16 + pointer head), tree sha256 e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+        "engine": "synaptic-tuner 29f7af0c35e3c825d96f770b62f46c60ac4db2b7 (interim pin; precedes the submodule-first api/v1 repoint, EH branch feat/submodule-cloud-api-v1-host)",
+        "repo": "Qwen/Qwen3.5-2B-Base",
+        "revision": "b1485b2fa6dfa1287294f269f5fb618e03d52d7c"
+      },
+      "created_at": "2026-10-04T19:37:48Z",
+      "falsifier": "The readout-tracks-knowledge line is falsified if H-C FAILS (95% CI upper bound of AUROC(R1 -> known) < 0.75) or H-A FAILS (gap CI lower bound > 0.10, or confident-wrong Wilson lower bound > 0.05 on unknowns); the residual-signal prediction is falsified if H-D2 FAILS (paired CI upper bound < +0.03); base-axis transfer is falsified if H-D1 FAILS (CI upper bound < 0.75) with Stage 0 valid. A CI that contains its threshold is INCONCLUSIVE.",
+      "inputs": [
+        "experiments/common/knowledge_probe/probe.py",
+        "experiments/common/knowledge_probe/backends.py",
+        "experiments/common/knowledge_probe/scoring.py",
+        "experiments/common/configs/knowledge-probe/probe.yaml",
+        {
+          "availability": "local",
+          "path": "synaptic-tuner/scratch/eh_staging/dmcc-pointer-popqa/final_model",
+          "sha256": "e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc",
+          "source": "tuner decision run decision-qwen35-2b-pointer/20261004_122756/final_model (Toolset-Training worktree jev-models-tuner-training-b55d92), staged by dmcc_harness.py stage-engine"
+        },
+        {
+          "availability": "local",
+          "path": "synaptic-tuner/scratch/eh_staging/dmcc-letter-logits-popqa/final_model",
+          "sha256": "3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96",
+          "source": "tuner decision run decision-qwen35-2b-letter-logits/20261004_152616/final_model (registry run id 55307ef8-ec80-414e-967d-c55ba6d7d1d6; secondary arm), staged by dmcc_harness.py stage-engine"
+        },
+        {
+          "availability": "local",
+          "path": "experiments/decision-model-calibrated-choice/analysis/popqa/probe_pool.jsonl",
+          "source": "dmcc_harness.py build-pool from akariasai/PopQA@098765c79ea10a2cb19c828324e33281b8336ec0 test.tsv (sha256 9a5227f41bff0e4c331d4a774d946b12f95307892b58f860a9606ef356e6089b)"
+        }
+      ],
+      "instrument": {
+        "concurrency": "one GPU job at a time",
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "probe.yaml",
+          "stage0_extract.yaml",
+          "stage0_probe_fit_gate.yaml",
+          "stage0_probe_fit_dial.yaml",
+          "stage0_probe_fit_gate_permuted.yaml",
+          "analysis_pointer.yaml",
+          "recipe_pointer.yaml",
+          "analysis_letter_logits.yaml",
+          "recipe_letter_logits.yaml"
+        ],
+        "engine": {
+          "name": "vllm",
+          "version": "0.27.1"
+        },
+        "engine_note": "vLLM 0.27.1 (batch invariance OFF, unsupported for Qwen3.5 GDN layers; one request per question) is the generation engine for the label stage (EH probe.py). Stage 0 hidden-state capture uses the tuner mechinterp extract verb on HF transformers, per batched-generation.md (new capture-only surface; no vLLM bridge registered for Qwen3.5-2B). Stage 1 runs no generation (option-logit forward passes inside the engine's analyze_confidence.py).",
+        "lane": "local_3090",
+        "modules": [
+          "dmcc_harness.py",
+          "../common/knowledge_probe/probe.py",
+          "../common/knowledge_probe/backends.py",
+          "../common/knowledge_probe/scoring.py"
+        ],
+        "persistence": {
+          "../common/knowledge_probe/backends.py": {
+            "checkpoint_path": "experiments/decision-model-calibrated-choice/analysis/knowledge_probe/qwen35-2b-base-popqa/probe_results.jsonl",
+            "note": "imported by probe.py (vLLM backend, render + thinking-off self-check) and by dmcc_harness:render; runs inside probe.py's incremental loop.",
+            "persistence": "incremental"
+          },
+          "../common/knowledge_probe/probe.py": {
+            "checkpoint_path": "experiments/decision-model-calibrated-choice/analysis/knowledge_probe/qwen35-2b-base-popqa/probe_results.jsonl",
+            "note": "EH instrument, unchanged; appends + flushes one row per question and skips rows already present on restart.",
+            "persistence": "incremental"
+          },
+          "../common/knowledge_probe/scoring.py": {
+            "checkpoint_path": "experiments/decision-model-calibrated-choice/analysis/knowledge_probe/qwen35-2b-base-popqa/probe_results.jsonl",
+            "note": "pure scoring functions imported by probe.py and dmcc_harness.py.",
+            "persistence": "incremental"
+          },
+          "dmcc_harness.py": {
+            "checkpoint_path": "experiments/decision-model-calibrated-choice/analysis/",
+            "note": "directory prefix. label resumes from probe.py's per-row append-log; stage0-extract resumes per 500-row shard (manifest_shard_<k>.json markers); analyze is one read-only tuner local-run invocation, re-runnable from its staged inputs; build-pool, convert, stage0-rows, stage0-fit, stage0-validate, collect and score are short CPU passes with atomic writes. Kill-resume drill 2026-10-04 PASSED for stage0-extract (kill at 159 s, resume 215 s, 2 shards x 3 rows incl. model load); the label drill on the real vLLM path is open (AMENDMENT checklist 5).",
+            "persistence": "incremental"
+          }
+        },
+        "pins": {
+          "../common/knowledge_probe/backends.py": "74409c68f7775d2188258669649fa8558534ba74080b634db165ba8db604aa32",
+          "../common/knowledge_probe/probe.py": "cb55a869c36cdc4916ad3572b63d352b08991cea1635e58c48ed5591d70e1baa",
+          "../common/knowledge_probe/scoring.py": "62394dc696e0791999fc63eec634e6a611e6423abdb01df5ed82ab8b673cfa94",
+          "analysis_letter_logits.yaml": "557fbd5e1a526835efd8d64188adedf526f70beddef23f1392c38fe98f275824",
+          "analysis_pointer.yaml": "43e8cfea017c27dada9dc4a5edd653b38ac727169d23456123c19fc9b0983142",
+          "cell.yaml": "98696787d79f1fc7489fdb37c98136ef0ba05b9bafbb941d8dcf0d85a77add3d",
+          "dmcc_harness.py": "4c102b9769eeff018a114e181a08d6c4595ac96a8c23db5f539e61b2c3b4a8c4",
+          "gates.yaml": "70026565b68fbbbb1f8d39cc01bd2d7dc67d98ba6be4845233fd84a9fc946145",
+          "probe.yaml": "d37d313f54e0714a6f0bf3ba23adc855a1de84a21536115e713ded12c162b938",
+          "recipe_letter_logits.yaml": "7457c5396171413445f8acce3a404382b4710e25a7d952aae9b8f56fd1143af4",
+          "recipe_pointer.yaml": "b081ae7513c8bcb94745eb98ca1ce7c175033cb2d2c33fb0c698e23a4f4be696",
+          "stage0_extract.yaml": "a7343b3f8534a9ef5ff753772742f4870aa6f45c33f6a728421bf69069a34e24",
+          "stage0_probe_fit_dial.yaml": "3dcd01a88c41423b6d527e43f7b89f10fdf6991717e9624ba4c749a3849d5131",
+          "stage0_probe_fit_gate.yaml": "0819d1510b0ce4618fc881920b299d46d60f0b8d87e9891c478bd09ddd2fbf21",
+          "stage0_probe_fit_gate_permuted.yaml": "60617418e7fef11007d328b0ea08804a1512b067acaa46e40ab508bf3bc92ffe"
+        },
+        "runtime_image_digest": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
+        "runtime_image_digest_note": "Stage 0 runtime. Local Image ID of mechinterp-runner:dmcc-tf5.17.0, built 2026-10-04 from synaptic-tuner@29f7af0c docker/mechinterp-runner with TRANSFORMERS_VERSION=5.17.0 (Docker Desktop daemon, reached from WSL as context default). Stage 1 runs in the unsloth digest under runtimes.stage1; the label stage in the WSL vLLM venv.",
+        "runtimes": {
+          "label": "/home/profsynapse/.venvs/vllm (vllm==0.27.1)",
+          "stage0": "mechinterp-runner:dmcc-tf5.17.0 (runtime_image_digest above)",
+          "stage1": "unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397"
+        }
+      },
+      "kg": [
+        "experiment:decision-model-calibrated-choice",
+        "mechanism:decision-model-readout-tracks-base-known-unknown-axis",
+        "mechanism:decision-model-state-carries-more-ku-signal-than-its-readout",
+        "mechanism:decision-model-unknown-confidence-above-chance-reflects-recognition"
+      ],
+      "posture": "exploratory",
+      "prediction": "On TEST, with Stage 0 valid (frozen base gate direction CAL AUROC >= 0.80, permuted twin in [0.40, 0.60]): H-A unknown-row confidence-over-chance <= 0.10 and confident-wrong <= 5%; H-B known-row underconfident-right <= 10%; H-C AUROC(calibrated max-p -> known) >= 0.75; H-D1 the frozen base gate direction on decision <answer> states reads known vs unknown at AUROC >= 0.75; H-D2 a fresh KU probe on <answer> states beats the readout by >= 0.03 AUROC with the paired-bootstrap CI excluding 0.",
+      "question": "Does a trained decision model (Qwen3.5-2B-Base torso, LoRA + pointer head), which always chooses and reports a temperature-calibrated distribution over options, give confidence on PopQA that tracks its base torso's prior known/unknown label (EH knowledge-probe protocol) without refusing, and does the base model's frozen known-unknown gate direction still read known vs unknown in the decision model's <answer> state?",
+      "registered": true,
+      "slug": "decision-model-calibrated-choice",
+      "status": "falsified",
+      "text_capture": "enabled",
+      "tier": 2,
+      "title": "Decision-model calibrated choice: does a never-refusing readout track what the base torso knows?",
+      "type": "eval",
+      "verdict": "Readout-tracks-knowledge line falsified on its H-A leg as registered: on TEST unknowns the pointer-arm calibrated confidence (R1) sits 0.1769 [0.1737, 0.1798] above chance against a 0.10 cap (confident-wrong 0.0007 passes), while H-B passes (0.0603), H-C passes (AUROC 0.9407 [0.9266, 0.9526]), H-D1 passes (frozen base gate 0.9762 [0.9718, 0.9805]) and H-D2 passes (probe minus readout +0.0509 [0.0393, 0.0639]); matrix cell: readout confidence tracks the base known-unknown axis; secondary letter-logit arm shows the same pattern; exploratory, single seed."
+    },
+    {
+      "checkpoint": {
         "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
         "revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
       },
