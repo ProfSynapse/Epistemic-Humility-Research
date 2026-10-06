@@ -1471,7 +1471,7 @@
           "availability": "local",
           "path": "experiments/decision-model-idk-option/analysis/dmcc_inputs/label_and_split_counts.json",
           "sha256": "f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562",
-          "source": "decision-model-calibrated-choice analysis-committed/label_and_split_counts.json (uncommitted in the dmcc worktree at drafting time), copied by import-dmcc"
+          "source": "decision-model-calibrated-choice analysis-committed/label_and_split_counts.json (committed in dmcc fe0d0ee54; digest = the committed blob, unchanged from the drafting-time working-tree pin), copied by import-dmcc"
         },
         {
           "availability": "local",

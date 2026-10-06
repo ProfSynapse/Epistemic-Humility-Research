@@ -693,7 +693,7 @@ def stage_recognize_worker(c: dict, args) -> None:
             key = (it["qid"], int(it["ordering"]))
             if key in done:
                 continue
-            t0 = time.time()
+            t0 = time.perf_counter()  # monotonic: the container wall clock can step backwards
             enc = tok(it["prompt"], return_tensors="pt", add_special_tokens=False).to("cuda")
             logits = model(**enc, use_cache=False).logits[0, -1].float()
             ll = [float(logits[i]) for i in letter_ids]
@@ -703,7 +703,7 @@ def stage_recognize_worker(c: dict, args) -> None:
                                  "gold_letter_index": int(it["gold_letter_index"]), "letter_logits": ll,
                                  "pred_letter_index": pred, "argmax_tie": tie, "top1_token_id": top1,
                                  "top1_in_letters": top1 in letter_ids, "n_prompt_tokens": int(enc["input_ids"].shape[1]),
-                                 "seconds": round(time.time() - t0, 4)}) + "\n")
+                                 "seconds": round(time.perf_counter() - t0, 4)}) + "\n")
             fh.flush()
     print("recognize-worker: done", flush=True)
 

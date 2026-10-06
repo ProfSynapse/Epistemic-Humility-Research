@@ -37,8 +37,12 @@ predecessor:
     popqa_meta:
       path: analysis/popqa/popqa_meta.jsonl
       sha256: ca70ddd5a6f68a9d4b88ff1bd42e145cfbbbaa8baa0f3db6660f6f7e66be1008
-    # dmcc committed aggregate (rows_sha256 cross-check). Uncommitted in the
-    # dmcc worktree at drafting time; the digest is of the working-tree bytes.
+    # dmcc committed aggregate (rows_sha256 cross-check). Committed in dmcc
+    # fe0d0ee54 ("dmcc: run results and Outcome"); the digest is of the
+    # COMMITTED blob (`git show fe0d0ee5:<path> | sha256sum`), re-pinned
+    # pre-sign 2026-10-06: unchanged from the drafting-time working-tree pin
+    # (the path has eol=lf, so the checkout bytes equal the blob; import-dmcc
+    # hashes the checkout).
     label_and_split_counts:
       path: analysis-committed/label_and_split_counts.json
       sha256: f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562

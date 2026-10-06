@@ -6,6 +6,200 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-06: pre-sign checks (checklist 2-6); two items need a PI decision before sign
+
+Tier 3, lab notebook. Run by a subagent for the orchestrator. Nothing was
+signed or committed, and no confirmatory stage ran. The GPU was exclusive
+(0 MiB in use at the start). Inputs were non-PopQA or throwaway:
+
+- cell.yaml `smoke_items`;
+- 150 synthetic arithmetic MC questions (`presign/drill_recognize_resume.py`);
+- 2,400 synthetic 5-option arithmetic rows (`presign/prep_engine_presign.py`).
+
+PopQA IDK rows were only tokenised and split. No PopQA row went through a
+model. Run record: `analysis-committed/run_records/dmio-presign-20261006.json`.
+Row-level outputs are in gitignored `analysis/presign/` and in the tuner's
+`scratch/eh_staging/dmio-presign-*/`.
+
+**Harness change (mechanical; listed in full).** In `recognize-worker`, the
+per-prompt `seconds` field now uses `time.perf_counter()` instead of
+`time.time()`. The first smoke logged two negative durations (-0.72 s and
+-1.01 s) because the container's wall clock stepped backwards. No label, gate
+or scored quantity reads `seconds`. Letter logits were identical across the
+launches before and after the change (32 of 32). No other harness, config or
+threshold edit was made.
+
+- **Check 1, IDK render inside the pinned engine image: PASS (both models).**
+  - Ran through `tuner.py local-run` of the pinned template recipe (same
+    image, pip set and copy set), with sandbox paths.
+  - `presign/check_engine_render.py` used the engine's own `load_examples`
+    and `DecisionCollator(train=False)` with each checkpoint's
+    `decision_config` and tokenizer. No weights were loaded.
+  - Coverage: all 12,067 rows at each of the 5 positions, for both models.
+    0 failures on every per-row check:
+    - canonical order is rendered, and the IDK option sits at
+      `meta.idk_slot`;
+    - the IDK line is exactly `<marker>. I don't know`;
+    - the 4 real options keep dmcc's relative order, and the gold name and
+      label shift are correct;
+    - the IDK prompt equals the no-IDK prompt plus one inserted line with
+      the markers renumbered;
+    - `option_index` is the last token of each option line;
+    - `answer_index` is the last token, at `<answer>`;
+    - nothing is truncated (76 to 124 tokens, against max_length 4096).
+  - The padded batch-of-8 path agrees with the single-row encode on the
+    first 400 rows of each position.
+  - Markers are single tokens: `1`-`5` are ids 16-20, and `A`-`E` are ids
+    32-36.
+  - The engine `analyze_confidence.py --dry-run` ran on the stage-engine
+    materialization of each position's config, with only the staging prefix
+    moved. All 10 (5 positions x 2 models) gave "Dry run OK" with FIT 4,829 /
+    CAL 2,410 / TEST 4,828.
+  - Synthetic render example (pointer, IDK at position 2):
+    `1. 64 / 2. 54 / 3. I don't know / 4. 74 / 5. 62`.
+- **Check 2, recognition smoke on non-PopQA items: PASS (sanity, not a
+  gate).**
+  - `recognize-smoke` was run twice. The second run came after the timer
+    fix and is the one recorded.
+  - Letters ` A`-` D` are single tokens (ids 357, 417, 351, 414).
+  - The full-vocabulary top-1 token was a letter on 64 of 64 prompts
+    (R0-V2 floor 0.95).
+  - `pred_letter_index` equals the argmax over the 4 letter logits on 64 of
+    64, with 0 ties.
+  - Logits were repeat-identical, 32 of 32.
+  - Gold was picked on 30 of 32 prompts. Per item, c = 4 on 7 items and
+    c = 2 on 1 item ("spider legs"). So 7 of 8 items have c >= 3. The R0-V1
+    floor of 0.80 applies to dmcc-known PopQA rows, so this is a sanity
+    reading only.
+  - Picks per letter: A 7, B 9, C 9, D 7.
+  - Exemplar collision, re-run:
+    - the harness rule matches 0 of the 12,067 primary rows;
+    - no exemplar question is a PopQA question;
+    - no exemplar gold answer is a PopQA subject;
+    - exemplar options match a gold alias on 27 of all 14,267 PopQA rows,
+      all of them `au` = AU. These are the rows dmcc excluded before its
+      split; none is a primary row;
+    - the distractors Five and Seven are PopQA subjects, as already
+      reported;
+    - no smoke question is a primary-row question.
+- **Check 4, recognition kill-resume drill: PASS.**
+  - Ran the real `stage_recognize`, with `cfg()` patched to a sandbox, on
+    600 synthetic prompts.
+  - The launcher's process group got SIGKILL at 49.6 s, with 61 lines
+    written at the snapshot. The container kept running as an orphan.
+  - The resume's `docker rm -f` removed the orphan. The resume finished with
+    rc 0 in 68.5 s.
+  - Result: 600 lines, 600 unique keys, full coverage, and the pre-kill
+    snapshot is a byte-identical prefix of the final log.
+- **Check 3, timing: MEASURED.**
+  - Recognition:
+    - steady rate 0.0619 s per prompt (mean; median 0.0603, p99 0.089);
+    - first-forward warmup 23 to 34 s per launch;
+    - so about 50 min for 48,268 prompts, plus about 1 min of start-up.
+      The AMENDMENT's estimate was 15 to 35 min.
+  - Engine, one decision pass per model on 2,400 synthetic rows (with phase
+    timers from `presign/timed_analyze.py`, which wraps the engine CLI and
+    does not edit it):
+
+    | Model | Launch to finish | Steady capture | Probe fits |
+    |---|---|---|---|
+    | pointer | 9.4 min | 12.6 ms per row | 2 x about 150 s |
+    | letter-logit | 8.9 min | 12.6 ms per row | 2 x about 150 s |
+
+  - Cost is dominated by the row-count-dependent probe fits, not by the
+    option count. dmcc's two full-size runs on the same 12,067 rows took
+    16.7 and 16.8 min. The extra option line adds under 10 s of capture per
+    run.
+  - Estimate: about 17 min per engine run, so 12 runs take about 3.4 h.
+    With recognition, the total is about 4.3 h of GPU time in separate
+    stages. Every engine run stays far under the 2 h tool limit.
+- **Check 5, digests: PASS, except a gap that exists by design.**
+  - The runner Image ID `sha256:b4166dbd...` equals `runtime_image_digest`.
+  - The engine image's local repo digest equals `engine.image`.
+  - Checkpoint tree digests, computed with `bin/exp`'s own `_path_sha256`,
+    match the pins on both the source and a staged copy: pointer
+    `e0cc616d...`, letter-logit `3aef07e2...`.
+  - `bin\exp.cmd doctor decision-model-idk-option` shows 8 OK and 2 MISSING.
+    The missing ones are `scratch/eh_staging/dmio-idk-p0-{pointer,letter-logits}/final_model`,
+    which only `stage-engine` creates. `stage-engine` refuses until the
+    recognition freeze marker exists, and that comes after sign. So doctor
+    cannot pass fully before sign; the digest check above stands in for it.
+- **Check 6, dmcc digest pin refreshed: unchanged (mechanical, no protocol
+  change).**
+  - `label_and_split_counts.json` is committed in dmcc `fe0d0ee54`.
+  - `git show fe0d0ee5:<path> | sha256sum` gives `f347db21...`, which
+    equals the old working-tree pin.
+  - The path has `eol=lf`, so the checkout bytes equal the blob. That means
+    `import-dmcc`, which hashes the checkout at run time, verifies the same
+    bytes.
+  - `import-dmcc` was re-run: 6 of 6 match. Only the comment in cell.yaml
+    and the `source` text in experiment.yaml changed, which also
+    regenerates the registry.
+- **Repo checks.**
+  - Cell tests: 44 pass.
+  - `bin\exp.cmd validate`: OK. This cell's only warnings are the two
+    staged-checkpoint inputs.
+  - `regen`: then `regen --check` is up to date.
+  - Hook commands, run one by one: all rc 0. `validate_kg` needs
+    `core.hooksPath=.githooks`.
+- **Environment note.** Launch `tuner.py local-run` from PowerShell, not Git
+  Bash. Under Git Bash, MSYS `tar` reads `F:\...` as a remote host, so the
+  artifact copy-back failed (`tar: Cannot connect to F:`) and the outputs of
+  that one attempt were lost. The rerun from PowerShell worked.
+
+**Needs a PI decision before sign (not chosen here):**
+
+1. **Generation-engine sign gate.**
+   - Problem: `bin/exp sign` refuses this cell as drafted. In `exp.py`
+     `cmd_sign`, the PI ruling of 2026-08-13 treats type `eval` as
+     generation-bearing. Sign then requires either `instrument.engine.name:
+     vllm` with a pinned version, or `instrument.engine_exception` with kind
+     `parity-locked` or `intervention` and a reason. This cell declares
+     `hf-transformers 5.17.0` and no exception.
+   - The cell has no generation. Recognition is a new next-token logprob
+     surface (HF, batch 1, dmcc's Stage 0 runner image). The decision passes
+     are dmcc's engine, unchanged.
+   - Neutral options:
+     - (a) Declare `engine_exception: {kind: parity-locked, reason: ...}`.
+       Several no-generation cells did this, e.g.
+       `readout-under-contract-crossing` and `base-refusal-direction-under-contract`.
+       The engine runs are dmcc's engine verbatim. Recognition reuses dmcc's
+       HF Stage 0 stack, but it is a new surface rather than a regeneration
+       of one.
+     - (b) Move recognition to vLLM (dmcc's label engine was 0.27.1), with
+       letter logprobs from vLLM. That changes the instrument and needs a
+       bridge check and a re-smoke. dmcc found that vLLM batch invariance
+       is unsupported for the Qwen3.5 GDN layers, and that batched greedy
+       output differed on 2 of 20 rows.
+     - (c) Another type or a PI waiver. `lab-diagnostic` is not
+       generation-bearing, but it does not fit a gated cell.
+2. **bf16 letter-logit ties in recognition.**
+   - What happens: the worker reads `logits[0, -1].float()`. The LM head
+     outputs bf16, so the letter logits (about 21 to 25) are quantized to
+     steps of 0.125, and exact ties occur.
+   - Evidence:
+     - smoke: 0 of 64 prompts tied;
+     - synthetic arithmetic (uncertain items): 29 of 600 tied. The tie rule
+       sent 19 to A, 8 to B and 2 to C. The gold letter was among the tied
+       letters 17 times;
+     - 16 of 150 synthetic questions had a tie that involved the gold
+       letter. 10 of 150 would land in a different recognition group under
+       another tie rule.
+   - PopQA unknown rows are the uncertain regime, so ties there may resemble
+     the arithmetic case. The registered rule (lowest letter, ties counted
+     and reported) is deterministic and is implemented as registered.
+   - Neutral options:
+     - (a) Keep the registered rule and report ties as planned.
+     - (b) Score the 4 letter logits in fp32 from the final hidden state and
+       the 4 LM-head rows. This is an instrument change before sign and
+       needs a re-smoke.
+     - (c) Change the tie rule, e.g. count a tie as not-gold or split
+       credit. This is a rule change before sign.
+   - Descriptive context: on the uncertain synthetic items, picks leaned
+     to A and B (A 229, B 203, C 110, D 58, against 150 gold per letter).
+     The cyclic-rotation design already handles this, because pure position
+     bias cannot create c = 0 or c >= 3.
+
 ### 2026-10-05 (final draft pass): PI decisions - thresholds confirmed; IDK at all five positions
 
 PI decisions, 2026-10-05, before any outcome:
