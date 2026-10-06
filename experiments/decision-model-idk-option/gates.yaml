@@ -1,0 +1,243 @@
+# Pre-stated gates for decision-model-idk-option.
+# Fixed at signing; never retuned after any result (AMENDMENT "Gates").
+# Consumed by idk_harness.py `recognition-labels` (R0 validity) and `score`
+# (G0, H1-H4, secondary).
+#
+# Threshold provenance: every threshold below was derived from the stated rule
+# beside it (majority rule, the predecessor's known-row cost cap, chance
+# arithmetic, Wilson floors), not from the PI's recorded predictions. See
+# AMENDMENT "Gates" for the disclosure of drafting order.
+#
+# Universal three-way rule for every gate (the INCONCLUSIVE rule):
+#   PASS          the whole 95% CI sits on the passing side of the threshold
+#   FAIL          the whole 95% CI sits on the failing side
+#   INCONCLUSIVE  the 95% CI contains the threshold
+# NOT-ADJUDICABLE (distinct from all three): a registered precondition failed
+# (a floor, an integrity check, or a validity gate). Reported with the reason.
+#
+# Unit of analysis (PI decision 2026-10-05): the QUESTION, not the copy. Every
+# question is run with the IDK option at each of 5 positions; its IDK rate is
+# the mean of its 5 pick-IDK indicators, in [0, 1].
+#
+# CI methods (fixed): question-level means use a cluster (question-level)
+# bootstrap: resample questions with replacement, 2000 reps, seed 0,
+# percentile 95%. Paired differences resample questions once and take both
+# arms' values for the same questions. Single-indicator rates (R0, the
+# position table, ">= 3 of 5" shares) use the Wilson 95% interval; AUROCs use
+# a class-stratified bootstrap (same reps and seed). Every number is on TEST
+# unless the gate says CAL or ALL.
+#
+# PI confirmed the drafted thresholds on 2026-10-05, before any outcome
+# (H1 >= 0.50, H2 <= 0.10, H3 CI > 0, the INCONCLUSIVE rule, R0 floors
+# 0.80 / 0.95). The question-level construction replaced copy-level Wilson
+# the same day, also before any outcome.
+
+ci:
+  level: 0.95
+  unit: question
+  question_mean_method: cluster_bootstrap_over_questions
+  single_indicator_rate_method: wilson
+  bootstrap_reps: 2000
+  bootstrap_seed: 0
+  diff_bootstrap: paired_over_questions
+  auroc_bootstrap: stratified_by_class
+
+populations:
+  # All populations are subsets of dmcc's 12,067 primary rows and dmcc's
+  # FIT/CAL/TEST split (identical qids; verified in G0).
+  known: dmcc meta.knowledge == known (EH probe, base-mode 5-shot; greedy correct AND >= 16/32 sampled correct)
+  unknown_true: dmcc meta.knowledge == unknown (0/32 sampled correct) AND recognition c == 0 of 4
+  known_recognized: dmcc meta.knowledge == unknown AND recognition c >= 3 of 4
+  recognition_ambiguous: dmcc meta.knowledge == unknown AND recognition c in {1, 2}; excluded from every gate, reported
+  dmcc_ambiguous: never present (dmcc excluded its recall-ambiguous rows before the split)
+  pick_idk: the decision model's argmax option is the IDK option (canonical index meta.idk_slot = the run's IDK position); argmax is temperature-invariant, so R0 and R1 agree
+  question_idk_rate: mean of a question's 5 pick_idk indicators (IDK at positions 0..4, real options in dmcc relative order), in [0, 1]
+  abstention: pick_idk is this cell's abstention; it is a closed-class option choice, not text (AMENDMENT "Abstention grading")
+
+# ---------------------------------------------------------------------------
+# G0: integrity and adjudicability (pre-outcome stop). Any failure makes the
+# named gates NOT-ADJUDICABLE; nothing is retried to pass.
+# ---------------------------------------------------------------------------
+g0_integrity:
+  dmcc_inputs_sha256_match: true            # every cell.yaml predecessor.files digest
+  dmcc_rows_sha256_equals_committed: true   # == dmcc label_and_split_counts.json rows_sha256
+  pointer_checkpoint_tree_sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
+  letter_logits_checkpoint_tree_sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96
+  engine_commit_equals_cell_yaml: true
+  split_identity: every engine run's TEST qids, CAL per-row qids (cal_rows.jsonl) and FIT/CAL/TEST counts equal dmcc splits.json
+  idk_rows_differ_from_dmcc_rows_only_by_the_idk_option: true   # same order, state, task, meta; 4 options in dmcc relative order plus one IDK line
+  idk_positions_complete: every TEST and CAL question appears exactly once in each of the 5 IDK-position runs, with meta.idk_slot equal to that run's position
+  recognition_freeze_marker_present_before_any_idk_analysis: true
+  applies_to: [h1, h2, h3, h4, secondary]
+
+g0_exemplar_option_collision_exclusion:
+  # Rule in cell.yaml recognition.exclude_exemplar_option_collisions. Pre-sign
+  # count on dmcc's 12,067 primary rows (no model, no labels): 0.
+  # build-recognition refuses if the rule matches any other count.
+  expected_count: 0
+
+g0_floors:
+  # Floors count QUESTIONS (unchanged by the 5-position design). A question's
+  # IDK rate lies in [0, 1], so its variance is at most 0.25, the Bernoulli
+  # maximum: the cluster-bootstrap CI of the mean is no wider than a
+  # Bernoulli interval at the same number of questions, and the repeated
+  # positions can only narrow it. The Wilson arithmetic therefore still bounds
+  # the floors (gate-diagnosticity.md):
+  # - H1 (threshold 0.50, at_least): a mean 0.10 from the threshold resolves
+  #   from about 91 questions; 150 adds margin (half-width at most 0.080).
+  # - H2 (cap 0.10, at_most): 150 is dmcc's floor; TEST known is fixed by dmcc
+  #   at 514 questions (a mean of 0.05 has a half-width of at most about
+  #   0.019).
+  # - H3 cutoff: fit on CAL known questions (dmcc CAL known = 268).
+  # A percentile bootstrap of a mean near 0 can be narrower than Wilson; with
+  # 514 known questions this matters for H2 only if the mean is within about
+  # 0.02 of the cap (stated, not corrected).
+  min_test_known: 150
+  min_test_unknown_true: 150
+  min_cal_known: 100
+  below_floor: the gates that use the short population are NOT-ADJUDICABLE; every quantity is reported descriptively
+
+# ---------------------------------------------------------------------------
+# R0: recognition instrument validity (base model only; computed by
+# `recognition-labels` BEFORE any IDK-arm engine run, written into the
+# recognition freeze marker). Failure makes every recognition-defined gate
+# (H1, H3, H4) NOT-ADJUDICABLE; H2 does not depend on recognition.
+# ---------------------------------------------------------------------------
+r0_v1_positive_control:
+  population: ALL dmcc-known primary rows (FIT + CAL + TEST; base-model property, no decision model involved)
+  statistic: share with recognition c >= 3 of 4
+  threshold: 0.80
+  rule: >-
+    The base model already GENERATES these answers (greedy correct and >= 16/32
+    sampled). A recognition probe that fails to pick the same answer in at
+    least 3 of 4 orderings on more than one in five of them is not measuring
+    recognition. Under uniform guessing the rate would be 0.0508.
+  pass: Wilson lower bound >= 0.80
+  otherwise: R0 NOT VALID (an INCONCLUSIVE V1 is treated as not valid)
+
+r0_v2_format_adherence:
+  population: every scored prompt (all primary rows x 4 orderings)
+  statistic: share whose full-vocabulary top-1 next token is one of the 4 scored letter tokens
+  threshold: 0.95
+  rule: the letter argmax is only an answer if the model is answering in the letter format; the restricted argmax is not read when it is mostly off-format
+  pass: point >= 0.95
+  otherwise: R0 NOT VALID
+
+r0_chance_reference:
+  # Uniform independent guessing over 4 letters in each of 4 orderings
+  # (Binomial(4, 1/4)). A pure position-biased responder picks gold in
+  # exactly 1 of 4 cyclic orderings and is always recognition-ambiguous.
+  p_c_ge_3: 0.05078125      # 13/256
+  p_c_eq_0: 0.31640625      # 81/256
+  p_c_1_or_2: 0.6328125     # 162/256
+
+# ---------------------------------------------------------------------------
+# Hypotheses. Pointer model = PRIMARY (gated, scored for predictions);
+# letter-logit model = SECONDARY: identical gates, exploratory label, no
+# confirmatory claim, no multiplicity correction. The refusal pair (H1, H2)
+# is reported as a pair and never averaged.
+# ---------------------------------------------------------------------------
+h1_idk_recall:
+  statistic: mean question-level IDK rate over TEST unknown_true questions   # EH refusal recall, on unknown-true
+  denominator: every TEST unknown_true question
+  threshold: 0.50
+  direction: at_least
+  ci: cluster bootstrap over questions
+  rule: >-
+    Majority rule: "picks IDK when the torso truly does not know" means the
+    IDK option is the decision model's answer, on average over its 5
+    positions, on more than half of the questions where the base model can
+    neither recall nor recognize the answer.
+  secondary_majority_positions: 3   # also reported: share of questions with IDK chosen in >= 3 of 5 positions (Wilson)
+  precondition: [r0 valid, g0 floors (unknown_true)]
+  companions_reported: [IDK rate on all dmcc-unknown TEST questions, question-level 3-way breakdown (picked IDK / answered right / answered wrong)]
+
+h2_over_idk:
+  statistic: mean question-level IDK rate over TEST known questions   # EH over-refusal, on known
+  denominator: every TEST known question (fixed by dmcc's label; not shrinkable by the model)
+  threshold: 0.10
+  direction: at_most
+  ci: cluster bootstrap over questions
+  rule: >-
+    The predecessor's known-row cost cap (dmcc H-B, underconfident-right
+    <= 0.10 of all known rows) carried over unchanged: on average the
+    intervention may cost the answer on no more than one known question in
+    ten.
+  diagnosticity: the IDK option is present in every copy, so every known question is exposed (fired fraction 1.0); no undosed-denominator issue
+  secondary_majority_positions: 3
+  precondition: [g0 floors (known)]
+  companions_reported: [question-level accuracy among non-IDK answers on known, answer change vs the no-IDK arm]
+
+h3_idk_vs_threshold:
+  question: at a matched over-abstention rate on known questions, does the IDK option catch more unknown_true questions than abstaining on low calibrated confidence?
+  baseline: >-
+    no-IDK arm (the dmcc 4-option rows recomputed under this cell's engine
+    pin, one run per question); abstain iff R1 (calibrated max option
+    probability) < tau; its per-question abstention indicator is 0 or 1
+  cutoff: >-
+    tau fit on CAL, from known questions only: r_cal = the IDK arm's mean
+    question-level IDK rate over CAL known questions; sort the no-IDK arm's
+    CAL-known R1 ascending s_1 <= ... <= s_n; k = round(r_cal * n);
+    tau = s_(k+1) (tau = +inf if k = n). The baseline then abstains on
+    exactly k CAL known questions (absent ties), so its CAL over-abstention
+    equals r_cal to within 1/(2n). No unknown question and no TEST question
+    enters the fit.
+  matched_precondition: >-
+    the paired question-level bootstrap 95% CI of (baseline over-abstention -
+    IDK-arm question-level over-IDK) on TEST known questions contains 0;
+    otherwise H3 is NOT-ADJUDICABLE (operating points not matched) and the
+    TEST-matched comparison is reported descriptively only
+  statistic: "delta = mean over TEST unknown_true questions of (question-level IDK rate - baseline abstention indicator)"
+  ci: paired cluster bootstrap over TEST unknown_true questions (2000 reps, seed 0); tau held fixed (CAL uncertainty not propagated; stated)
+  verdicts:
+    IDK_BETTER: CI lower bound > 0
+    THRESHOLD_BETTER: CI upper bound < 0
+    NO_DIFFERENCE_DETECTED: otherwise
+  precondition: [r0 valid, g0 floors (unknown_true, known, cal_known), matched_precondition]
+  cal_rows: >-
+    all 6 runs of a model (5 IDK positions + no-IDK) export CAL per-row
+    records (engine export.cal_rows; cal_rows.jsonl with split "cal");
+    `collect` refuses an output without them and G0 checks
+    their qids equal dmcc's CAL split, so a missing export is an integrity
+    failure, not a designed NOT-ADJUDICABLE
+
+h4_known_recognized_descriptive:
+  statistic: mean question-level IDK rate over TEST known_recognized questions (cluster bootstrap CI); mean, over those questions with >= 1 non-IDK answer, of their accuracy among non-IDK answers (cluster bootstrap CI); share with IDK in >= 3 of 5 positions (Wilson)
+  gate: none (descriptive; no threshold, no verdict)
+  reported_also: the same pair on recognition_ambiguous rows
+
+interpretation_matrix:
+  # Fixed reading of the refusal pair. INCONCLUSIVE or NOT-ADJUDICABLE in
+  # either input leaves the cell unresolved; it is never rounded to a neighbor.
+  h1_pass_and_h2_pass: selective IDK use (the option is taken on most true unknowns and on few knowns)
+  h1_pass_and_h2_fail: IDK over-attracts (taken on most true unknowns, and on knowns above the cost cap)
+  h1_fail_and_h2_pass: IDK under-used (the model keeps answering on true unknowns)
+  h1_fail_and_h2_fail: IDK use not knowledge-selective (rarely on true unknowns, yet above the cap on knowns)
+
+line_falsifier:
+  selective_idk_use: H1 FAIL or H2 FAIL (primary pointer arm)
+  idk_beats_threshold: H3 THRESHOLD_BETTER (primary pointer arm, H3 adjudicable). NO_DIFFERENCE_DETECTED (CI contains 0) is the INCONCLUSIVE analog for a zero threshold - it is reported as "no detectable difference", never as support and never as a falsification
+
+secondary_descriptive:
+  per_group: for known, unknown_true, known_recognized, recognition_ambiguous and all dmcc-unknown TEST questions - question-level IDK rate, share with IDK in >= 3 of 5 positions, question-level 3-way shares, answered accuracy, mean R1-calibrated IDK mass p_idk (mean over the 5 positions)
+  unknown_true_breakdown: question-level picked IDK / answered right / answered wrong shares (each question's three shares sum to 1; cluster bootstrap CIs)
+  idk_distribution_calibration: AUROC(question mean p_idk -> unknown_true vs known) with stratified bootstrap CI; binary ECE (15 bins) of question mean p_idk against the unknown_true indicator on known + unknown_true questions
+  position_bias:
+    statistic: pick-IDK rate at each IDK position 1..5 (one copy per question per position; Wilson), pooled over all TEST questions and per group (known, unknown_true, known_recognized, recognition_ambiguous), plus the position x group table
+    strong_range: 0.10   # max - min over the 5 positions within a group; at or above this, flagged as a strong position effect
+    use: descriptive only; a flag on pooled, known or unknown_true is reported as a caveat beside H1/H2 and changes no verdict
+  answer_change: share of non-IDK copies whose answer differs from the no-IDK arm's answer for that question, per group
+  threshold_curve: baseline recall on unknown_true vs over-abstention on known at R1 cutoffs (TEST, deciles of known R1), with the IDK arm's operating point
+  test_matched_comparison: delta at a tau chosen on TEST known rows to equal the IDK arm's TEST over-IDK (descriptive only; never a verdict)
+  reproduction: no-IDK arm vs dmcc's TEST outputs on the same rows (prediction agreement, max abs conf_r1 difference)
+  recognition_counts: c distribution (0..4) by dmcc label and split; argmax ties; per-letter pick shares
+  letter_logit_model: SECONDARY arm; every gate evaluated identically and reported as exploratory
+
+no_goalpost_movement:
+  rule: >-
+    Thresholds, CI methods, populations, the recognition rule and prompt, the
+    IDK text and the five positions, the question-level unit, the cutoff
+    rule, floors and the interpretation matrix are fixed at signing. No
+    population, cutoff, position set, unit of analysis or threshold is
+    substituted after any recognition or IDK-arm number exists. An
+    INCONCLUSIVE or NOT-ADJUDICABLE result is reported as such.

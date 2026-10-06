@@ -1,0 +1,61 @@
+# Engine analysis config: SECONDARY (exploratory) letter_logits decision model, idk arm.
+# Rows: 4 options plus an explicit "I don't know" option at canonical position 0.
+# TEMPLATE for all 5 IDK positions: idk_harness.py stage-engine materializes
+# position k by replacing the run_id dmio-idk-p0-<model> with dmio-idk-p<k>-<model>;
+# the staged rows file name is the same for every position.
+#
+# Schema: synaptic-tuner Trainers/decision/decision_core/confidence_analysis.py
+#         (ConfidenceAnalysisConfig) at the cell.yaml engine pin. Identical to
+#         dmcc's analysis_letter_logits.yaml except: the staged rows, the run paths, and
+#         no `directions:` block (no frozen-direction gate in this cell).
+# export.cal_rows (engine feature added for this cell's H3, generic in the
+# tuner): writes cal_rows.jsonl beside test_rows.jsonl, same per-row schema
+# plus split: "cal" / "test". H3 fits its cutoff on these CAL rows.
+# Staged by: idk_harness.py `stage-engine --run idk_p<k>_letter_logits` into the tuner's
+#            gitignored scratch/eh_staging/dmio-idk-p0-letter-logits/ (tuner-relative paths).
+
+checkpoint: scratch/eh_staging/dmio-idk-p0-letter-logits/final_model
+
+data:
+  files: [scratch/eh_staging/dmio-idk-p0-letter-logits/decision_rows_idk.jsonl]
+  max_rows: null          # every row (12,067)
+  fit_fraction: 0.4       # identical to dmcc: the split depends only on row order and task,
+  cal_fraction: 0.2       # so FIT/CAL/TEST qids equal dmcc's (verified in G0)
+  seed: 0
+
+ablation:
+  enabled: false
+
+capture:
+  layers: all
+  batch_size: 8
+  max_length: null
+
+probe:
+  n_components: 128
+  n_splits: 5
+  C: 1.0
+  max_iter: 2000
+  permuted_control: true
+
+conformal:
+  alphas: [0.1, 0.2]
+  min_rows_per_kind: 50
+
+thresholds:
+  confident: 0.8
+  underconfident: 0.5
+  ece_bins: 15
+
+bootstrap:
+  n_boot: 2000
+  seed: 0
+
+output:
+  output_root: scratch/eh_staging/dmio-idk-p0-letter-logits/output
+
+export:
+  states: false
+  layers: null
+  per_row: true           # probs_r0 / probs_r1 in canonical option order (IDK at meta.idk_slot)
+  cal_rows: true          # cal_rows.jsonl: CAL per-row records (H3 cutoff fit)

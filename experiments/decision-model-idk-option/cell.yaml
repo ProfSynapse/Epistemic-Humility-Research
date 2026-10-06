@@ -1,0 +1,232 @@
+# Instrument config for decision-model-idk-option (pinned at `bin/exp sign`).
+#
+# Consumed by: experiments/decision-model-idk-option/idk_harness.py
+# Every knob the harness reads lives here; the harness hard-codes none of them.
+# Sibling instrument files (also pinned): gates.yaml (pre-stated thresholds),
+# analysis_{idk,noidk}_{pointer,letter_logits}.yaml and
+# recipe_{idk,noidk}_{pointer,letter_logits}.yaml (engine calls).
+
+slug: decision-model-idk-option
+
+# ---------------------------------------------------------------------------
+# Predecessor artifacts (decision-model-calibrated-choice, "dmcc").
+# dmcc is signed (commit 1387e92d on local branch
+# amendment-decision-model-calibrated-choice) and run (2026-10-05), but at
+# drafting time it is NOT on origin/main and its outputs are gitignored local
+# data. This cell consumes them by absolute path + sha256: the harness
+# `import-dmcc` stage copies each file into this cell's gitignored
+# analysis/dmcc_inputs/ and refuses on any digest mismatch. Nothing is
+# relabeled, re-split or re-generated from PopQA here.
+# ---------------------------------------------------------------------------
+predecessor:
+  slug: decision-model-calibrated-choice
+  signed_commit: 1387e92df
+  root: F:/Code/Epistemic-Humility-Research/.worktrees/amendment-decision-model-calibrated-choice/experiments/decision-model-calibrated-choice
+  files:
+    # dmcc `convert` output: 12,067 primary 4-way choice rows (known + unknown;
+    # ambiguous and the 27 exemplar-collision rows already excluded), PopQA
+    # file order, meta.knowledge = dmcc's EH-protocol label.
+    decision_rows_primary:
+      path: analysis/decision_rows/decision_rows_primary.jsonl
+      sha256: abeef06247691b9d3c6dc9f23a6f861646fa9df5e94e1fa313a7db5649b1d012
+    # dmcc FIT/CAL/TEST qids (ported engine split, verified against the engine by dmcc G0).
+    splits:
+      path: analysis/decision_rows/splits.json
+      sha256: 82392bcf7076bf5db484e618837bde16311329168383786539a28e041be32979
+    # PopQA meta (aliases, obj, subj) for the exemplar-collision check.
+    popqa_meta:
+      path: analysis/popqa/popqa_meta.jsonl
+      sha256: ca70ddd5a6f68a9d4b88ff1bd42e145cfbbbaa8baa0f3db6660f6f7e66be1008
+    # dmcc committed aggregate (rows_sha256 cross-check). Uncommitted in the
+    # dmcc worktree at drafting time; the digest is of the working-tree bytes.
+    label_and_split_counts:
+      path: analysis-committed/label_and_split_counts.json
+      sha256: f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562
+    # dmcc Stage 1 engine outputs (no-IDK TEST rows). Used ONLY for the
+    # descriptive reproduction check of this cell's recomputed no-IDK arm;
+    # never as the baseline of record (H3 needs CAL rows, which dmcc's engine
+    # pin did not export).
+    dmcc_test_rows_pointer:
+      path: analysis/engine/dmcc-pointer-popqa/20261005_174724/test_rows.jsonl
+      sha256: 2a5eb0ffaa5df3a5c58de12e149794c9240840abcb99f89a7f9f111d0dfbaf21
+    dmcc_test_rows_letter_logits:
+      path: analysis/engine/dmcc-letter-logits-popqa/20261005_180612/test_rows.jsonl
+      sha256: 15e38740a901ab7ee4474db0f855d1f97db15b3314d0d8880fe5887fa296ddb7
+  expected:
+    n_rows_primary: 12067
+    knowledge_by_split:
+      fit: {known: 525, unknown: 4304}
+      cal: {known: 268, unknown: 2142}
+      test: {known: 514, unknown: 4314}
+
+# ---------------------------------------------------------------------------
+# Recognition labeling (NEW labeling stage; base model only, no adapter).
+# Every dmcc primary row is scored as a 4-way multiple choice over the SAME 4
+# options as its decision row (no IDK option), in 4 cyclic rotations of the
+# decision row's canonical option order. dmcc-known rows are the positive
+# control (gates.yaml v1); dmcc-unknown rows are split into unknown-true /
+# known-recognized / recognition-ambiguous. The base model's answer per
+# ordering is the argmax of its next-token logits over the 4 letter tokens.
+# ---------------------------------------------------------------------------
+recognition:
+  hf_id: Qwen/Qwen3.5-2B-Base
+  revision: b1485b2fa6dfa1287294f269f5fb618e03d52d7c
+  causal_lm_class: Qwen3_5ForCausalLM   # transformers 5.17.0 (runner image); text tower only
+  torch_dtype: bfloat16
+  batch_size: 1                         # one prompt per forward: no padding or batch-composition effects
+  letters: [A, B, C, D]
+  # Scored next-token ids: the tokenizer encoding of " A" .. " D" (leading
+  # space, matching the exemplar answer lines "A: B"). Each must be exactly
+  # one token; the worker refuses otherwise (pre-sign check).
+  letter_token_prefix: " "
+  orderings: cyclic_rotations           # ordering k shows canonical[k:] + canonical[:k], k = 0..3
+  n_orderings: 4
+  # Group rule (pre-registered). c = number of orderings whose argmax letter is
+  # the gold option. Applied to dmcc-unknown rows.
+  group_rule:
+    known_recognized_min: 3              # c >= 3 of 4
+    unknown_true_max: 0                  # c == 0 of 4
+    ambiguous: otherwise                 # c in {1, 2}; reported separately, excluded from primary
+  argmax_tie_rule: lowest_letter_index   # exact logit ties go to the lowest letter; ties are counted and reported
+  # Amendment-Y base-mode 5-shot surface in multiple-choice form. The five
+  # exemplar QUESTIONS and gold answers are Amendment Y's frozen exemplars,
+  # byte-identical to experiments/common/readouts/amendment_x_cross_model_extract.py
+  # _BASE_MODE_FEWSHOT (a test pins them). Distractors are hand-written and
+  # passed the pre-sign collision probe (NOTEBOOK 2026-10-05): no normalized
+  # option text below equals a normalized gold alias or option text of any
+  # dmcc primary row. Gold letters, in order: B, D, A, C, B.
+  prompt:
+    exemplar_template: "Q: {question}\n{option_lines}\nA: {letter}\n\n"
+    target_template: "Q: {question}\n{option_lines}\nA:"
+    option_line_template: "{letter}. {text}"
+    exemplars:
+      - question: What is the largest planet in our solar system?
+        options: [Saturn, Jupiter, Neptune, Uranus]
+        gold: Jupiter
+      - question: How many sides does a hexagon have?
+        options: [Five, Seven, Eight, Six]
+        gold: Six
+      - question: What is the chemical symbol for gold?
+        options: [Au, Ag, Fe, Pb]
+        gold: Au
+      - question: In what year did the Second World War end?
+        options: ["1918", "1939", "1945", "1950"]
+        gold: "1945"
+      - question: What is the tallest mountain on Earth?
+        options: [Kangchenjunga, Mount Everest, Mont Blanc, Lhotse]
+        gold: Mount Everest
+  # Pre-registered exclusion: a primary row is excluded from every
+  # recognition-defined group iff any normalized exemplar option text equals a
+  # normalized gold alias (possible_answers + obj) or a normalized option text
+  # of that row. Pre-sign count on the dmcc primary rows: 0 (gates.yaml pins it).
+  exclude_exemplar_option_collisions: true
+  runtime:
+    # The image dmcc pinned for Stage 0 (transformers 5.17.0, torch 2.9.1+cu128).
+    image_tag: mechinterp-runner:dmcc-tf5.17.0
+    docker_cli: [docker, --context, default]
+    docker: [docker, --context, default, run, --rm, --gpus, all]
+    hf_cache_mount: "$HOME/.cache/huggingface:/root/.cache/huggingface"
+    workdir_in_container: /workspace
+    pythonpath: experiments/decision-model-idk-option
+    container_name: dmio-recognize
+  # Non-PopQA items for the pre-sign recognition smoke (format adherence,
+  # single-token letters, repeat identity, throughput). Never scored for a gate.
+  smoke_items:
+    - {question: "How many legs does a spider have?", options: [Ten, Eight, Twelve, Four], gold: Eight}
+    - {question: "What gas do plants take in from the air for photosynthesis?", options: [Oxygen, Nitrogen, Carbon dioxide, Helium], gold: Carbon dioxide}
+    - {question: "How many days are in a leap year?", options: ["365", "364", "360", "366"], gold: "366"}
+    - {question: "Which ocean is the largest?", options: [Pacific, Atlantic, Indian, Arctic], gold: Pacific}
+    - {question: "How many minutes are in an hour?", options: ["100", "60", "30", "45"], gold: "60"}
+    - {question: "What is the square root of 81?", options: ["8", "7", "18", "9"], gold: "9"}
+    - {question: "What is the freezing point of water in degrees Fahrenheit?", options: ["0", "32", "100", "212"], gold: "32"}
+    - {question: "Which metal is liquid at room temperature?", options: [Iron, Copper, Mercury, Tin], gold: Mercury}
+
+# ---------------------------------------------------------------------------
+# The intervention: an explicit "I don't know" option, analysis time only.
+# No training, no prompt change beyond the added option line.
+# ---------------------------------------------------------------------------
+idk_option:
+  text: "I don't know"          # exact option name; ASCII apostrophe U+0027
+  description: ""               # empty: the engine renders "<marker>. I don't know"
+  # Position control (PI decision 2026-10-05: ALL FIVE POSITIONS). Every
+  # question is run 5 times, once with the IDK option at each canonical
+  # position 0..4 (canonical order = rendered order at eval). The 4 original
+  # options keep their dmcc relative order; the gold label index shifts by
+  # one when the IDK position is at or before it. One engine run per
+  # position per model, each over all 12,067 rows, so every run keeps dmcc's
+  # exact FIT/CAL/TEST split. Unit of analysis = the question: its IDK rate
+  # is the mean of its 5 pick-IDK indicators (gates.yaml).
+  positions: [0, 1, 2, 3, 4]
+
+# ---------------------------------------------------------------------------
+# Engine (synaptic-tuner) and decision models: unchanged from dmcc.
+# ---------------------------------------------------------------------------
+engine:
+  submodule: synaptic-tuner
+  # Must provide the generic `export.cal_rows` option (cal_rows.jsonl, same
+  # per-row schema as test_rows.jsonl plus split "cal"/"test"); H3 fits its
+  # cutoff on those CAL rows. `collect` refuses an engine output without it.
+  # e51a802b adds export.cal_rows / export.fit_rows on top of 29f7af0c (dmcc's
+  # pin); engine --dry-run of this cell's configs accepted it 2026-10-05.
+  commit: e51a802b1229cc399a80163612638523ddeddbb6
+  cli: Trainers/decision/analyze_confidence.py
+  launcher: [py.exe, "-3.11", tuner.py, local-run, --job-config]
+  staging_root: scratch/eh_staging
+  image: unsloth/unsloth@sha256:0b8efd89caf77bc4150f6464416d7bc6a5e00e27a4446615ecf99ef20f553397
+  test_rows_file: test_rows.jsonl
+  cal_rows_file: cal_rows.jsonl     # written by export.cal_rows
+
+models:
+  pointer:
+    role: primary
+    tuner_run: decision-qwen35-2b-pointer
+    source_checkpoint: F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-pointer/20261004_122756/final_model
+    tree_sha256: e0cc616de238cfad85a8627aaa47583dba7689ece63c9bedc4c63a6e9a4acbfc
+    dmcc_test_rows: dmcc_test_rows_pointer
+  letter_logits:
+    role: secondary_exploratory
+    tuner_run: decision-qwen35-2b-letter-logits
+    source_checkpoint: F:/Code/Toolset-Training/.claude/worktrees/jev-models-tuner-training-b55d92/toolset-training-artifacts/runs/local_docker/decision/decision-qwen35-2b-letter-logits/20261004_152616/final_model
+    tree_sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96
+    dmcc_test_rows: dmcc_test_rows_letter_logits
+
+# Twelve read-only engine runs per cell: per model, 5 IDK runs (one per IDK
+# position) + 1 no-IDK run. The no-IDK runs recompute dmcc's analysis on the
+# identical rows under this cell's engine pin (CAL per-row records for H3).
+# The IDK runs of one model share one pinned template (analysis config +
+# recipe, written for position 0): `stage-engine` materializes position k by
+# replacing the template run_id with run_id_template.format(position=k), and
+# records the sha256 of every materialized file in the run record. Run keys:
+# idk_p<k>_<model> and noidk_<model>.
+idk_runs:
+  pointer:
+    run_id_template: dmio-idk-p{position}-pointer
+    template_run_id: dmio-idk-p0-pointer
+    analysis_config: experiments/decision-model-idk-option/analysis_idk_pointer.yaml
+    recipe: experiments/decision-model-idk-option/recipe_idk_pointer.yaml
+  letter_logits:
+    run_id_template: dmio-idk-p{position}-letter-logits
+    template_run_id: dmio-idk-p0-letter-logits
+    analysis_config: experiments/decision-model-idk-option/analysis_idk_letter_logits.yaml
+    recipe: experiments/decision-model-idk-option/recipe_idk_letter_logits.yaml
+noidk_runs:
+  pointer:
+    run_id: dmio-noidk-pointer
+    analysis_config: experiments/decision-model-idk-option/analysis_noidk_pointer.yaml
+    recipe: experiments/decision-model-idk-option/recipe_noidk_pointer.yaml
+  letter_logits:
+    run_id: dmio-noidk-letter-logits
+    analysis_config: experiments/decision-model-idk-option/analysis_noidk_letter_logits.yaml
+    recipe: experiments/decision-model-idk-option/recipe_noidk_letter_logits.yaml
+staged_rows_name: {idk: decision_rows_idk.jsonl, noidk: decision_rows_primary.jsonl}
+
+scoring:
+  gates: experiments/decision-model-idk-option/gates.yaml
+  bootstrap_reps: 2000
+  bootstrap_seed: 0
+  ci_level: 0.95
+
+paths:
+  analysis_root: experiments/decision-model-idk-option/analysis            # gitignored
+  committed_root: experiments/decision-model-idk-option/analysis-committed # aggregates only
+  run_records: experiments/decision-model-idk-option/analysis-committed/run_records
