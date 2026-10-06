@@ -2,7 +2,7 @@ slug: decision-model-idk-option
 title: 'Decision-model IDK option: with no further training, do decision models pick
   an explicit I don''t know when the base torso truly does not know?'
 type: eval
-status: draft
+status: signed
 registered: true
 created_at: '2026-10-05T23:06:58Z'
 tier: 2
@@ -21,12 +21,12 @@ prediction: 'On dmcc TEST, with the recognition instrument valid (known-row posi
   over-abstention rate, IDK recall minus threshold recall on unknown-true questions
   has a paired question-level bootstrap CI above 0; H4 (descriptive) question-level
   IDK rate and answer accuracy on known-recognized reported without a gate.'
-falsifier: 'The selective-IDK-use line is falsified if H1 FAILS (cluster-bootstrap
+falsifier: The selective-IDK-use line is falsified if H1 FAILS (cluster-bootstrap
   CI upper bound of the mean question IDK rate on unknown-true < 0.50) or H2 FAILS
   (CI lower bound of the mean question IDK rate on known > 0.10); the IDK-beats-threshold
   line is falsified if H3, adjudicable with matched operating points, is THRESHOLD_BETTER
-  (paired CI upper bound < 0). A CI that contains its threshold (for H3, contains 0)
-  is INCONCLUSIVE.'
+  (paired CI upper bound < 0). A CI that contains its threshold (for H3, contains
+  0) is INCONCLUSIVE.
 text_capture: not-applicable
 checkpoint:
   repo: Qwen/Qwen3.5-2B-Base
@@ -51,36 +51,46 @@ instrument:
   - recipe_noidk_letter_logits.yaml
   modules:
   - idk_harness.py
-  pins: {}
+  pins:
+    cell.yaml: 52def6c35302cdb79f92f51465610088abc45a1865d5141b877dbdbadebb1f28
+    gates.yaml: 544df872367d2765f5b1e36333596b1d926f16a538bbd0d7bfacfb094622e4ff
+    analysis_idk_pointer.yaml: 7624cd8fb28c7009d716f7923ce4256aa95d46eab0905b4061caa5374b65dc19
+    recipe_idk_pointer.yaml: 8fcca5d8c27c4b1c7cf9b537cdc995d7ab3d35ee004d3df520c0edd298f1acdf
+    analysis_noidk_pointer.yaml: bdfdbd5cede468b53b4e1e596aac1e76ac6527b1b755c389af4467f2b7d44ec9
+    recipe_noidk_pointer.yaml: 6449794697eb28467ecb326f3cb46561a7a81c04cc5499f103e1b4b30a2af302
+    analysis_idk_letter_logits.yaml: 141de9757d68368e2251301b6497e45b3d07f75954174fa766f1943d963f1f9f
+    recipe_idk_letter_logits.yaml: 6a44baec29b52a2930d5b7c2b8b793f9b69104c99d7fa5c4212d2eb42f4834fa
+    analysis_noidk_letter_logits.yaml: abe3df036e979a6ea2664b46e3f196099e7f5a2ff0049d6855ee9c46780a5d12
+    recipe_noidk_letter_logits.yaml: d0cbee98964e60bddeb9c06c98a1a73519e92ace754f382010a4707aaff86a77
+    idk_harness.py: 4e442da0a1233ba76b4c32dde0c1327b9867af87dfec91a06bb32cb71329df14
   persistence:
     idk_harness.py:
       persistence: incremental
       checkpoint_path: experiments/decision-model-idk-option/analysis/recognition/recognition_log.jsonl
       note: recognize appends and flushes one JSON line per (qid, ordering) and skips
         keys already present on restart; each of the 12 engine analyze runs (5 IDK
-        positions + 1 no-IDK, per model) is one read-only tuner
-        local-run invocation, re-runnable from its staged inputs; import-dmcc, build-recognition,
-        recognition-labels, build-idk-rows, stage-engine, collect and score are short
-        CPU passes with atomic writes. Kill-resume drill of recognize is a pre-sign
-        checklist item.
+        positions + 1 no-IDK, per model) is one read-only tuner local-run invocation,
+        re-runnable from its staged inputs; import-dmcc, build-recognition, recognition-labels,
+        build-idk-rows, stage-engine, collect and score are short CPU passes with
+        atomic writes. Kill-resume drill of recognize is a pre-sign checklist item.
   engine:
     name: hf-transformers
     version: 5.17.0
-  engine_note: No generation anywhere in this cell. The recognition stage is one
-    forward pass per prompt (next-token letter logits) under HF transformers 5.17.0
-    in the pinned runner image, batch size 1. The decision-model stages are option-logit
+  engine_note: No generation anywhere in this cell. The recognition stage is one forward
+    pass per prompt (next-token letter logits) under HF transformers 5.17.0 in the
+    pinned runner image, batch size 1. The decision-model stages are option-logit
     forward passes inside the engine's analyze_confidence.py (unsloth image). Letter
     logits are projected in fp32 from the bf16 model's LM-head input (PI 2026-10-06).
   engine_exception:
     kind: parity-locked
-    reason: 'PI decision 2026-10-06 (pre-sign, before any outcome). No generation-bearing
+    reason: PI decision 2026-10-06 (pre-sign, before any outcome). No generation-bearing
       step. Recognition is a scoring-only forward pass (next-token option-letter logits,
-      batch 1) on the pinned HF transformers 5.17.0 stack in dmcc''s pinned runner image
-      mechinterp-runner:dmcc-tf5.17.0 (sha256:b4166dbd...), the same stack and image as
-      dmcc''s Stage 0 forward passes. The decision-model passes are the tuner''s decision
-      engine (Trainers/decision/analyze_confidence.py, unsloth digest 0b8efd89...) that
-      produced dmcc''s registered outputs, re-run on the identical rows; the no-IDK arm
-      reproduces dmcc''s analysis under it.'
+      batch 1) on the pinned HF transformers 5.17.0 stack in dmcc's pinned runner
+      image mechinterp-runner:dmcc-tf5.17.0 (sha256:b4166dbd...), the same stack and
+      image as dmcc's Stage 0 forward passes. The decision-model passes are the tuner's
+      decision engine (Trainers/decision/analyze_confidence.py, unsloth digest 0b8efd89...)
+      that produced dmcc's registered outputs, re-run on the identical rows; the no-IDK
+      arm reproduces dmcc's analysis under it.
   runtime_image_digest: sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c
   runtime_image_digest_note: Recognition runtime. Local Image ID of mechinterp-runner:dmcc-tf5.17.0,
     built 2026-10-04 for dmcc Stage 0 from synaptic-tuner@29f7af0c docker/mechinterp-runner
@@ -112,8 +122,8 @@ inputs:
 - path: experiments/decision-model-idk-option/analysis/dmcc_inputs/label_and_split_counts.json
   availability: local
   source: decision-model-calibrated-choice analysis-committed/label_and_split_counts.json
-    (committed in dmcc fe0d0ee54; digest = the committed blob, unchanged from the drafting-time
-    working-tree pin), copied by import-dmcc
+    (committed in dmcc fe0d0ee54; digest = the committed blob, unchanged from the
+    drafting-time working-tree pin), copied by import-dmcc
   sha256: f347db21a676e3d5ebc9c1db75505c45943978f70f4309ef7dad902b7eeaf562
 - path: experiments/decision-model-idk-option/analysis/dmcc_inputs/dmcc_test_rows_pointer.jsonl
   availability: local
@@ -134,7 +144,8 @@ inputs:
 - path: synaptic-tuner/scratch/eh_staging/dmio-idk-p0-letter-logits/final_model
   availability: local
   source: tuner decision run decision-qwen35-2b-letter-logits/20261004_152616/final_model
-    (secondary arm), staged by idk_harness.py stage-engine (same bytes for dmio-idk-p1..p4-letter-logits and dmio-noidk-letter-logits)
+    (secondary arm), staged by idk_harness.py stage-engine (same bytes for dmio-idk-p1..p4-letter-logits
+    and dmio-noidk-letter-logits)
   sha256: 3aef07e292b2892d7e2812d2935ed054c01d3422dc330e52c486805e13f9dd96
 verdict: ''
 kg: []

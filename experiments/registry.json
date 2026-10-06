@@ -1532,7 +1532,19 @@
             "persistence": "incremental"
           }
         },
-        "pins": {},
+        "pins": {
+          "analysis_idk_letter_logits.yaml": "141de9757d68368e2251301b6497e45b3d07f75954174fa766f1943d963f1f9f",
+          "analysis_idk_pointer.yaml": "7624cd8fb28c7009d716f7923ce4256aa95d46eab0905b4061caa5374b65dc19",
+          "analysis_noidk_letter_logits.yaml": "abe3df036e979a6ea2664b46e3f196099e7f5a2ff0049d6855ee9c46780a5d12",
+          "analysis_noidk_pointer.yaml": "bdfdbd5cede468b53b4e1e596aac1e76ac6527b1b755c389af4467f2b7d44ec9",
+          "cell.yaml": "52def6c35302cdb79f92f51465610088abc45a1865d5141b877dbdbadebb1f28",
+          "gates.yaml": "544df872367d2765f5b1e36333596b1d926f16a538bbd0d7bfacfb094622e4ff",
+          "idk_harness.py": "4e442da0a1233ba76b4c32dde0c1327b9867af87dfec91a06bb32cb71329df14",
+          "recipe_idk_letter_logits.yaml": "6a44baec29b52a2930d5b7c2b8b793f9b69104c99d7fa5c4212d2eb42f4834fa",
+          "recipe_idk_pointer.yaml": "8fcca5d8c27c4b1c7cf9b537cdc995d7ab3d35ee004d3df520c0edd298f1acdf",
+          "recipe_noidk_letter_logits.yaml": "d0cbee98964e60bddeb9c06c98a1a73519e92ace754f382010a4707aaff86a77",
+          "recipe_noidk_pointer.yaml": "6449794697eb28467ecb326f3cb46561a7a81c04cc5499f103e1b4b30a2af302"
+        },
         "runtime_image_digest": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
         "runtime_image_digest_note": "Recognition runtime. Local Image ID of mechinterp-runner:dmcc-tf5.17.0, built 2026-10-04 for dmcc Stage 0 from synaptic-tuner@29f7af0c docker/mechinterp-runner with TRANSFORMERS_VERSION=5.17.0 (Docker Desktop daemon, context default). Engine runs use the unsloth digest under runtimes.engine.",
         "runtimes": {
@@ -1546,7 +1558,7 @@
       "question": "Given an explicit \"I don't know\" option added at analysis time, and with no further training, do the existing PopQA decision models (Qwen3.5-2B-Base torso, pointer PRIMARY, letter-logit SECONDARY) pick it on questions the base torso truly does not know (dmcc unknown and unrecognized in 0 of 4 multiple-choice orderings) and not on questions it knows (dmcc known), and does the option beat a calibrated-confidence threshold at a matched over-abstention rate?",
       "registered": true,
       "slug": "decision-model-idk-option",
-      "status": "draft",
+      "status": "signed",
       "text_capture": "not-applicable",
       "tier": 2,
       "title": "Decision-model IDK option: with no further training, do decision models pick an explicit I don't know when the base torso truly does not know?",
