@@ -6,6 +6,89 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-10-06 (latest): Outcome written for PI resolve
+
+- An agent wrote AMENDMENT.md `## Outcome` from the committed gate
+  summaries, `recognition_freeze.json`, the 13 run records, the operator
+  logs under `analysis/run_logs/` and the operator's report. It also filled
+  the frontmatter `outcome:`, corrected the stale "draft (not signed)"
+  header, and added a dated resolution line to the Predictions scoreboard
+  section.
+- Numbers were transcribed, not recomputed. The operator's reported values
+  were checked against the two gate summaries and the freeze marker. The
+  residual tie was checked against the gitignored recognition log and
+  labels (FIT row `popqa-2727560`, ordering 2, gold tied with B, c = 2), and
+  the attempt-1 CUDA error against its kept log.
+- One wording correction to the operator's summary: pointer answered
+  accuracy on unknown-true is 0.2168 [0.1989, 0.2346], slightly BELOW the
+  0.25 chance level, not merely near it. The Outcome says so and ties it to
+  the lure case the design anticipated.
+- The prediction mappings were re-applied from the recording notes. They
+  agree with the operator's reading: PI 1 contradicted, 2 contradicted, 3
+  supported, 4 contradicted; orchestrator 1 contradicted, 2 supported, 3
+  supported, 4 supported.
+- No pinned file changed. AMENDMENT.md and NOTEBOOK.md are not pinned.
+  `experiment.yaml` is untouched: its `status`, `verdict` and `kg` fields
+  are set by `bin/exp resolve` and KG ingest.
+- Left for the PI:
+  - the terminal status and the verdict. Proposed: `falsified`, because a
+    registered falsifier condition is met on the primary arm (H1 FAIL; H3
+    THRESHOLD_BETTER with matched operating points), the same rule dmcc's
+    resolve applied to its H-A FAIL;
+  - the scoreboard scores (frontmatter `scoreboard:` and
+    `docs/prediction-scoreboard.md`);
+  - `outcome.verified` in the 13 run records;
+  - KG ingest.
+- The interpretation and follow-up subsections of the Outcome are labelled
+  post-hoc and change no verdict.
+
+### 2026-10-06 (run): signed run executed end to end
+
+Tier: execution of the signed protocol (HEAD `4e327158`, engine
+`e51a802b`). Every stage went through `idk_harness.py` and was logged to
+gitignored `analysis/run_logs/`; `status.log` holds UTC BEGIN/END lines and
+return codes. This entry was transcribed by the Outcome-writing agent from
+those logs, the run records and the operator's report; the operator wrote
+no entry of its own. Before every stage, all 11 signed pins were re-checked
+and matched, and the `synaptic-tuner` HEAD equalled the pin.
+
+- **CPU preparation, re-run under the signed commit.** import-dmcc (6 of 6
+  artifacts verified), build-recognition (48,268 prompts over 12,067 rows,
+  items sha256 `761060dc...`, the pre-sign value) and, after the freeze,
+  build-idk-rows (12,067 rows x 5 positions). All rc 0.
+- **Recognition.** recognize 10:26:20Z-11:11:18Z (45.0 min), rc 0.
+  - The first launch from PowerShell had bad quoting and ran nothing. The
+    stray `wsl` process was killed and the stage relaunched.
+  - recognition-labels rc 0; freeze marker 11:11:37Z. R0 valid: V1 0.9227
+    [0.9070, 0.9360], V2 1.0000.
+  - TEST groups: known 514, unknown-true 1,860, known-recognized 1,283,
+    recognition-ambiguous 1,171.
+  - 1 residual fp32 tie (a FIT row; c = 2 under the registered rule); the
+    bf16 head would have tied 3,284 prompts.
+- **Engine runs** (Windows `py -3.11`, `run_logs/engine_chain.ps1`;
+  stage-engine -> analyze -> collect per key). Pointer 11:12Z-13:37Z, then
+  letter-logit 13:37Z-16:25Z. Each analyze took 16.9 to 34.6 min against
+  the 17 min estimate. All rc 0 except:
+  - `analyze idk_p4_pointer` attempt 1 (12:34:39Z-12:39:20Z, rc 1). A
+    transient `CUDA error: unknown error` was raised in the triton autotuner
+    benchmark of the fla gated-delta-rule kernel, and no engine output was
+    written. The chain stopped fail-closed.
+  - Tier-3 recovery: `run_logs/engine_resume.ps1` re-ran analyze and collect
+    on the staged inputs (12:40:16Z-13:07:38Z, rc 0) and then continued the
+    chain. Attempt-1 logs are kept as `*.attempt1.*`.
+- **Scoring.** score pointer 13:37:41Z and score letter-logits 16:26:01Z,
+  both rc 0. G0 integrity and floors hold on both arms.
+  - Pointer: H1 FAIL, H2 PASS, H3 THRESHOLD_BETTER, H4 descriptive; matrix
+    cell "IDK under-used". No position-bias flag.
+  - Letter-logit: H1 FAIL, H2 PASS, H3 NOT-ADJUDICABLE (operating points
+    not matched), H4 descriptive; same matrix cell. Position-bias caveat on
+    the pooled and unknown-true rows.
+  - Both no-IDK runs reproduce dmcc's TEST outputs exactly.
+- **Other events.** An API 529 error interrupted the operator agent, with
+  no effect on the detached chain. No chmod was needed.
+- The results were committed at `be09c4e4` on the PI's instruction.
+  `outcome.verified` stays false in every run record for the PI.
+
 ### 2026-10-06 (later): PI decisions applied (engine exception; fp32 letter logits); pre-sign closed out
 
 The PI decided both open items on 2026-10-06, before any outcome and before

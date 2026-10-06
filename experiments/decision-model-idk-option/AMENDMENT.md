@@ -41,7 +41,16 @@ predictions:
       (usually right) answer over IDK. 4. IDK option vs confidence threshold:
       "IDK option better". At the same over-IDK rate, the explicit option
       catches more true unknowns.
-outcome: pending
+outcome: >-
+  Run complete 2026-10-06 (see "Outcome"). Recognition instrument valid (V1
+  0.9227 [0.9070, 0.9360], V2 1.0000). Primary pointer arm: H1 FAIL (IDK
+  rate on unknown-true 0.0185 [0.0138, 0.0238] against 0.50), H2 PASS
+  (over-IDK on known 0.0066 [0.0012, 0.0140]), H3 THRESHOLD_BETTER (matched;
+  delta -0.1665 [-0.1848, -0.1480]), H4 descriptive (known-recognized IDK
+  0.0235, answered accuracy 0.6391); matrix cell "IDK under-used". Secondary
+  letter-logit arm: H1 FAIL (0.3254), H2 PASS (0.0230), H3 NOT-ADJUDICABLE
+  (operating points not matched), position-bias caveat flagged. Terminal
+  status and scores pending PI resolve.
 scoreboard:
   user: pending
   orchestrator: pending
@@ -49,8 +58,12 @@ scoreboard:
 
 # Decision-model IDK option: with no further training, do decision models pick an explicit I don't know when the base torso truly does not know?
 
-Status: draft (not signed; do not launch as confirmatory evidence). Nothing
-in this cell has been run on a GPU. Drafted 2026-10-05 for the PI.
+Status: signed 2026-10-06 (commit `4e327158`); signed run executed
+2026-10-06. The Outcome section records the result; the terminal status and
+verdict live in `experiment.yaml`. This header read "draft (not signed; do
+not launch as confirmatory evidence). Nothing in this cell has been run on a
+GPU." until 2026-10-06; corrected to match the machine state (the dmcc
+header-correction pattern). First drafted 2026-10-05 for the PI.
 
 Keep this document the prose home for the experiment. The machine state lives
 in `experiment.yaml` and is never duplicated here.
@@ -722,11 +735,312 @@ Recording notes (orchestrator prediction):
 - Metric note (2026-10-05): mapped to question-level rates as above; the
   prediction itself is unchanged.
 
-Resolution: each call is compared with the outcome in Outcome. WIN / LOSS /
-TIE scores are the PI's to ratify and are recorded in
-`docs/prediction-scoreboard.md`.
+Resolution (2026-10-06): each call is compared with the outcome in Outcome /
+"Predictions vs outcome". The WIN / LOSS / TIE scores are the PI's to ratify,
+are recorded in `docs/prediction-scoreboard.md`, and are not assigned in this
+document.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Run executed 2026-10-06 under the signed instrument. This section was
+transcribed on 2026-10-06 from the committed artifacts for PI review. The
+terminal status and the one-sentence verdict are stamped by the PI with
+`bin/exp resolve` and live in `experiment.yaml`. Exploratory tier-2 evidence,
+no training, single checkpoint per arm, never pooled with the headline
+matrix. Confirmatory claims rest on the primary pointer arm alone.
+
+Proposed one-sentence summary (for the manifest `verdict:`; PI to confirm):
+Selective-IDK-use line falsified as registered: on TEST unknown-true
+questions (base model neither recalls nor recognizes the answer, n 1,860) the
+pointer arm picks the added IDK option at a mean question rate of 0.0185
+[0.0138, 0.0238] against the 0.50 threshold (H1 FAIL), while over-IDK on
+known questions is 0.0066 [0.0012, 0.0140] (H2 PASS); IDK-beats-threshold
+line also falsified: at matched over-abstention (TEST check diff 0.0031
+[-0.0074, 0.0140]) a CAL-fit calibrated-confidence threshold (tau 0.3354)
+abstains on 0.1849 of unknown-true questions against 0.0185 for the IDK
+option, delta -0.1665 [-0.1848, -0.1480] (H3 THRESHOLD_BETTER);
+known-recognized IDK rate 0.0235 with answered accuracy 0.6391 (H4,
+descriptive); matrix cell: IDK under-used; recognition instrument valid (V1
+0.9227 [0.9070, 0.9360], V2 1.0000); secondary letter-logit arm H1 FAIL
+(0.3254), H2 PASS (0.0230), H3 NOT-ADJUDICABLE (operating points not
+matched), with a flagged IDK position effect; exploratory, no training,
+single checkpoint per arm.
+
+### Run provenance
+
+- Signed commit `4e327158`, engine `e51a802b`. Before every stage, all 11
+  signed sha256 pins were re-checked and matched, and the `synaptic-tuner`
+  HEAD equalled the engine pin (`analysis/run_logs/status.log`, gitignored).
+- Records: `analysis-committed/recognition_freeze.json`;
+  `analysis-committed/run_records/dmio-recognize.json` and the 12 engine
+  records `dmio-{idk-p0..p4,noidk}-{pointer,letter-logits}.json`. Every
+  record has `research_repo_commit` `4e327158`; the engine records have
+  `submodule_commit` `e51a802b`, the pinned checkpoint tree digests
+  (`e0cc616d...`, `3aef07e2...`) and the recognition freeze digest.
+  `outcome.verified` is `false` in all 13 and is left for the PI.
+- Timeline (UTC, 2026-10-06):
+  - import-dmcc and build-recognition 10:15-10:16, each rc 0;
+  - recognize 10:26:20-11:11:18 (45.0 min), rc 0;
+  - recognition-labels and freeze 11:11:37; build-idk-rows 11:12, rc 0;
+  - pointer engine runs 11:12-13:37; pointer scored 13:37:41;
+  - letter-logit engine runs 13:37-16:25; letter-logit scored 16:26:01.
+
+  Every stage exited rc 0 apart from the one failed attempt under
+  Anomalies. `score` is CPU-only; the pointer score ran while the first
+  letter-logit engine run held the GPU.
+- Number sources: `analysis-committed/dmio-pointer_gate_summary.json`
+  (primary), `analysis-committed/dmio-letter_logits_gate_summary.json`
+  (secondary) and `analysis-committed/recognition_freeze.json`. Values are
+  transcribed, not recomputed, and rounded to 4 decimal places; the files
+  hold full precision.
+
+### Recognition, populations and G0
+
+- R0 (instrument validity): **valid.** V1 positive control: 1,206 of 1,307
+  dmcc-known rows have c >= 3, rate 0.9227, Wilson [0.9070, 0.9360] against
+  the 0.80 floor. V2 format adherence: 1.0000 of 48,268 prompts have a
+  letter as the full-vocabulary top-1 token, against 0.95. H1, H3 and H4
+  are adjudicable on recognition.
+- c distribution (all splits): known c = 0/1/2/3/4: 27 / 30 / 44 / 59 /
+  1,147; unknown: 4,691 / 1,757 / 1,125 / 1,114 / 2,073. Letter pick shares
+  A 0.3224, B 0.2320, C 0.2572, D 0.1884. Chance reference P(c = 0) 0.3164,
+  P(c >= 3) 0.0508.
+- Ties: letter logits scored in fp32 as registered; 1 residual exact tie
+  over 48,268 prompts (Anomalies, item 4). The bf16 head would have tied
+  3,284 prompts (descriptive).
+- Groups by split (known / unknown-true / known-recognized /
+  recognition-ambiguous): FIT 525 / 1,883 / 1,286 / 1,135; CAL 268 / 948 /
+  618 / 576; TEST 514 / 1,860 / 1,283 / 1,171.
+- Exemplar-option collisions: 0 (expected 0).
+- G0 integrity: PASS on both arms (split identity for TEST and CAL per-row
+  records, engine commit, checkpoint digests, IDK row shape and all five
+  positions, recognition frozen before analysis). G0 floors: met (TEST known
+  514 against 150, unknown-true 1,860 against 150, CAL known 268 against
+  100). Every gate is adjudicable on its preconditions.
+
+### Gate results (TEST; question-level; cluster-bootstrap 95% CIs)
+
+| Gate | Pointer (PRIMARY) | Letter-logit (SECONDARY, exploratory) |
+|---|---|---|
+| H1: mean question IDK rate, unknown-true (n 1,860), >= 0.50 | 0.0185 [0.0138, 0.0238]: **FAIL** | 0.3254 [0.3092, 0.3423]: **FAIL** |
+| H2: mean question IDK rate, known (n 514), <= 0.10 | 0.0066 [0.0012, 0.0140]: **PASS** | 0.0230 [0.0117, 0.0354]: **PASS** |
+| H3 matched check: baseline over-abstention - IDK over-IDK, known | 0.0031 [-0.0074, 0.0140]: matched | -0.0191 [-0.0319, -0.0074]: **not matched** |
+| H3: IDK recall - threshold recall, unknown-true | -0.1665 [-0.1848, -0.1480]: **THRESHOLD_BETTER** | **NOT-ADJUDICABLE** (would-be reading 0.0152 [-0.0080, 0.0388], NO_DIFFERENCE_DETECTED) |
+| H4 (descriptive): known-recognized (n 1,283) IDK rate; answered accuracy | 0.0235 [0.0167, 0.0307]; 0.6391 [0.6136, 0.6643] | 0.2256 [0.2072, 0.2437]; 0.7510 [0.7282, 0.7722] |
+
+- H1 and H2 secondaries, share of questions with IDK in >= 3 of 5
+  positions (Wilson): pointer unknown-true 26 / 1,860 = 0.0140
+  [0.0096, 0.0204], known 3 / 514 = 0.0058 [0.0020, 0.0170]; letter-logit
+  unknown-true 577 / 1,860 = 0.3102 [0.2896, 0.3316], known 11 / 514 =
+  0.0214 [0.0120, 0.0379].
+- H3 detail, pointer: the IDK arm's CAL question-level over-IDK r_cal is
+  0.0022 over 268 CAL known questions, so k = 1 and tau = 0.3354. On TEST,
+  over-IDK is 0.0066 and the baseline's over-abstention 0.0097; recall on
+  unknown-true is 0.0185 for the IDK option and 0.1849 for the threshold.
+- H3 detail, letter-logit: r_cal 0.0090, k = 2, tau 0.3366. On TEST,
+  over-IDK 0.0230 against baseline over-abstention 0.0039; the paired CI
+  excludes 0, so the operating points are not matched and H3 is
+  NOT-ADJUDICABLE by rule. Recall 0.3254 (IDK) and 0.3102 (threshold) are
+  reported descriptively only.
+- H4 also on recognition-ambiguous (reported, no gate): pointer IDK 0.0253
+  [0.0181, 0.0333], answered accuracy 0.3659 [0.3390, 0.3934]; letter-logit
+  0.3170 [0.2979, 0.3390], 0.4094 [0.3832, 0.4358].
+
+### Interpretation matrix
+
+Both arms: H1 FAIL and H2 PASS, so the registered cell is **"IDK under-used:
+the model keeps answering on true unknowns"**. H3 and H4 are read beside
+the matrix, not in it. On the primary arm H3 adds that a confidence
+threshold beats the option at the matched operating point; on the secondary
+arm H3 is NOT-ADJUDICABLE and adds nothing.
+
+### Falsifier adjudication (registered text applied; PI to confirm)
+
+- Selective-IDK-use line ("falsified if H1 FAILS ... or H2 FAILS, on the
+  primary pointer arm"): the H1 condition is met. The H1 CI upper bound is
+  0.0238, below 0.50. The H2 condition is not met (CI lower bound 0.0012,
+  not above 0.10). The line is falsified on its recall leg, not its cost
+  leg.
+- IDK-beats-threshold line ("falsified if H3, adjudicable with matched
+  operating points, is THRESHOLD_BETTER"): met on the primary arm. The
+  operating points are matched (check CI [-0.0074, 0.0140] contains 0) and
+  the paired CI upper bound is -0.1480, below 0. The line is falsified.
+- The secondary letter-logit arm carries no confirmatory claim. Its H1 FAIL
+  would meet the same condition; its H3 is NOT-ADJUDICABLE.
+- The terminal status (`falsified` or `resolved`) is the PI's call at
+  `bin/exp resolve`.
+
+### Caveats and sensitivities (registered descriptive; no verdict changes)
+
+- **Position bias, pointer: no flag.** Ranges over the five IDK positions:
+  pooled 0.0259, known 0.0058, unknown-true 0.0263, known-recognized 0.0281,
+  recognition-ambiguous 0.0316, all under the 0.10 flag. The pooled rate is
+  highest with IDK in position 1 (0.0375; positions 2 to 5: 0.0116, 0.0166,
+  0.0199, 0.0155).
+- **Position bias, letter-logit: FLAGGED; caveat beside H1 and H2 on the
+  pooled and unknown-true rows.**
+  - Pooled pick-IDK by position 1 to 5: 0.1162, 0.2597, 0.4588, 0.2583,
+    0.2301 (range 0.3426).
+  - Unknown-true: 0.1290, 0.3156, 0.5704, 0.3226, 0.2892 (range 0.4414).
+    IDK peaks in position 3, the middle option (`C.`), at 0.5704.
+  - Known: range 0.0136, no flag. Known-recognized (0.2720) and
+    recognition-ambiguous (0.4099) are also flagged; they are not caveat
+    groups.
+  - The flag changes no verdict. The five-position design averages the
+    position effect into each question's rate; it does not remove it.
+- **H3 operating point.** tau is fit on CAL from r_cal, and the pointer's
+  r_cal is 1 of 268 CAL known questions. The matched comparison is therefore
+  made at a very low over-abstention rate (about 1%), and tau is held fixed
+  in the bootstrap, so CAL uncertainty is not propagated (stated limitation).
+  The registered descriptive TEST-matched comparison points the same way:
+  pointer tau 0.3180, delta -0.0842 [-0.0995, -0.0702]; letter-logit tau
+  0.4106, delta -0.3660 [-0.3897, -0.3424].
+- **Reproduction of dmcc.** On both arms the no-IDK run reproduces dmcc's
+  TEST outputs exactly: 4,828 shared rows, prediction agreement 1.0, maximum
+  absolute R1 difference 0.0. The baseline is dmcc's analysis under the new
+  engine pin.
+- **Residual tie.** The one fp32 tie is on a FIT row, which no gate scores
+  (Anomalies, item 4).
+
+### Secondary (registered descriptive; no gate)
+
+- **Per group, pointer** (question-level; IDK rate, answered accuracy, mean
+  calibrated IDK mass p_idk):
+  - known: 0.0066, 0.9719, 0.0861 [0.0819, 0.0903];
+  - unknown-true: 0.0185, 0.2168 [0.1989, 0.2346], 0.1732
+    [0.1713, 0.1750];
+  - known-recognized: 0.0235, 0.6391, 0.1680;
+  - recognition-ambiguous: 0.0253, 0.3659, 0.1742;
+  - all dmcc-unknown (n 4,314): 0.0218 [0.0182, 0.0255], 0.3825, 0.1719.
+- **Per group, letter-logit** (same columns): known 0.0230, 0.9791, 0.1406;
+  unknown-true 0.3254, 0.1540 [0.1391, 0.1698], 0.2493; known-recognized
+  0.2256, 0.7510, 0.2461; recognition-ambiguous 0.3170, 0.4094, 0.2472; all
+  dmcc-unknown 0.2934 [0.2828, 0.3033], 0.4030, 0.2478.
+- **Unknown-true 3-way breakdown** (picked IDK / answered right / answered
+  wrong): pointer 0.0185 / 0.2119 / 0.7696; letter-logit 0.3254 / 0.1029 /
+  0.5717.
+- **IDK-distribution calibration** (question mean p_idk, unknown-true vs
+  known): AUROC pointer 0.9298 [0.9121, 0.9472], letter-logit 0.9050
+  [0.8850, 0.9244]. Binary ECE (15 bins) against the unknown-true indicator:
+  0.6377 and 0.5750. The IDK mass ranks unknown-true above known well, but
+  as a probability of being unknown-true it is far too low.
+- **Answer change vs the no-IDK arm** (non-IDK copies whose answer differs):
+  pointer known 14 / 2,553 = 0.0055, unknown-true 431 / 9,128 = 0.0472,
+  known-recognized 0.0318, recognition-ambiguous 0.0336; letter-logit known
+  10 / 2,511 = 0.0040, unknown-true 1,086 / 6,274 = 0.1731,
+  known-recognized 0.1071, recognition-ambiguous 0.1793.
+- **Threshold curve** (TEST, no-IDK arm). Pointer: at tau 0.5164 the
+  baseline abstains on 0.1012 of known and 0.9194 of unknown-true
+  questions; at tau 0.6285, 0.2004 and 0.9823. Letter-logit: at tau 0.5496,
+  0.1012 and 0.9419. The IDK option's operating points are 0.0066 / 0.0185
+  (pointer) and 0.0230 / 0.3254 (letter-logit).
+- **Chance reference.** Pointer answered accuracy on unknown-true, 0.2168,
+  sits slightly below the 4-option chance of 0.25 (the CI upper bound is
+  0.2346). The decision model does not beat chance on the questions the base
+  torso fails to recognize. Below-chance accuracy fits the case the design
+  anticipated: c = 0 also selects rows whose distractor lures the shared
+  torso (Design / Recognition).
+
+### Anomalies (run records, operator logs and operator report)
+
+None of these changed a pinned file, a registered constant, a population or
+a threshold.
+
+1. **Recognition launch quoting.** The first `recognize` launch from
+   PowerShell had bad quoting and ran nothing. The stray `wsl` process was
+   killed and the stage was relaunched; the recorded run starts at
+   10:26:20Z.
+2. **CUDA error, `analyze idk_p4_pointer` attempt 1** (12:34:39-12:39:20Z,
+   rc 1).
+   - A transient `CUDA error: unknown error` was raised inside the triton
+     autotuner's benchmark of the fla `chunk_gated_delta_rule` forward
+     kernel. The engine wrote no output and nothing was collected.
+   - Remedy (tier-3 recovery): `run_logs/engine_resume.ps1` re-ran analyze
+     and collect on the already-staged inputs (stage-engine refuses a
+     non-empty staging directory by design), with the pin check before each
+     stage. Attempt 2 ran 12:40:16-13:07:38Z, rc 0.
+   - The attempt-1 logs are kept as
+     `run_logs/analyze_idk_p4_pointer.{err,out}.attempt1.log` and
+     `run_logs/dmio-idk-p4-pointer.runrecord.attempt1.json`.
+3. **Operator interruption.** An API 529 error interrupted the operator
+   agent. The detached chain was unaffected.
+4. **One residual fp32 tie.** FIT row `popqa-2727560`, ordering 2: gold (C)
+   tied with B. The registered lowest-letter rule picked B, so that row has
+   c = 2 (recognition-ambiguous) where a gold pick would give c = 3. FIT is
+   not scored, so no gate population changes. bf16 scoring would have tied
+   3,284 prompts.
+5. **No chmod needed.** dmcc's root-owned-file issue did not recur.
+6. **Engine run time.** The 12 engine runs took 16.9 to 34.6 min each
+   (launch to finish, run records) against the pre-sign estimate of about
+   17 min. The engine phase took about 5.2 h of wall-clock (11:12-16:25Z,
+   including the failed attempt) against about 3.4 h estimated. No run
+   approached the 2 h tool limit. Recognition took 45.0 min against 45 to
+   50 min.
+7. **Pre-launch re-runs.** import-dmcc, build-recognition and
+   build-idk-rows were re-run under the signed commit. The digests are
+   identical to pre-sign (6 of 6 dmcc inputs verified; recognition items
+   sha256 `761060dc...`).
+
+### Post-hoc descriptive interpretation (not pre-registered; changes no verdict)
+
+- **Pointer: the IDK option is under-used, although its probability tracks
+  unknowns.** Without training on such an option, the pointer model rarely
+  picks "I don't know": its mean question IDK rate is 0.0066 to 0.0253
+  across the four groups. Yet the calibrated mass it puts on the option
+  roughly doubles on unknown-true questions
+  (0.1732 vs 0.0861 on known), and that mass ranks unknown-true above known
+  at AUROC 0.9298. The model registers the option as more plausible where
+  the torso does not know, but almost never enough for it to win the argmax.
+- **Pointer: confidence works better as an abstention signal than the
+  option does.** Using the same model's calibrated confidence as an
+  abstention threshold catches 0.1849 of unknown-true questions at the
+  matched over-IDK point, against 0.0185 for the option. On the descriptive
+  threshold curve it catches 0.9194 at 0.1012 over-abstention on known.
+- **Letter-logit: more IDK use, but position-dependent.** The letter-logit
+  model picks IDK on 0.3254 of unknown-true questions and 0.0230 of known
+  ones. Its IDK use depends strongly on where the option sits, peaking at
+  0.5704 on unknown-true questions when IDK is the third option. Its H3 is
+  not adjudicable, so no comparison with the threshold is drawn.
+- **Scope.** Untrained, read-only, one checkpoint per arm, one dataset.
+  dmcc's no-IDK outputs on these rows were seen before sign (Prior exposure
+  item 1); the no-IDK arm reproduces them exactly, so they add no new
+  information here.
+
+### Follow-up directions (post-hoc; each needs its own amendment)
+
+- **Train with IDK as a gold answer.** For example, gold IDK on rows the
+  base torso neither recalls nor recognizes, with the H1/H2 refusal pair
+  and the position-bias table carried over as gates.
+- **Confidence-threshold abstention as the default.** Treat the calibrated
+  confidence threshold as the decision models' default abstention
+  mechanism, with tau fit on CAL at a pre-stated over-abstention budget,
+  tested against an IDK-trained arm.
+
+### Predictions vs outcome (primary pointer arm; scores for the PI to ratify)
+
+- **User (PI).** Calls, each scored under its recording-note mapping:
+  1. IDK recall "Mostly (>= 50%)" -> H1: **contradicted** (H1 FAIL, CI upper
+     bound 0.0238 < 0.50).
+  2. Over-IDK "Some (5-20%)" -> H2 statistic: **contradicted** (CI
+     [0.0012, 0.0140]; upper bound below 0.05, "none").
+  3. Known-recognized "Mostly answers" -> H4: **supported** (IDK rate CI
+     upper bound 0.0307 < 0.50; answered accuracy CI upper bound 0.6643 is
+     not below 0.50, so "(usually right)" is not contradicted; n 1,283 >= 50;
+     R0 valid).
+  4. "IDK option better" -> H3: **contradicted** (THRESHOLD_BETTER).
+  - Neither matrix cell the PI's calls 1 and 2 pointed to ("selective IDK
+    use", "IDK over-attracts") was realized. The realized cell is "IDK
+    under-used".
+- **Orchestrator.** Calls, each scored under its recording-note mapping:
+  1. IDK recall "Sometimes (10-50%)" -> H1 statistic: **contradicted** (CI
+     upper bound 0.0238 < 0.10, "rarely").
+  2. Over-IDK "Almost never (< 5%)" -> H2 statistic: **supported** (CI upper
+     bound 0.0140 < 0.05).
+  3. Known-recognized "Mostly answers" -> H4: **supported** (CI upper bound
+     0.0307 < 0.50).
+  4. "Threshold better" -> H3: **supported** (THRESHOLD_BETTER).
+- Divergence rule from the recording notes: H1 FAIL below 0.10 contradicts
+  both parties on call 1; on H3, THRESHOLD_BETTER supports the orchestrator.
+- The secondary letter-logit arm is reported, not scored.
+- **Scores and ledger.** WIN / LOSS / TIE scores are not assigned here. The
+  PI ratifies them and records them in `docs/prediction-scoreboard.md`.
