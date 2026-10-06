@@ -1549,12 +1549,12 @@
       "question": "Does a trained decision model (Qwen3.5-2B-Base torso, LoRA + pointer head), which always chooses and reports a temperature-calibrated distribution over options, give confidence on PopQA that tracks its base torso's prior known/unknown label (EH knowledge-probe protocol) without refusing, and does the base model's frozen known-unknown gate direction still read known vs unknown in the decision model's <answer> state?",
       "registered": true,
       "slug": "decision-model-calibrated-choice",
-      "status": "signed",
+      "status": "falsified",
       "text_capture": "enabled",
       "tier": 2,
       "title": "Decision-model calibrated choice: does a never-refusing readout track what the base torso knows?",
       "type": "eval",
-      "verdict": ""
+      "verdict": "Readout-tracks-knowledge line falsified on its H-A leg as registered: on TEST unknowns the pointer-arm calibrated confidence (R1) sits 0.1769 [0.1737, 0.1798] above chance against a 0.10 cap (confident-wrong 0.0007 passes), while H-B passes (0.0603), H-C passes (AUROC 0.9407 [0.9266, 0.9526]), H-D1 passes (frozen base gate 0.9762 [0.9718, 0.9805]) and H-D2 passes (probe minus readout +0.0509 [0.0393, 0.0639]); matrix cell: readout confidence tracks the base known-unknown axis; secondary letter-logit arm shows the same pattern; exploratory, single seed."
     },
     {
       "checkpoint": {
