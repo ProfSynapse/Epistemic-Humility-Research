@@ -93,3 +93,29 @@ conservatively bills two internal decode-wiring probe rows per steer call.
 Fresh qualification will use a new T7 execution directory. Earlier GPU time
 will carry into its shared budget; failed-attempt evidence will not certify the
 new source. Candidate and held-out generation remain unstarted and unsigned.
+
+## 2026-11-03 — user strategy review hold and source ingestion
+
+The user asked to walk through the paper-derived strategy before further runs.
+Further GPU execution is held. Neither candidate nor held-out generation has
+started. The fresh r2 snapshot is staged but has no new run binding or GPU job.
+
+The user prediction is recorded verbatim: "Yes, I expect it to pass". The lead's
+prior prediction remains unchanged. No result is scored against either call.
+
+Source ingestion is now complete on canonical EHR main91b258d4: the author blog,
+released Experiment8 protocol/README and final edit diagnosis are represented by
+library/notes/web-20261102--sparks-weight-space-programming.md and typed method /
+mechanism nodes. Fulltext copies stay ignored. Graph validation: zero errors;
+new nodes have no warning. Retrieval checks rank the source second for a generic
+repair-without-retraining query and the mechanism first for thinking-loop MLP
+queries. This is source verification, not an independent reproduction.
+
+Strategy implication for review: the authors diagnose the failure, localize
+writers using matched contexts, choose and test a targeted edit, then evaluate
+unseen benchmarks. Our fixed amplification sweep is a proposed pilot, not a
+reproduction of that agent-led discovery loop. Its layer window, support size,
+edit sign, scales and single-site restriction are project choices. The mechanism
+link from answerability to selective response behavior needs an explicit audit
+before a final edit family is signed. No numeric gate or candidate rule is
+changed by this notebook entry.

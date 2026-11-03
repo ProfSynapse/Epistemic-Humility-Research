@@ -254,7 +254,7 @@ The runtime controller is a descriptive reference, not an alternate success gate
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Expects a refusal/cost tradeoff to defeat the positive prediction; prior confidence 0.70. |
-| user | Not recorded; no user prediction is inferred. |
+| user | "Yes, I expect it to pass" (2026-11-03; before candidate/held-out generation). |
 
 ## Outcome
 
