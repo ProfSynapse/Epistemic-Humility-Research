@@ -1,7 +1,7 @@
 schema_version: ehr-astra-runtime/v1
 capture:
   engine: HF MechInterp module hooks
-  image_digest: sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc
+  image_digest: sha256:aa9ddcd3307fd939077dbb2af1e3924d7a2ce9e7e02b60766d800f8cff993632
   torch: 2.9.1+cu128
   transformers: 5.17.0
   reason: down_proj input/output module sites require the registered hook capture;
@@ -9,7 +9,7 @@ capture:
 evaluation:
   engine: vllm
   vllm_version: 0.23.0
-  image_digest: sha256:fa1f394893e0a969f0e990b8c9338f39d2898420315b3da2e0ea9d3b62ae3676
+  image_digest: sha256:1e44f7b4c043f78008ac6a971d0fba839beeec85eac855894e268daa481c54dc
   qualified: false
   min_compute_capability: '8.0'
   batch_size: 16
@@ -27,17 +27,19 @@ evaluation:
   transformers: 5.12.0
   xgrammar: 0.2.2
   python_executable: /usr/bin/python3
+  model_runner: v1
 engine:
   requires: '>=1.1.0rc1,<2'
   api: v1
   cli_requires: ==1.1.0rc1
-  source_commit: 49a6b6b8a217b217bef95d3570f56a5444e10a85
-  wheel_sha256: 9ef85baa6d0c5ccd8b407a40c371dea55ec550c4e70898bacea7be225a84e9dc
+  source_commit: 43af9b407e009bf902220ae5b510f6f27d926644
+  wheel_sha256: 0a385c486a63b8328e9e4d90eb3143e687ea33a90c1bd384f80b170eb1736efc
 storage:
   models: E:/Models/Epistemic-Humility-Research
   private_artifacts: E:/SynapticResearch
   desktop_mount: /mnt/e
 qualification:
+  namespace: vllm-0.23.0-v1-exportfix-r1
   required: 20 non-evaluation rows, two repeats in each of two orders, exact token
     IDs/finish/schema; real generation SIGKILL/resume; no outcome screening
   status: pending

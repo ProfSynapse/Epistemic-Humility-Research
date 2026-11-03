@@ -66,6 +66,7 @@ def test_batch_arguments_pin_registered_engine_and_do_not_sample(tmp_path):
     args = run.batch_arguments(proposal, runtime, layout, tmp_path, 'artifact://prompts', 'artifact://out')
     assert args[args.index('--expected-vllm-version') + 1] == '0.23.0'
     assert args[args.index('--min-compute-capability') + 1] == '8.0'
+    assert args[args.index('--vllm-model-runner') + 1] == 'v1'
     assert args[args.index('--temperature') + 1] == '0.0'
     assert '--do-sample' not in args and '--resume' in args
     assert '--json-schema' in args and '--suppress-token' not in args

@@ -295,7 +295,7 @@ be filled before sign. Do not invent persistence measurements.
 - [ ] Verify runtime image digest and real model/scheduler/schema invariance.
 - [x] Tokenizer-only full-surface length check; maximum 310 tokens, no truncation.
 - [x] Prior-source decoy feasibility and synthetic grading-lane end-to-end check.
-- [ ] Qualify the export/readback handoff on a synthetic checkpoint before sign.
+- [x] Qualify the export/readback handoff on a synthetic checkpoint before sign.
   Actual selected-edit readback is required after construction and before evaluation.
 - [ ] Record measured smoke durations and persistence declarations.
 - [ ] Confirm real entry points and registered roll-up execute end to end.
@@ -306,6 +306,8 @@ be filled before sign. Do not invent persistence measurements.
 Design and execution approval date: 2026-11-03. Approved scope: test Astra's
 single fixed weight-edit proposal and its registered evaluation on the desktop
 RTX3090, using T7 storage. The registered matrix, seeds and behavioral gates
-remain as proposed. Formal instrument signing awaits technical qualification.
+remain as proposed. The PI subsequently authorized the lead to sign on the PI's behalf after
+technical qualification. The desktop launch hold remains until explicitly lifted.
+Formal instrument signing awaits technical qualification.
 No construction capture, numerical patch, scored evaluation or verdict exists
 under this revised contract. Outcome and prediction scoreboard remain pending.

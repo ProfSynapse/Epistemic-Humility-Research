@@ -6,8 +6,8 @@ engine:
   requires: '>=1.1.0rc1,<2'
   api: v1
   cli_requires: ==1.1.0rc1
-  source_commit: 49a6b6b8a217b217bef95d3570f56a5444e10a85
-  wheel_sha256: 9ef85baa6d0c5ccd8b407a40c371dea55ec550c4e70898bacea7be225a84e9dc
+  source_commit: 43af9b407e009bf902220ae5b510f6f27d926644
+  wheel_sha256: 0a385c486a63b8328e9e4d90eb3143e687ea33a90c1bd384f80b170eb1736efc
 paths:
   configs: project://experiments
   artifacts: project://.synaptic/artifacts

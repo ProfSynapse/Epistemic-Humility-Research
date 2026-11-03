@@ -1,0 +1,8 @@
+# Update a pinned runtime with a reviewed engine wheel without dependency drift.
+# The caller verifies the local base tag's full image ID before building.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+ARG PYTHON=python
+COPY wheels/ /opt/ehr-engine-update/
+RUN ${PYTHON} -m pip install --no-cache-dir --no-deps --force-reinstall /opt/ehr-engine-update/*.whl \
+    && ${PYTHON} -c "import engine_host, synaptic_tuner; from MechInterp.weights.export import _publish_manifest_last"

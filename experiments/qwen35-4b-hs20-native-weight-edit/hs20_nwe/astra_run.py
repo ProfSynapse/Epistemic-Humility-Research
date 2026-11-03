@@ -49,7 +49,7 @@ def plan(proposal) -> dict:
             'maximum_completions_including_format_retries': evaluation['maximum_evaluation_completions_including_retries'],
             'acceptance': 'all detector-negative rows -> committed blinded adjudication -> paired roll-up',
             'pending_before_sign': ['evaluation runtime digest and invariance smoke', 'decoy feasibility',
-                                    'measured persistence declarations', 'PI sign-off']}
+                                    'synthetic export/readback', 'measured persistence declarations and formal signing']}
 
 
 def require_signed(directory: Path, *, runtime_role: str) -> dict:
@@ -302,6 +302,7 @@ def batch_arguments(proposal, runtime, layout, model: Path, prompt_ref: str, out
             '--compute-dtype', 'bfloat16', '--seed', str(d['seed']), '--temperature', str(d['temperature']),
             '--max-new-tokens', str(d['max_new_tokens']), '--batch-size', str(e['batch_size']),
             '--expected-vllm-version', e['vllm_version'], '--min-compute-capability', str(e['min_compute_capability']),
+            '--vllm-model-runner', e['model_runner'],
             '--tensor-parallel-size', '1', '--max-num-seqs', str(e['max_num_seqs']),
             '--max-num-batched-tokens', str(e['max_num_batched_tokens']), '--max-model-len', str(e['max_model_len']),
             '--gpu-memory-utilization', str(e['gpu_memory_utilization']),

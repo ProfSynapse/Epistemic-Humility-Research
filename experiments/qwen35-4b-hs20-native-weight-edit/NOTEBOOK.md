@@ -266,3 +266,42 @@ Formal signing remains pending the technical qualification checks already
 listed. Complete those checks, sign the instrument, construct and freeze the
 one edit, then execute the registered evaluation under this approval. No study
 capture, numerical patch or scored generation has run at this entry.
+
+
+## 2026-11-03 — Signing authority delegated; desktop launch hold remains
+
+PI instruction: “anything else we need to finish before running? you can sign it for me”.
+
+The PI authorizes the lead to sign this fixed Astra proposal on the PI's behalf
+once the technical prerequisites pass. No further scientific approval is needed
+for the registered design. The preceding instruction after the desktop restart,
+“dont start yet”, remains a hold on desktop and GPU launches. Signing authority
+does not lift that hold.
+
+Outstanding pre-sign work: synthetic export/readback on T7 with the fixed engine,
+actual-model evaluation repeat/permutation invariance and capture/generation
+kill-resume checks, then measured persistence declarations and final entry-point
+validation. The experiment remains draft until these checks pass. A filesystem
+compatibility repair in Tuner passed 295 CPU MechInterp tests; its updated images
+are not built or qualified yet. No scored evaluation or study edit exists.
+
+
+## 2026-11-03 — Desktop hold lifted; T7 export/readback qualified
+
+PI instruction: “should be good to start”. The desktop/GPU launch hold is lifted.
+Signing authority remains delegated to the lead after technical qualification.
+
+Docker Desktop and the RTX3090 are available after the restart; the GPU was
+idle at preflight. Rebuilt both runtimes with engine source 43af9b407e009bf902220ae5b510f6f27d926644.
+The generic export fallback preserves create-only semantics on T7 when exclusive
+rename is unavailable. It verifies all copied files and writes the completion
+manifest last. A killed fallback is an incomplete export, never a checkpoint to
+consume. This repair changes no edit formula, scale, support or behavioral gate.
+
+Ran tests/test_astra_engine_export.py in the new capture image on T7, with no
+GPU requested: 1 passed in 7.38 seconds. The synthetic nonzero patch validates,
+exports, reads back and passes the fixed-formula audit; untouched tensors and
+sidecars remain identical. Public build/evidence metadata is recorded in
+analysis-committed/astra_runtime_build.json. Exact new image IDs are in
+astra_runtime.yaml. Actual-model runtime qualification remains pending; no
+study capture, edit or scored generation has occurred.

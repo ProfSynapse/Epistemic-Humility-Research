@@ -23,6 +23,7 @@ instrument:
   - hs20_nwe/ORIGINS.json
   - hs20_nwe/detector_v2_patterns.yaml
   - runtime/Dockerfile.vllm
+  - runtime/Dockerfile.engine-overlay
   - runtime/inspect.yaml
   modules:
   - hs20_nwe/__init__.py
@@ -47,7 +48,7 @@ instrument:
   - hs20_nwe/integrity.py
   pins: {}
   persistence: {}
-  runtime_image_digest: sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc
+  runtime_image_digest: sha256:aa9ddcd3307fd939077dbb2af1e3924d7a2ce9e7e02b60766d800f8cff993632
 inputs:
 - experiments/common/directions/qwen35-4b-hs20/provenance.json
 - path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/inputs/capture_rows.jsonl
