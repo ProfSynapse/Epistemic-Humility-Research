@@ -11,7 +11,7 @@ storage:
 runtime:
   provider: docker-desktop
   gpu: NVIDIA GeForce RTX 3090
-  image_digest: sha256:35fc50d3e1878710147f5a0251a4d89c39958255263ed71f5d540fc6d88414e9
+  image_digest: sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc
   gpu_count: 1
   maximum_run_hours: 14
   qualification_scope: installed_numeric_contract_passed_real_model_token_parity_pending
