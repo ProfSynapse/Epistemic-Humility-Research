@@ -79,7 +79,8 @@ VLLM_BATCH_INVARIANT=1 python -m hs20_nwe.astra_run eval-cell \
 ```
 
 Repeat for the eight registered surface/prompt/arm cells. Each uses the public
-`batch-generate` verb with pinned vLLM/scheduler/schema settings. Raw text, token
+`batch-generate` verb with pinned HF batch-one/XGrammar settings after the
+observed vLLM GDN batch-invariance refusal. Raw text, token
 IDs and finish reasons persist by batch. Only malformed rows get up to two
 format retries. Resume uses the same physical output paths and exact prompt
 rosters. No cells may be added in response to a score.
@@ -99,3 +100,12 @@ The current calibration pool uses 25 historical positives and 25 held-back
 historical negatives, with evaluation and construction questions excluded.
 Its exact bytes are pinned in `astra_r1.yaml`. `prepare-decoys` verifies both
 prior runlogs before selecting that pool; it performs no model inference.
+
+
+Runtime qualification uses `python -m hs20_nwe.astra_qualification prepare`,
+`run`, `verify`, and `verify-capture` in the exact registered image. It uses a
+separate named namespace of twenty development questions, never benchmark rows.
+Both repeats in both orders and an actual hard-killed/resumed run must retain
+identical token IDs and whole-schema-valid outputs. Capture has its own hard-kill
+and tensor-byte equality check. A changed source/runtime requires a fresh
+qualification namespace; stale checkpoints are preserved, never bypassed.

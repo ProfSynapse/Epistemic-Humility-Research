@@ -171,13 +171,22 @@ tokens, identical JSON schema and retry behavior in both arms. At most 62412
 evaluation completions including retries. Do not truncate questions or silently
 change the 2048-token context. Tokenizer-only feasibility must pass first.
 
-Use pinned vLLM for both evaluation arms with VLLM_BATCH_INVARIANT=1 before
-startup. Scheduler, hardware, dtype, tokenizer and container pins live in
-`astra_runtime.yaml`. Qwen3.5 support and the 8.0 compute-capability requirement
-were checked in the official 0.23.0 documentation. A real Qwen3.5 invariance
-smoke is still required; documentation support is not qualification. The HF
-module-site capture is a separately named instrument, not an evaluation arm.
-Historical Qwen3-4B scores are methodological context, not this Qwen3.5 baseline.
+Use the same pinned Hugging Face Transformers + XGrammar runtime for both
+evaluation arms, at batch size one. The original prospective vLLM runtime is
+preserved in `design-history/vllm_runtime_refusal_20261103.yaml`. Actual Qwen3.5
+initialization refused `VLLM_BATCH_INVARIANT=1` because GDN_ATTN does not support
+that mode. Zero evaluation or smoke completions existed at this decision.
+Following the experiment-runner batching reference, use its HF fallback rather
+than bypassing the capability check. This technical revision preserves the
+model, edit construction, prompts, JSON schema, greedy decoding, evaluation
+rosters, retries, scorers and all benefit/cost thresholds.
+
+Pin scheduler/hardware/dtype/tokenizer/container versions in `astra_runtime.yaml`.
+Batch size one removes batch-composition changes; repeatability on this exact
+hardware still requires the real-model repeat/permutation and hard-kill/resume
+smoke. JSON schema decoding uses XGrammar's HF logits processor, with a new
+matcher per request. HF module-site capture requires its separate qualification.
+Historical Qwen3-4B scores remain methodological context, not this model's baseline.
 
 The development source exclusion leaves enough rows for both groups. One
 SelfAware question occurs in the historical source pool used for direction

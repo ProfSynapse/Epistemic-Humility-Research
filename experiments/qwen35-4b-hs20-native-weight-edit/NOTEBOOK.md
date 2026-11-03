@@ -305,3 +305,30 @@ sidecars remain identical. Public build/evidence metadata is recorded in
 analysis-committed/astra_runtime_build.json. Exact new image IDs are in
 astra_runtime.yaml. Actual-model runtime qualification remains pending; no
 study capture, edit or scored generation has occurred.
+
+
+## 2026-11-03 — Actual vLLM GDN refusal; prospective HF schema fallback
+
+The twenty-row unscored vLLM qualification reached actual model initialization
+and failed: `VLLM batch_invariant mode is not supported for GDN_ATTN.` It wrote
+zero completion rows. This is an unsupported instrument, not an abstention null.
+The original runtime is preserved in design-history/vllm_runtime_refusal_20261103.yaml.
+The upstream support boundary is also documented at
+https://github.com/vllm-project/vllm/issues/48613 (including failure of a simple
+support-flag-only patch). No capability check was bypassed.
+
+The experiment-runner batching reference explicitly permits an HF fallback when
+the invariance smoke fails. Before any behavioral output, registered HF batch
+size one with the same JSON schema through XGrammar. Model/revision, edit formula,
+prompts, datasets, greedy decoding, retry rules, metrics and thresholds are
+unchanged. This is a technical execution repair under the PI's delegated signing
+and run authority, not a new edit selection or scientific gate.
+
+Added reusable HF schema decoding and registered conditional-model loading in
+Tuner (d03a15d62549c64cf46e10532d50a77accd32b26). The optional dependency is lazy;
+each request gets a new grammar matcher. 347 batch/MechInterp CPU tests pass.
+The experiment CPU suite passes 237 tests with 2 Torch-only skips (49.106 s).
+The pinned desktop HF image passes all 3 generic HF-schema CPU tests in 6.27 s.
+The runtime has XGrammar 0.2.2 and apache-tvm-ffi 0.1.15.post2 on the existing
+Torch 2.9.1+cu128 / Transformers 5.17.0 stack. Actual-model repeat/permutation and
+capture/generation hard-kill drills still precede formal sign and study capture.

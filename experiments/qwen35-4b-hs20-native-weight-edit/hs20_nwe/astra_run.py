@@ -296,6 +296,16 @@ def read_tensor(proposal, model: Path, expected_sha256: str, out: Path) -> dict:
 def batch_arguments(proposal, runtime, layout, model: Path, prompt_ref: str, out_ref: str) -> list[str]:
     e = runtime['evaluation']
     d = proposal.raw['evaluation']['decode']
+    if e['engine'] == 'hf-batched':
+        return ['--prompts', prompt_ref, '--out-dir', out_ref, '--model', str(model.resolve()),
+                '--model-revision', proposal.raw['model']['revision'],
+                '--tokenizer-revision', proposal.raw['model']['revision'], '--engine', 'hf-batched',
+                '--compute-dtype', 'bfloat16', '--seed', str(d['seed']), '--temperature', str(d['temperature']),
+                '--max-new-tokens', str(d['max_new_tokens']), '--batch-size', str(e['batch_size']),
+                '--json-schema', layout.ref(f'{PREFIX}/response_schema.json'),
+                '--structured-output-backend', e['structured_output_backend'], '--resume']
+    if e['engine'] != 'vllm':
+        raise HarnessError('EVALUATION_ENGINE', 'only the registered HF or vLLM engine is admitted')
     return ['--prompts', prompt_ref, '--out-dir', out_ref, '--model', str(model.resolve()),
             '--model-revision', proposal.raw['model']['revision'],
             '--tokenizer-revision', proposal.raw['model']['revision'], '--engine', 'vllm',

@@ -6919,6 +6919,7 @@
           "hs20_nwe/detector_v2_patterns.yaml",
           "runtime/Dockerfile.vllm",
           "runtime/Dockerfile.engine-overlay",
+          "runtime/Dockerfile.hf-schema",
           "runtime/inspect.yaml"
         ],
         "modules": [
@@ -6945,7 +6946,7 @@
         ],
         "persistence": {},
         "pins": {},
-        "runtime_image_digest": "sha256:aa9ddcd3307fd939077dbb2af1e3924d7a2ce9e7e02b60766d800f8cff993632"
+        "runtime_image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224"
       },
       "kg": [],
       "prediction": "The one frozen Astra edit passes all five primary SelfAware P-struct benefit and cost gates; AmbigQA transfer and P-rc are reported separately.",

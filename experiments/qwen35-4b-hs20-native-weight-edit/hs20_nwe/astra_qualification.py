@@ -116,7 +116,7 @@ def run(proposal, root, layout, model, name, *, ack):
     qual_root = qualification_root(runtime)
     if os.environ.get('EHR_RUNTIME_IMAGE_ID') != runtime['evaluation']['image_digest']:
         raise HarnessError('QUAL_IMAGE', 'use the exact registered evaluation image')
-    if os.environ.get('VLLM_BATCH_INVARIANT') != '1':
+    if runtime['evaluation']['engine'] == 'vllm' and os.environ.get('VLLM_BATCH_INVARIANT') != '1':
         raise HarnessError('QUAL_INVARIANCE', 'set VLLM_BATCH_INVARIANT=1 before startup')
     manifest = read_json(layout.local(f'{qual_root}/manifest.json'))
     if manifest['binding'] != binding(proposal, runtime) or manifest['model_path'] != str(model.resolve()):
@@ -164,7 +164,7 @@ def compare(original, runs):
                 jsonschema.validate(json.loads(row['completion_text']), benchmark.JSON_SCHEMA)
             except (ValueError, jsonschema.ValidationError) as exc:
                 raise HarnessError('QUAL_SCHEMA', 'qualification output is not valid whole JSON, without salvage') from exc
-            if not row.get('completion_token_ids') or row.get('finish_reason') != 'stop':
+            if not row.get('completion_token_ids') or row.get('finish_reason') not in ('stop', 'eos'):
                 raise HarnessError('QUAL_FINISH', 'qualification requires natural termination and retained token IDs')
         signature = canonical_sha256(sorted(rows, key=lambda r: r['id']))
         if canonical is not None and signature != canonical:

@@ -17,6 +17,28 @@
     "wall_seconds": 7.38
   },
   "gpu_runtime_qualified": false,
+  "hf_schema_fallback": {
+    "apache-tvm-ffi": "0.1.15.post2",
+    "desktop_cpu_tests": {
+      "evidence": "E:/SynapticResearch/builds/ehr-hf-schema-20261103/cpu-tests/hf-schema.xml",
+      "passed": true,
+      "tests": 3,
+      "wall_seconds": 6.27
+    },
+    "engine_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+    "engine_wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a",
+    "gpu_runtime_qualified": false,
+    "parent_image_digest": "sha256:aa9ddcd3307fd939077dbb2af1e3924d7a2ce9e7e02b60766d800f8cff993632",
+    "recipe": "runtime/Dockerfile.hf-schema",
+    "runtime_image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+    "vllm_failure": {
+      "durable_completion_rows": 0,
+      "message": "VLLM batch_invariant mode is not supported for GDN_ATTN.",
+      "phase": "initialization",
+      "version": "0.23.0"
+    },
+    "xgrammar": "0.2.2"
+  },
   "recipe": "runtime/Dockerfile.engine-overlay",
   "schema_version": "ehr-astra-runtime-build/v1"
 }
