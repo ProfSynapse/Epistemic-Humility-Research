@@ -232,3 +232,12 @@ is current. `astra_run plan` resolves the actual eight-cell matrix without model
 execution. Remaining inputs are declared as typed local artifacts, including
 both checkpoint shards and their exact hashes; portable validation does not
 pretend those bytes exist in every clone.
+
+The final agent-box CPU suite passed 220 tests, with the torch-only file skipped
+there. Ran that file separately inside the pinned desktop capture image with
+NO GPU requested: 1 passed in 6.90 seconds. It checks real engine inspection,
+patch validation and realized-delta agreement on a tiny synthetic bf16
+checkpoint. An initial pytest setup failed because the explicit basetemp parent
+did not exist; creating that scratch parent fixed setup without a source change.
+This closes the CPU/torch fixture gap, not GPU invariance or export/reload
+qualification.
