@@ -7119,7 +7119,7 @@
       "question": "Can one Astra-designed sparse Qwen3.5-4B weight edit improve abstention under P-struct while preserving known-answer accuracy on the existing humility benchmarks?",
       "registered": true,
       "slug": "qwen35-4b-hs20-native-weight-edit",
-      "status": "signed",
+      "status": "running",
       "text_capture": "enabled",
       "title": "Astra fixed hs20 weight edit for epistemic humility",
       "type": "steer-cell",

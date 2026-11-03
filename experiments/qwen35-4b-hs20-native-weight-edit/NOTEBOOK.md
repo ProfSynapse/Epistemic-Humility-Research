@@ -399,3 +399,14 @@ changes off support, whole-tensor relative change 0.00538 (cap 0.01), selected
 column relative change 0.09001 (cap 0.10). The engine export and hash-only freeze
 followed. These are instrument checks, not behavioral evidence. No benchmark
 generation occurred before `analysis-committed/astra_patch_freeze.json` was committed.
+
+## 2026-11-03: evaluation launched; 128-token cap retained
+
+Evaluation started at 18:00 EST from commit 03d3d15b, in pinned pipeline order. Early
+structure counts on the SelfAware P-struct base cell, with no scores read: 40 of 664
+rows hit the 128-token cap and 39 of those are invalid JSON; none has a repetitive
+tail; median completion is 28 tokens. These rows enter the registered format retries,
+whose instruction mentions abstention, so retry incidence per cell must be read with
+the result. PI ruling: "No it's fine keep it if it screws things up for us we can
+change on a second round". The cap stays as signed. Any change belongs to a separately
+registered round, not this one.
