@@ -1,0 +1,62 @@
+# PROPOSED per-module persistence declarations for experiment.yaml `instrument.persistence`.
+# Written by the harness build; NOT wired into experiment.yaml (parent owns that file and the sign step).
+# Every "kill_resume" line says what is actually durable.  Nothing here claims a drill has been run:
+# no kill-resume drill has been executed (build only; no model, GPU or private rows were touched).
+# Durations are ESTIMATES of a meaningful short smoke, not measurements.
+schema_version: hs20-nwe-persistence-proposal/v1
+modules:
+  materialize:
+    stage: materialize
+    persistence: atomic-complete
+    durable_unit: whole stage (each output file is written temp+fsync+rename; manifest last)
+    kill_resume: re-run recomputes everything from pinned inputs; byte-identical outputs; nothing to resume
+    smoke: full stage (seconds)
+  emit_static:
+    persistence: atomic-complete
+    durable_unit: each config file (temp+rename)
+    kill_resume: re-run rewrites configs deterministically
+    smoke: full stage (seconds)
+  extract_fit_l:
+    persistence: per-row (engine capture journal capture.runlog.jsonl)
+    durable_unit: one row = its anchor + site tensor files fsynced and hashed, then a journal line fsynced
+    kill_resume: engine `resume: true` verifies run identity (hashes every file of the local model dir, including ~9.3 GB of
+      shards, on EVERY start) and every committed file, skips committed rows, retries the interrupted one; manifest.json is
+      published atomically only on completion. A killed row leaves no committed record.
+    smoke: 12 rows via `smoke-prepare --limit-rows 12 --smoke-tag K`, SIGKILL after >=4 committed journal lines, resume;
+      estimate 3-6 min (dominated by model load + whole-model hashing, then <1 s per row)
+  localize:
+    persistence: per-row (host RunLog + per-row npz with sha256 in the journal)
+    durable_unit: one row reduction
+    kill_resume: re-run skips rows whose journal line AND file hash verify; a corrupt or missing row file is recomputed;
+      a changed capture manifest is a different run (RunLogError). The final means are recomputed from verified row files.
+    smoke: 13 rows (all roles); kill after 5 rows; estimate <1 min
+  inspect:
+    persistence: atomic-complete per engine call (each weights-inspect writes one JSON; dots saved as .npy)
+    durable_unit: whole stage; no partial resume
+    kill_resume: re-run repeats the 4 reads (hashes ~9.3 GB of shards for hash_files); estimate minutes on T7
+    smoke: not killable in a meaningful way; run once for real on the staged model
+  propose:
+    persistence: atomic-complete (spec + payload files are rewritten identically, then 6 engine validations)
+    durable_unit: whole stage; candidates.json written once at the end
+    kill_resume: re-run recomputes all six validations (each re-hashes the checkpoint files for the pinned binding)
+    smoke: none useful
+  gen_static / gen_screen_candidates / gen_heldout / parity jobs:
+    persistence: per-batch row (engine steer/dose-calibrate output JSONL, append + fsync per record)
+    durable_unit: one generated row (a batch of 4 writes its rows after the batch; at most the in-flight batch is lost)
+    kill_resume: engine resume skips finished (arm,row) / (readout,dose,row) keys; `.weight_patch.json` binds the output to
+      one patch lineage and a resume under another patch exits 6; this harness re-counts the output file into the ledger on
+      every start, so budget accounting is exact across resumes. Mid-generation (inside a row) state is NOT kept.
+    smoke: decoy_baseline or screen_baseline on a 12-row smoke tree, SIGKILL after the first output lines, resume, require
+      12 unique rows and an unchanged ledger total; estimate 2-4 min (load + 3 batches of 4 x up to 200 tokens)
+  budget_ledger:
+    persistence: append-only JSONL, fsync per entry, under the shared artifact root (smokes and the real run share one cap)
+    kill_resume: a gpu_start without a gpu_seconds line (hard kill) is billed conservatively on the next reserve
+  select / controls / export_selected:
+    persistence: atomic-complete (selection.json, controls.json, export directory)
+    kill_resume: select/controls re-run from verified earlier outputs. export is create-only in the engine; a kill mid-export
+      may leave a staging sibling that must be removed by hand before re-running (NOT verified here).
+  adjudication_pool:
+    persistence: append-only commit logs (pool_commit.log.jsonl, graded_commit.log.jsonl), fsynced
+    kill_resume: a committed pool can never be rebuilt; commit-hash is idempotent for the same file; regrade shards are append-only
+  rollup:
+    persistence: pure function of committed files; rewrites results/rollup.json

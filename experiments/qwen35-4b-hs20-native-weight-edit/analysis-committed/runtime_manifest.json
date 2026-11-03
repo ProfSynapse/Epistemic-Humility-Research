@@ -1,0 +1,27 @@
+{
+  "schema_version": "ehr-runtime-build/v1",
+  "base_image": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
+  "engine_source_commit": "78aefc978f12e1af32b13a2268116f6f2cfa3c5a",
+  "host_source_commit": "86ae2b68",
+  "wheels": {
+    "attrs-25.4.0-py3-none-any.whl": "adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373",
+    "certifi-2026.10.19-py3-none-any.whl": "42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b",
+    "ehr_engine_host-0.1.0-py3-none-any.whl": "28511365e15a66f36ec34d57caf5b56c02398074cc516b22d99dddf976c44e7c",
+    "exceptiongroup-1.3.0-py3-none-any.whl": "4d111e6e0c13d0644cad6ddaa7ed0261a0b36971f6d23e7ec9b4b9097da78a10",
+    "iniconfig-2.3.0-py3-none-any.whl": "f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12",
+    "jsonschema-4.25.1-py3-none-any.whl": "3fba0169e345c7175110351d456342c364814cfcf3b964ba4587f22915230a63",
+    "jsonschema_specifications-2025.9.1-py3-none-any.whl": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+    "pluggy-1.6.0-py3-none-any.whl": "e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746",
+    "pygments-2.19.2-py3-none-any.whl": "86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b",
+    "pytest-8.4.2-py3-none-any.whl": "872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79",
+    "python_dotenv-1.2.1-py3-none-any.whl": "b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61",
+    "referencing-0.37.0-py3-none-any.whl": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+    "rpds_py-0.28.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": "b1b553dd06e875249fd43efd727785efb57a53180e0fde321468222eabbeaafa",
+    "synaptic_tuner-1.1.0rc1-py3-none-any.whl": "b884aab4cfbb92da40ed4bd381dffee2325cd3d76107654308b20fbfd8421764",
+    "tomli-2.3.0-py3-none-any.whl": "e95b1af3c5b07d9e643909b5abbec77cd9f1217e6d0bca72b0234736b9fb1f1b"
+  },
+  "scope": "token-ID parity extension and explicit CLI stdout; no research data",
+  "host_wheel_sha256": "28511365e15a66f36ec34d57caf5b56c02398074cc516b22d99dddf976c44e7c",
+  "derived_image": "sha256:35fc50d3e1878710147f5a0251a4d89c39958255263ed71f5d540fc6d88414e9",
+  "base_layers_verified": true
+}

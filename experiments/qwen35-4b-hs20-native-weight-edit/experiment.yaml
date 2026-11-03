@@ -1,0 +1,58 @@
+slug: qwen35-4b-hs20-native-weight-edit
+title: Qwen3.5-4B hs20 native weight edit
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-11-03T11:22:20Z'
+question: Can a bounded direct edit to downstream MLP weights produce selective abstention
+  without an inference-time controller?
+prediction: "A patch selected from six fixed candidates will pass held-out benefit,\
+  \ known-cost and native-specificity gates G1\u2013G3 without an inference-time controller."
+falsifier: "No eligible FIT candidate, or a valid complete held-out test failing any\
+  \ of G1\u2013G3, falsifies this bounded-family prediction; no further rescoring\
+  \ or search is allowed."
+text_capture: enabled
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - hs20_nwe/ORIGINS.json
+  - hs20_nwe/detector_v2_patterns.yaml
+  modules:
+  - hs20_nwe/__init__.py
+  - hs20_nwe/__main__.py
+  - hs20_nwe/adjudication.py
+  - hs20_nwe/budget.py
+  - hs20_nwe/capture.py
+  - hs20_nwe/cli.py
+  - hs20_nwe/commitments.py
+  - hs20_nwe/config.py
+  - hs20_nwe/detector_v2.py
+  - hs20_nwe/engine.py
+  - hs20_nwe/gen_lib.py
+  - hs20_nwe/grader.py
+  - hs20_nwe/grading.py
+  - hs20_nwe/inputs.py
+  - hs20_nwe/integrity.py
+  - hs20_nwe/jobs.py
+  - hs20_nwe/localize.py
+  - hs20_nwe/parity.py
+  - hs20_nwe/pipeline.py
+  - hs20_nwe/qualification.py
+  - hs20_nwe/render.py
+  - hs20_nwe/rollup.py
+  - hs20_nwe/selection.py
+  - hs20_nwe/sensor.py
+  - hs20_nwe/stages.py
+  - hs20_nwe/util.py
+  - hs20_nwe/weights.py
+  pins: {}
+  persistence: {}
+  runtime_image_digest: sha256:35fc50d3e1878710147f5a0251a4d89c39958255263ed71f5d540fc6d88414e9
+inputs:
+- experiments/common/directions/qwen35-4b-hs20/provenance.json
+verdict: ''
+kg: []

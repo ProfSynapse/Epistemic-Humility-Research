@@ -1,0 +1,140 @@
+schema_version: ehr-native-weight-edit/v1
+slug: qwen35-4b-hs20-native-weight-edit
+engine:
+  source_commit: 78aefc978f12e1af32b13a2268116f6f2cfa3c5a
+  wheel_sha256: b884aab4cfbb92da40ed4bd381dffee2325cd3d76107654308b20fbfd8421764
+  public_api: v1
+  mechinterp: experimental-cli
+model:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  files_sha256:
+    model.safetensors-00001-of-00002.safetensors: 26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61
+    model.safetensors-00002-of-00002.safetensors: cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188
+  dtype: bfloat16
+  hidden_dim: 2560
+  intermediate_dim: 9216
+  runtime_prefix_rules:
+  - checkpoint_prefix: model.language_model.
+    runtime_prefix: model.
+sensor:
+  hidden_state: 20
+  decoder_block: 19
+  mu_d: -0.2903456867965383
+  sigma_d: 1.669221862861343
+  tau: -0.5897473076358422
+  score: neg_z_d
+writer:
+  direction: c_hat
+  mu_c: -4.031343053353048
+  sigma_c: 1.576023489724997
+  reference_target: 12.608187917799976
+  reference_position: anchor_onward
+  direction_root: project://experiments/common/directions/qwen35-4b-hs20
+splits:
+  seed: 20261103
+  fit_localization:
+    confab: 443
+    known_correct: 120
+    unknown_refused: 181
+  fit_selection:
+    confab: 444
+    known_correct: 120
+  fit_screen:
+    confab: 96
+    known_correct: 96
+  heldout_seed: 20261104
+  heldout:
+    confab: 300
+    known_correct: 360
+  decoy_seed: 20261105
+  decoy_known: 32
+  decoy_unknown_refused: 32
+candidates:
+  family: selected_down_projection_amplification
+  blocks:
+  - 20
+  - 21
+  - 22
+  columns: 32
+  scales:
+  - 4.0
+  - 16.0
+  max_candidates: 6
+  score: (mean_confab_activation - mean_known_activation) * dot(c_hat, weight_column)
+  require_positive_score: true
+  tie_break: column_index_ascending
+  budget:
+    max_modified_tensors: 1
+    max_modified_entries: 81920
+    max_relative_frobenius: 0.05
+selection:
+  instrument: frozen_detector_v2_only_exploratory_screen
+  min_confab_refusal: 0.4
+  max_known_refusal: 0.05
+  min_known_correct_retention: 0.95
+  min_well_formed: 0.9
+  objective: confab_refusal - 2 * known_refusal
+  tie_break:
+  - smaller_realized_delta
+  - lower_block
+  - lower_scale
+  stop_if_no_eligible: true
+controls:
+  random_seeds:
+  - 20261111
+  - 20261112
+  - 20261113
+  same_support: true
+  orthogonal_to:
+  - c_hat
+  - u_d
+  relative_delta_norm_tolerance: 0.01
+  max_norm_adjustments: 3
+  clamp_z: 3.0
+generation:
+  backend: hf
+  reason: Weight edits and intervention hooks require the HF surface; unpatched reference
+    uses same engine for parity. This is not an unsteered vLLM performance run.
+  do_sample: false
+  max_new_tokens: 200
+  min_new_tokens: 1
+  num_beams: 1
+  batch_size: 4
+  parity_batch_sizes:
+  - 1
+  - 4
+  use_cache: true
+  thinking: false
+  preflight_rows: 8
+grading:
+  detector_source: experiments/gate-contribution-factorial/detector_v2.py
+  grader_source: experiments/gate-contribution-factorial/grader.py
+  render_source: experiments/gate-contribution-factorial/render.py
+  adjudication: all_detector_negative_scored_arms_both_populations
+  pool_seed: 20261121
+  bootstrap_seed: 20261122
+  bootstrap_replicates: 2000
+  target_candidates_per_shard: 55
+  positive_decoys_per_shard: 25
+  negative_decoys_per_shard: 25
+  per_shard_positive_agreement: 0.6
+  pooled_positive_agreement: 0.6
+  per_shard_negative_agreement: 0.95
+  max_regrades: 1
+  lead_spot_check_n: 30
+  lead_spot_min_agreement: 0.90
+  judge_tier: opus
+  fresh_context_per_shard: true
+  no_posthoc_rescore: true
+limits:
+  maximum_gpu_hours: 12
+  maximum_generated_rows: 7000
+  maximum_candidate_proposals: 6
+  allow_paid_cloud: false
+  export_selected_only: true
+paths:
+  private_root: artifact://qwen35-4b-hs20-native-weight-edit
+  model_source: artifact://qwen35-4b-hs20-native-weight-edit/base_model
+  outputs: artifact://qwen35-4b-hs20-native-weight-edit/runlog
+  export: artifact://qwen35-4b-hs20-native-weight-edit/checkpoints/selected
