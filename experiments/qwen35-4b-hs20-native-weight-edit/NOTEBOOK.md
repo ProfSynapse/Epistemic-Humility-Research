@@ -387,3 +387,15 @@ ignored so private artifacts cannot be staged in a checkout.
 Signed by the lead under the PI's delegated authority. No study capture, numerical
 edit or benchmark output exists at signing.
 
+
+## 2026-11-03: one edit constructed, audited and frozen
+
+Signed capture completed all 128 development rows in 122.5 s. The captured
+module input and output pass the registered linear-consistency check, with max
+error-to-bound ratio 0.2539 (must be at most 1). The one edit was constructed
+without refusal: alpha 0.26767, limited by the column-norm cap, 32 columns. The
+realized audit passed on readback: 79,097 changed entries (cap 81,920), zero
+changes off support, whole-tensor relative change 0.00538 (cap 0.01), selected
+column relative change 0.09001 (cap 0.10). The engine export and hash-only freeze
+followed. These are instrument checks, not behavioral evidence. No benchmark
+generation occurred before `analysis-committed/astra_patch_freeze.json` was committed.
