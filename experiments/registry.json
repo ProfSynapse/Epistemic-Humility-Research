@@ -6920,8 +6920,16 @@
           "runtime/Dockerfile.vllm",
           "runtime/Dockerfile.engine-overlay",
           "runtime/Dockerfile.hf-schema",
-          "runtime/inspect.yaml"
+          "runtime/evaluation_pipeline.yaml",
+          "runtime/inspect.yaml",
+          "design-history/vllm_runtime_refusal_20261103.yaml",
+          "runtime/engine_capability_gap.yaml"
         ],
+        "engine_exception": {
+          "evidence": "runtime/engine_capability_gap.yaml",
+          "kind": "capability-gap",
+          "reason": "Pinned vLLM refuses batch-invariant GDN_ATTN at initialization for Qwen3.5, and vLLM 0.33.0 and main still lack support, so both evaluation arms use the repository-authorized pinned HF batch-one fallback."
+        },
         "modules": [
           "hs20_nwe/__init__.py",
           "hs20_nwe/astra_fixed.py",
@@ -6944,7 +6952,132 @@
           "hs20_nwe/commitments.py",
           "hs20_nwe/integrity.py"
         ],
-        "persistence": {},
+        "persistence": {
+          "hs20_nwe/__init__.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/adjudication.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/astra_analysis.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/astra_benchmark.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/astra_capture.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/astra_fixed.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/astra_render.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/astra_run.py": {
+            "checkpoint_path": ".synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/operations.jsonl",
+            "durable_unit": "Per-row engine generation outputs and capture journal; the host operation journal records stage boundaries.",
+            "kill_resume_evidence": "analysis-committed/astra_runtime_qualification.json",
+            "per_item_checkpoints": [
+              ".synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/capture/capture.runlog.jsonl",
+              ".synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/evaluation/<surface>/<prompt>/<arm>/attempt-<k>/output/completions.jsonl"
+            ],
+            "persistence": "incremental"
+          },
+          "hs20_nwe/benchmark_ood.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/benchmark_scorers.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/benchmark_stats.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/capture.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/commitments.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/config.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/detector_v2.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/grader.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/integrity.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/render.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/util.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          },
+          "hs20_nwe/weights.py": {
+            "measured_smoke_wall_clock_s": 49.106,
+            "measurement_scope": "Whole composite synthetic CPU smoke covering the library component; conservative complete-suite duration, not a production GPU estimate.",
+            "persistence": "short-run",
+            "smoke_evidence": "analysis-committed/astra_cpu_smoke_timings.json"
+          }
+        },
         "pins": {},
         "runtime_image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224"
       },

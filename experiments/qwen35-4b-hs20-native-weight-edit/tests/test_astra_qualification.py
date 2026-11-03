@@ -1,6 +1,8 @@
 """Synthetic checks of strict invariance and prompt/finish/schema refusals."""
 import copy
+import hashlib
 import json
+import struct
 
 import pytest
 from hs20_nwe import astra_qualification as q
@@ -67,3 +69,48 @@ def test_qualification_namespace_cannot_escape_or_be_implicit(name):
 
 def test_changed_namespace_changes_engine_output_paths():
     assert q.qualification_root({'qualification': {'namespace': 'r1'}}) != q.qualification_root({'qualification': {'namespace': 'r2'}})
+
+
+def capture_fixture(tmp_path, *, changed_data=False, changed_metadata=False):
+    import numpy as np
+    directories, records = [], []
+    for name, metadata in [('original', {'a': 'x', 'b': 'y'}), ('resumed', {'b': 'y', 'a': 'x'})]:
+        directory = tmp_path / name
+        directory.mkdir()
+        if changed_metadata and name == 'resumed':
+            metadata['a'] = 'changed'
+        values = np.array([0., 1.], dtype='<f4')
+        if changed_data and name == 'resumed':
+            values[0] = -0.  # equal numerically; different raw tensor bits
+        header = json.dumps({'__metadata__': metadata, 'x': {'dtype': 'F32', 'shape': [2], 'data_offsets': [0, 8]}}).encode()
+        header += b' ' * (-len(header) % 8)
+        data = struct.pack('<Q', len(header)) + header + values.tobytes()
+        (directory / 'row.safetensors').write_bytes(data)
+        records.append([{'row_key': 'row', 'capture_files': {'anchor': {
+            'file': 'row.safetensors', 'sha256': hashlib.sha256(data).hexdigest()}}}])
+        directories.append(directory)
+    return directories, records
+
+
+def test_capture_parity_ignores_only_header_key_order_and_verifies_payload(tmp_path):
+    dirs, rows = capture_fixture(tmp_path)
+    assert rows[0][0]['capture_files']['anchor']['sha256'] != rows[1][0]['capture_files']['anchor']['sha256']
+    assert q.compare_capture_rows(*dirs, *rows) == 1
+
+
+@pytest.mark.parametrize(('data', 'metadata', 'message'), [(True, False, 'tensor bytes'), (False, True, 'metadata values')])
+def test_capture_parity_rejects_actual_bit_or_metadata_changes(tmp_path, data, metadata, message):
+    dirs, rows = capture_fixture(tmp_path, changed_data=data, changed_metadata=metadata)
+    with pytest.raises(HarnessError, match=message):
+        q.compare_capture_rows(*dirs, *rows)
+
+
+def test_capture_parity_still_requires_each_files_own_hash_and_exact_rows(tmp_path):
+    dirs, rows = capture_fixture(tmp_path)
+    rows[1][0]['row_key'] = 'different'
+    with pytest.raises(HarnessError, match='row metadata'):
+        q.compare_capture_rows(*dirs, *rows)
+    rows[1][0]['row_key'] = 'row'
+    (dirs[1] / 'row.safetensors').write_bytes(b'corrupted')
+    with pytest.raises(HarnessError, match='hash mismatch'):
+        q.compare_capture_rows(*dirs, *rows)

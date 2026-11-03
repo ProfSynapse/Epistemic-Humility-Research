@@ -72,3 +72,67 @@ def test_batch_arguments_pin_registered_engine_and_do_not_sample(tmp_path):
     assert args[args.index('--temperature') + 1] == '0.0'
     assert '--do-sample' not in args and '--resume' in args
     assert '--json-schema' in args and '--suppress-token' not in args
+
+
+def _eval_fixture(tmp_path, monkeypatch, engine):
+    from types import SimpleNamespace
+    from hs20_nwe import commitments
+    from hs20_nwe.util import write_json, write_jsonl
+    root = tmp_path / 'project'
+    rows = [{'id': f'row-{i}'} for i in range(2)]
+    local = lambda rel: root / rel
+    write_jsonl(_parent(local(f'{run.PREFIX}/inputs/selfaware.jsonl')), rows)
+    write_json(_parent(local(f'{run.PREFIX}/materialized.json')),
+               {'files': {'selfaware.jsonl': sha256_file(local(f'{run.PREFIX}/inputs/selfaware.jsonl'))}})
+    public = _parent(root / 'public/astra_patch_freeze.json')
+    public.write_text('{}')
+    layout = SimpleNamespace(local=local, ref=lambda r: 'artifact://test/' + r)
+    proposal = SimpleNamespace(sha256='p', raw={'evaluation': {'max_attempts_per_item': 3}, 'model': {'revision': 'r'}})
+    runtime = {'evaluation': {'engine': engine}}
+    monkeypatch.setattr(run, 'require_signed', lambda *a, **k: runtime)
+    monkeypatch.setattr(run, 'require_frozen', lambda *a, **k: {'spec_sha256': 's'})
+    monkeypatch.setattr(run, 'batch_arguments', lambda *a, **k: [a[4], a[5]])
+    monkeypatch.setattr(commitments, 'public_path', lambda *a, **k: public)
+    monkeypatch.setattr(run.benchmark, 'prompts', lambda pending, prompt, idx: [{'id': r['id'], 'idx': idx} for r in pending])
+    monkeypatch.setattr(run.benchmark.legacy, 'parse_stated_confidence',
+                        lambda text: SimpleNamespace(stated_confidence=None if text == 'bad' else 0.5))
+    monkeypatch.setattr(run.benchmark, 'merge_attempts',
+                        lambda rows, attempts: [dict(r, generation_attempts=len(attempts)) for r in rows])
+    calls = []
+
+    def gpu(_root, _layout, operation, args, *, ack, role):
+        calls.append((operation, role, args[1]))
+        out = local(args[1].removeprefix('artifact://test/') + '/completions.jsonl')
+        pending = [r['id'] for r in run.read_jsonl(local(args[0].removeprefix('artifact://test/')))]
+        text = 'bad' if len(calls) == 1 else 'ok'
+        write_jsonl(_parent(out), [{'id': r, 'completion_text': text if r == 'row-0' else 'ok'} for r in pending])
+    monkeypatch.setattr(run, '_gpu', gpu)
+    return proposal, root, layout, calls
+
+
+def _parent(path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _evaluate(proposal, root, layout):
+    return run.evaluate_cell(proposal, root, layout, surface='selfaware', prompt='P-struct', arm='base',
+                             base_model=root, edited_model=root, ack=True)
+
+
+def test_hf_evaluation_needs_no_vllm_flag_and_retries_only_malformed_rows(tmp_path, monkeypatch):
+    monkeypatch.delenv('VLLM_BATCH_INVARIANT', raising=False)
+    proposal, root, layout, calls = _eval_fixture(tmp_path, monkeypatch, 'hf-batched')
+    record = _evaluate(proposal, root, layout)
+    assert [c[:2] for c in calls] == [('batch-generate', 'evaluation')] * 2
+    assert calls[0][2].endswith('attempt-0/output') and calls[1][2].endswith('attempt-1/output')
+    assert run.read_jsonl(layout.local(f'{run.PREFIX}/evaluation/selfaware/P-struct/base/attempt-1/prompts.jsonl')) == [{'id': 'row-0', 'idx': 1}]
+    assert record['rows'] == 2
+
+
+def test_vllm_evaluation_still_requires_the_invariance_flag(tmp_path, monkeypatch):
+    monkeypatch.delenv('VLLM_BATCH_INVARIANT', raising=False)
+    proposal, root, layout, calls = _eval_fixture(tmp_path, monkeypatch, 'vllm')
+    with pytest.raises(HarnessError, match='VLLM_BATCH_INVARIANT'):
+        _evaluate(proposal, root, layout)
+    assert not calls

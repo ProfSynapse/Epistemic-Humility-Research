@@ -73,7 +73,7 @@ unchanged tokenizer/config sidecars. Both arms use the base tokenizer.
 After runtime qualification, sign-off and that Git commitment:
 
 ```bash
-VLLM_BATCH_INVARIANT=1 python -m hs20_nwe.astra_run eval-cell \
+python -m hs20_nwe.astra_run eval-cell \
   --surface selfaware --prompt P-struct --arm base \
   --base-model BASE --edited-model EDITED --gpu-ack
 ```

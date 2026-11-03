@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-03",
+  "full_suite_wall_seconds": 49.106,
+  "passed": 237,
+  "schema_version": "ehr-astra-cpu-smoke-timings/v1",
+  "scope": "Timed composite synthetic CPU smoke of the pinned harness; module declarations use this measured complete-suite duration as a conservative component bound, not an estimate of production GPU duration.",
+  "skipped": 2,
+  "test_module_sums_seconds": {
+    "tests.test_adjudication": 1.165,
+    "tests.test_astra_analysis": 0.8440000000000001,
+    "tests.test_astra_benchmark": 0.03,
+    "tests.test_astra_capture": 0.14300000000000002,
+    "tests.test_astra_fixed": 3.8179999999999965,
+    "tests.test_astra_qualification": 0.392,
+    "tests.test_astra_run": 0.03899999999999999,
+    "tests.test_capture_sensor_localize": 0.24999999999999997,
+    "tests.test_end_to_end_fake_engine": 18.542999999999996,
+    "tests.test_frozen_ports": 0.101,
+    "tests.test_inputs": 1.205,
+    "tests.test_installed_consumer_plan": 7.007,
+    "tests.test_no_eligible_and_cli": 14.424,
+    "tests.test_review_guards": 0.37300000000000005,
+    "tests.test_rollup": 0.376,
+    "tests.test_selection_budget": 0.053,
+    "tests.test_token_parity": 0.0,
+    "tests.test_weights_localize": 0.09999999999999999
+  },
+  "tests": 239,
+  "xml_sha256": "ec8adbc59e24189bb2a560bd167d2264d28faff7bdc20b452dfbc3fc1d9ea288"
+}

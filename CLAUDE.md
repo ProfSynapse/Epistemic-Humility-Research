@@ -180,8 +180,11 @@ local instructions in that area before editing. Treat registered study design as
 governed: changes need explicit rationale, changelog, and user approval.
 
 GENERATION ENGINE (PI ruling 2026-08-13): vLLM is the forced default for every
-new generation, eval, logprob, or capture surface — the only exceptions are
-parity-locked reuse of a registered engine and per-row intervention cells.
+new generation, eval, logprob, or capture surface. Exceptions are parity-locked
+reuse, per-row intervention cells, and the batching reference's HF fallback
+after an actual pinned vLLM capability/invariance failure. The fallback declares
+`engine_exception.kind: capability-gap` and pins its failure and qualification
+evidence in the signed instrument. Never bypass the failed capability check.
 Never rule vLLM out from remembered capability limits; that memory is
 chronically stale (current vLLM exposes generation-time hidden states,
 per-token logprobs, LoRA, and bnb quantization). Capability questions are

@@ -332,3 +332,27 @@ The pinned desktop HF image passes all 3 generic HF-schema CPU tests in 6.27 s.
 The runtime has XGrammar 0.2.2 and apache-tvm-ffi 0.1.15.post2 on the existing
 Torch 2.9.1+cu128 / Transformers 5.17.0 stack. Actual-model repeat/permutation and
 capture/generation hard-kill drills still precede formal sign and study capture.
+
+
+## 2026-11-03 — First HF qualification passes; capture CLI flag repair
+
+The first HF namespace completed both orders twice (20 rows each), with exact
+persisted row/token equality. A whole-container SIGKILL after one durable row
+returned exit137; its resumed 20-row output matched all four uninterrupted runs.
+Whole JSON-schema validation and prompt-token checks passed. This first proof
+remains under qualification/hf-5.17.0-xgrammar-0.2.2-b1-r1.
+
+The subsequent capture command refused before model load: the direct extract
+verb requires --mi-config, while the new Astra driver passed --config. Fixed
+that one argument in astra_run.capture. Because the generation qualification
+also binds that source file, selected fresh namespace
+hf-5.17.0-xgrammar-0.2.2-b1-r2 instead of rewriting or weakening the first proof.
+Capture is qualified first, followed by final-source generation repeats/drill.
+No study capture, numerical edit or benchmark output exists at this point.
+
+The uninterrupted final-source capture completed all20forward-only rows. The
+actual module input/output and pinned W pass the registered linear-consistency
+check; max error/bound ratio is0.2370663718674437 (must be<=1). This is a
+mechanical capture check, not an abstention benefit. The actual hard-kill and
+resume comparison is in progress. The eight-cell production pipeline also
+plans successfully through the installed public engine, without model execution.

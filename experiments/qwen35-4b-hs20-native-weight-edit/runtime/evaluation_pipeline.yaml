@@ -1,0 +1,154 @@
+schema_version: mechinterp-pipeline/v1
+name: astra-fixed-behavioral-evaluation
+model: /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+model_revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+runtime:
+  provider: local
+  python: python
+  pythonpath:
+  - project://experiments/qwen35-4b-hs20-native-weight-edit
+stages:
+- name: selfaware_p_struct_base
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - selfaware
+  - --prompt
+  - P-struct
+  - --arm
+  - base
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: selfaware_p_struct_edited
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - selfaware
+  - --prompt
+  - P-struct
+  - --arm
+  - edited
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: selfaware_p_rc_base
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - selfaware
+  - --prompt
+  - P-rc
+  - --arm
+  - base
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: selfaware_p_rc_edited
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - selfaware
+  - --prompt
+  - P-rc
+  - --arm
+  - edited
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: ambigqa_p_struct_base
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - ambigqa
+  - --prompt
+  - P-struct
+  - --arm
+  - base
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: ambigqa_p_struct_edited
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - ambigqa
+  - --prompt
+  - P-struct
+  - --arm
+  - edited
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: ambigqa_p_rc_base
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - ambigqa
+  - --prompt
+  - P-rc
+  - --arm
+  - base
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack
+- name: ambigqa_p_rc_edited
+  kind: command
+  command:
+  - python
+  - -m
+  - hs20_nwe.astra_run
+  - eval-cell
+  - --surface
+  - ambigqa
+  - --prompt
+  - P-rc
+  - --arm
+  - edited
+  - --base-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model
+  - --edited-model
+  - /workspace/.synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/checkpoints/edited
+  - --gpu-ack

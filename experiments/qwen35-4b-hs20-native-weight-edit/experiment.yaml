@@ -25,7 +25,10 @@ instrument:
   - runtime/Dockerfile.vllm
   - runtime/Dockerfile.engine-overlay
   - runtime/Dockerfile.hf-schema
+  - runtime/evaluation_pipeline.yaml
   - runtime/inspect.yaml
+  - design-history/vllm_runtime_refusal_20261103.yaml
+  - runtime/engine_capability_gap.yaml
   modules:
   - hs20_nwe/__init__.py
   - hs20_nwe/astra_fixed.py
@@ -48,7 +51,136 @@ instrument:
   - hs20_nwe/commitments.py
   - hs20_nwe/integrity.py
   pins: {}
-  persistence: {}
+  engine_exception:
+    kind: capability-gap
+    reason: Pinned vLLM refuses batch-invariant GDN_ATTN at initialization for Qwen3.5,
+      and vLLM 0.33.0 and main still lack support, so both evaluation arms use the
+      repository-authorized pinned HF batch-one fallback.
+    evidence: runtime/engine_capability_gap.yaml
+  persistence:
+    hs20_nwe/__init__.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/astra_fixed.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/astra_capture.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/astra_render.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/astra_benchmark.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/astra_run.py:
+      persistence: incremental
+      checkpoint_path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/operations.jsonl
+      durable_unit: Per-row engine generation outputs and capture journal; the host
+        operation journal records stage boundaries.
+      per_item_checkpoints:
+      - .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/capture/capture.runlog.jsonl
+      - .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/evaluation/<surface>/<prompt>/<arm>/attempt-<k>/output/completions.jsonl
+      kill_resume_evidence: analysis-committed/astra_runtime_qualification.json
+    hs20_nwe/astra_analysis.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/benchmark_scorers.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/benchmark_ood.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/benchmark_stats.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/capture.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/weights.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/config.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/util.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/render.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/grader.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/detector_v2.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/adjudication.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/commitments.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
+    hs20_nwe/integrity.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 49.106
+      smoke_evidence: analysis-committed/astra_cpu_smoke_timings.json
+      measurement_scope: Whole composite synthetic CPU smoke covering the library
+        component; conservative complete-suite duration, not a production GPU estimate.
   runtime_image_digest: sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224
 inputs:
 - experiments/common/directions/qwen35-4b-hs20/provenance.json

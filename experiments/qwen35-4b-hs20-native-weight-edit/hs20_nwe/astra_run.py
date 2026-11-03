@@ -155,7 +155,7 @@ def capture(proposal, root, layout, model: Path, *, ack: bool):
     write_json(request_path, request)
     config_path = layout.local(f'{PREFIX}/capture.yaml')
     write_yaml(config_path, capture_config(proposal, layout))
-    _gpu(root, layout, 'mechinterp', ['extract', '--config', layout.ref(f'{PREFIX}/capture.yaml'),
+    _gpu(root, layout, 'mechinterp', ['extract', '--mi-config', layout.ref(f'{PREFIX}/capture.yaml'),
                                     '--model', str(model.resolve()), '--model-revision', proposal.raw['model']['revision'],
                                     '--i-know-this-runs-on-gpu'], ack=ack, role='capture')
     return astra_capture.verify_request(proposal, layout.local(f'{PREFIX}/capture'), request_path,
@@ -323,7 +323,7 @@ def batch_arguments(proposal, runtime, layout, model: Path, prompt_ref: str, out
 
 def evaluate_cell(proposal, root, layout, *, surface, prompt, arm, base_model, edited_model, ack):
     runtime = require_signed(EXPERIMENT_DIR, runtime_role='evaluation')
-    if os.environ.get('VLLM_BATCH_INVARIANT') != '1':
+    if runtime['evaluation']['engine'] == 'vllm' and os.environ.get('VLLM_BATCH_INVARIANT') != '1':
         raise HarnessError('BATCH_INVARIANCE', 'set VLLM_BATCH_INVARIANT=1 before process startup')
     frozen = require_frozen(proposal, layout, base_model, edited_model)
     rows = read_jsonl(layout.local(f'{PREFIX}/inputs/{surface}.jsonl'))

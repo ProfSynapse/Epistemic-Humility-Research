@@ -7,6 +7,7 @@ behavior, constructs an edit, or authorizes scored study generation.
 from __future__ import annotations
 
 import argparse
+import copy
 import fcntl
 import hashlib
 import json
@@ -212,8 +213,9 @@ def verify_capture(proposal, layout, base_tensor):
         loaded[name] = [capture.read_row(directory, r, hidden_state=proposal.patch['hidden_state'],
                                         sites=[(proposal.patch['decoder_block'], 'mlp.down_proj', t) for t in ('input', 'output')])
                         for r in manifests[name]['rows']]
-    if manifests['original']['rows'] != manifests['resume']['rows']:
-        raise HarnessError('QUAL_CAPTURE_PARITY', 'capture rows or tensor bytes changed across resume')
+    tensor_count = compare_capture_rows(layout.local(f'{qual_root}/capture_original'),
+                                        layout.local(f'{qual_root}/capture_resume'),
+                                        manifests['original']['rows'], manifests['resume']['rows'])
     before = layout.local(f'{qual_root}/capture_before.jsonl')
     prefix = read_jsonl(before)
     kill = read_json(layout.local(f'{qual_root}/capture_kill_evidence.json'))
@@ -228,11 +230,50 @@ def verify_capture(proposal, layout, base_tensor):
     inputs = np.stack([r['sites'][site_in] for r in loaded['original']])
     outputs = np.stack([r['sites'][site_out] for r in loaded['original']])
     base = np.load(base_tensor, allow_pickle=False)
-    report = {'passed': True, 'rows': N, 'tensor_bytes_identical': True, 'kill_evidence': kill,
+    report = {'passed': True, 'rows': N, 'tensor_bytes_identical': True, 'tensors_compared': tensor_count,
+              'verification_binding': binding(proposal, runtime), 'kill_evidence': kill,
               'base_tensor_sha256': astra_fixed.bf16_raw_sha256(base),
               'linear_consistency': astra_capture.linear_consistency(inputs, inputs[:0], outputs, base, proposal)}
     write_json(layout.local(f'{qual_root}/capture_qualification.json'), report)
     return report
+
+
+def compare_capture_rows(original_dir, resumed_dir, original, resumed):
+    """Compare actual tensor bytes, not safetensors metadata key ordering.
+
+    Each file must still match its own journal hash. Every other row field,
+    tensor name/shape/dtype, payload byte and parsed file-metadata value must
+    agree. Container-header serialization has no numerical interpretation.
+    """
+    from safetensors import safe_open
+    from safetensors.numpy import load_file
+
+    if len(original) != len(resumed):
+        raise HarnessError('QUAL_CAPTURE_PARITY', 'capture row count changed')
+    count = 0
+    for a, b in zip(original, resumed):
+        normalized_a, normalized_b = copy.deepcopy(a), copy.deepcopy(b)
+        for field in ('capture_files', 'site_captures'):
+            for record in (normalized_a, normalized_b):
+                for info in record.get(field, {}).values():
+                    info.pop('sha256', None)
+        if normalized_a != normalized_b:
+            raise HarnessError('QUAL_CAPTURE_PARITY', 'capture row metadata changed')
+        for field in ('capture_files', 'site_captures'):
+            for family in a.get(field, {}):
+                left = capture.verified_path(original_dir, a[field][family])
+                right = capture.verified_path(resumed_dir, b[field][family])
+                with safe_open(str(left), framework='np') as x, safe_open(str(right), framework='np') as y:
+                    if x.metadata() != y.metadata():
+                        raise HarnessError('QUAL_CAPTURE_PARITY', 'capture file metadata values changed')
+                x, y = load_file(str(left)), load_file(str(right))
+                if x.keys() != y.keys():
+                    raise HarnessError('QUAL_CAPTURE_PARITY', 'capture tensor names changed')
+                for key in x:
+                    if x[key].dtype != y[key].dtype or x[key].shape != y[key].shape or x[key].tobytes() != y[key].tobytes():
+                        raise HarnessError('QUAL_CAPTURE_PARITY', 'capture tensor bytes changed')
+                    count += 1
+    return count
 
 
 def main(argv=None):

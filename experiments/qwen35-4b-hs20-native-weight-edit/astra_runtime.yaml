@@ -36,7 +36,7 @@ storage:
   private_artifacts: E:/SynapticResearch
   desktop_mount: /mnt/e
 qualification:
-  namespace: hf-5.17.0-xgrammar-0.2.2-b1-r1
+  namespace: hf-5.17.0-xgrammar-0.2.2-b1-r4
   required: 20 non-evaluation rows, two repeats in each of two orders, exact token
     IDs/finish/schema; actual capture and generation SIGKILL/resume; no outcome screening
   status: pending

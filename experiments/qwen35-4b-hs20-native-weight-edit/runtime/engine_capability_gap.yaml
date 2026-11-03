@@ -1,0 +1,34 @@
+schema_version: ehr-engine-capability-gap/v1
+kind: capability-gap
+surface: Unsteered base and edited evaluation generation; both arms share one engine.
+attempted_runtime:
+  record: design-history/vllm_runtime_refusal_20261103.yaml
+  engine: vllm
+  version: 0.23.0
+  image_digest: sha256:1e44f7b4c043f78008ac6a971d0fba839beeec85eac855894e268daa481c54dc
+  batch_invariance: true
+observed_failure:
+  phase: engine initialization on the real model, 2026-11-03
+  message: VLLM batch_invariant mode is not supported for GDN_ATTN.
+  durable_completion_rows: 0
+  bypassed: false
+upstream_recheck:
+  date: 2026-11-03
+  latest_release: v0.33.0
+  finding: GDNAttentionBackend in v0.33.0 and main declares no batch-invariance support;
+    the attention selector refuses at initialization.
+  open_fix_candidates:
+  - https://github.com/vllm-project/vllm/pull/60033
+  - https://github.com/vllm-project/vllm/pull/45819
+  open_fix_status: Unmerged; #60033 is marked WIP and was validated on H100, not on this RTX 3090.
+  tracking_issue: https://github.com/vllm-project/vllm/issues/48613
+pi_ruling:
+  date: 2026-11-03
+  decision: Run this study on the qualified HF path.
+  quote: ok fineee we'll start with HF
+qualified_fallback:
+  engine: hf-batched
+  batch_size: 1
+  image_digest: sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224
+  structured_output_backend: xgrammar
+  evidence: analysis-committed/astra_runtime_qualification.json
