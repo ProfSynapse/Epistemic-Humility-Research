@@ -293,3 +293,53 @@ def test_cli_supports_explicit_stdout_without_global_fd_changes(project, tmp_pat
     with output.open("wb") as sink:
         EngineCLI(project).run("project", ["validate", "--json"], stdout=sink)
     assert json.loads(output.read_text())["data"]["valid"] is True
+
+
+@pytest.mark.skipif(not sys.platform.startswith('linux'), reason='qualified Linux GPU host')
+def test_parent_death_guard_kills_engine_and_releases_inherited_lock(tmp_path):
+    import fcntl
+    import os
+    import signal
+    import time
+
+    # The launcher and child are ours. Child inherits the real writer lock.
+    script = '''import fcntl, os, subprocess, sys, time
+from pathlib import Path
+root=Path(sys.argv[1])
+lock=(root/'writer.lock').open('a+b')
+fcntl.flock(lock, fcntl.LOCK_EX|fcntl.LOCK_NB)
+child=subprocess.Popen([sys.executable,'-m','engine_host.exec_guard',str(os.getpid()),'--',sys.executable,'-c',"from pathlib import Path; import os,time; Path('child.pid').write_text(str(os.getpid())); time.sleep(30)"],cwd=root,pass_fds=(lock.fileno(),))
+while True: time.sleep(.02)
+'''
+    parent = subprocess.Popen([sys.executable, '-c', script, str(tmp_path)])
+    child_pid = None
+    try:
+        deadline = time.monotonic() + 5
+        while not (tmp_path / 'child.pid').exists() and time.monotonic() < deadline:
+            time.sleep(.02)
+        child_pid = int((tmp_path / 'child.pid').read_text())
+        with (tmp_path / 'writer.lock').open('a+b') as lock:
+            with pytest.raises(BlockingIOError):
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            parent.kill()
+            parent.wait(timeout=5)
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except BlockingIOError:
+                    time.sleep(.02)
+            else:
+                pytest.fail('engine retained writer lock after owning harness died')
+            status = Path(f'/proc/{child_pid}/stat')
+            assert not status.exists() or status.read_text().split()[2] == 'Z'
+    finally:
+        if parent.poll() is None:
+            parent.kill()
+            parent.wait(timeout=5)
+        if child_pid:
+            try:
+                os.kill(child_pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass

@@ -149,3 +149,10 @@ are implemented in Tuner, on its own branch, with no EHR model/site assumptions.
 The native-weight-edit experiment additionally requires reviewed patching,
 patch-export, module-capture, revision-forwarding and installed-pipeline fixes;
 base release import success does not establish those capabilities.
+
+Guarded desktop GPU calls use the Linux parent-death signal through the installed
+host exec helper. The harness passes its single-writer lock descriptor to the
+engine. Killing the harness kills that engine and keeps a resume from acquiring
+the lock until the engine exits. This guard is opt-in for the experiment wrapper;
+ordinary read-only CLI calls retain their existing behavior. The CPU regression
+kills an owned launcher and verifies both child exit and inherited-lock release.

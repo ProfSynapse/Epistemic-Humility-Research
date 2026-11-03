@@ -54,7 +54,8 @@ class EngineCLI:
                 "--project-root", str(self.project_root),
                 "--manifest", str(self.project_root / "synaptic.yaml")]
 
-    def run(self, operation: str, arguments=(), *, timeout=None, stdout=None, stderr=None):
+    def run(self, operation: str, arguments=(), *, timeout=None, stdout=None, stderr=None,
+            guard_parent=False, pass_fds=()):
         environment = os.environ.copy()
         if environment.get("EHR_HOST_CONFIG"):
             from .storage import configure_storage
@@ -65,8 +66,13 @@ class EngineCLI:
         environment["PATH"] = os.pathsep.join((str(Path(sys.executable).parent), environment.get("PATH", "")))
         if self.plugin_roots:
             environment["PYTHONPATH"] = os.pathsep.join(map(str, self.plugin_roots))
-        return subprocess.run(self.command(operation, arguments), cwd=self.project_root,
-                              env=environment, check=True, timeout=timeout, stdout=stdout, stderr=stderr)
+        command = self.command(operation, arguments)
+        if guard_parent:
+            if not sys.platform.startswith("linux"):
+                raise ValueError("guarded GPU CLI execution requires the qualified Linux host")
+            command = [sys.executable, "-m", "engine_host.exec_guard", str(os.getpid()), "--", *command]
+        return subprocess.run(command, cwd=self.project_root, env=environment, check=True,
+                              timeout=timeout, stdout=stdout, stderr=stderr, pass_fds=tuple(pass_fds))
 
     def plan_pipeline(self, config: str):
         return self.run("mechinterp", ["run", "--config", config, "--provider", "local", "--dry-run", "--json"])
