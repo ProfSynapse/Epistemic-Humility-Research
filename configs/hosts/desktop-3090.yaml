@@ -11,10 +11,10 @@ storage:
 runtime:
   provider: docker-desktop
   gpu: NVIDIA GeForce RTX 3090
-  image_digest: sha256:aaafc29751b932ed6c7532fb34995552202da358e4af2250d74743afb0ccc509
+  image_digest: sha256:88a834eb51e80d0e1a2fadc19ddbb9ea5324511a00bb90d7b5817984fed87eea
   gpu_count: 1
   maximum_run_hours: 14
-  qualification_scope: synthetic_capture_only_native_patch_checks_pending
+  qualification_scope: installed_numeric_contract_passed_real_model_token_parity_pending
 base_model:
   repo: Qwen/Qwen3.5-4B
   revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
