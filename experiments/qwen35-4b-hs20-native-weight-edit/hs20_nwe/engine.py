@@ -74,9 +74,11 @@ class Engine:
                 raise HarnessError("ACTIVE_WRITER", "another engine owns the shared GPU ledger") from exc
             from .integrity import verify
             verify(self.ledger.cell, self.ledger.layout)
-            timeout = self.ledger.reserve(stage, planned_rows)
+            probe_rows = 2 if args and args[0] == "steer" else 0
+            timeout = self.ledger.reserve(stage, planned_rows + probe_rows)
             full = list(args) + ["--i-know-this-runs-on-gpu"]
             token = self.ledger.begin_gpu(stage)
+            self.ledger.bill_probe_rows(token, probe_rows)
             start, timed_out, rc = time.monotonic(), False, 0
             try:
                 self.cli.run("mechinterp", full, timeout=timeout, guard_parent=True, pass_fds=(lock.fileno(),))

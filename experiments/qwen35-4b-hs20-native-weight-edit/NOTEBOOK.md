@@ -64,3 +64,32 @@ The review-regression suite checks budget/instrument refusal separation,
 smoke accounting, export-order enforcement, real Git commitment checks,
 objective spot acceptance, journal validation, and source/model/threshold drift.
 Real-model token parity and measured persistence checks are pending.
+
+
+## 2026-11-03 — attempt1 preserved; measurement repair qualified on CPU
+
+Attempt1 extraction SIGKILL/resume passed4->24 rows in270.8744s. Generation
+qualification stopped at the engine smoke gate before any scored row, with
+off-target movement0.0018307163 above0.001. No force flag or tolerance change
+was used. The frozen binding and aggregate failure are retained in
+analysis-committed/run_binding_attempt1.json and attempt1_qualification.json;
+private journals and logs remain in the original T7 execution snapshot.
+
+A CPU counterexample showed the actual bf16 hidden tensor remained bit-identical
+while readback reported movement0.0253904. The engine used different direction
+precision for pre/post measurement. Engine49a6b6b8 fixes only that measurement
+basis. All290 MechInterp tests pass, including the regression. The active wheel
+is9ef85ba and the rebuilt runtime is a1d3995e; the runtime manifest pins both.
+Host26 tests and experiment144 CPU tests pass; the torch-only contract file is
+skipped in the CPU host environment. No behavioral gate or tolerance changed.
+
+Remaining review repairs make spot packs/decisions write-once, hide grader
+labels from the lead, require a public spot Git commitment, and freeze terminal
+adjudication while retaining the registered CG1 regrade. Full FIT baseline
+generation now requires sign/preflight admission. Drill/parity evidence binds
+the exact runtime/source binding and the fixed24-row smoke count. The budget
+conservatively bills two internal decode-wiring probe rows per steer call.
+
+Fresh qualification will use a new T7 execution directory. Earlier GPU time
+will carry into its shared budget; failed-attempt evidence will not certify the
+new source. Candidate and held-out generation remain unstarted and unsigned.

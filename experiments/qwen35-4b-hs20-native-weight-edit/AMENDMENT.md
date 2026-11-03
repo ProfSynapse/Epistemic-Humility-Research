@@ -271,3 +271,27 @@ committed run binding before GPU work. Pool and graded hashes must appear in
 Git commits before grading and unblinding respectively. The lead spot check
 uses the objective agreement rule above. These repairs were made before sign
 and before experimental output; no observed gate result informed them.
+
+
+### Pre-sign repair closure (2026-11-03, before candidate output)
+
+The lead records the first blinded spot pack and decisions once. The lead sees
+bare opaque-id/text pairs, without grader labels. Its ID/hash-only commitment
+must be in Git before apply. Terminal adjudication is immutable; only the
+registered one-time CG1 regrade can advance a pending report. Direct full
+FIT baseline generation requires the same sign/preflight admission as the
+candidate path. The held-back64 decoys may be generated separately before sign
+to check constructibility; this does not generate the FIT-screen baseline.
+All qualification evidence binds the exact run-binding digest and the fixed
+24-row persistence smoke size. Generation budgeting conservatively bills two
+engine decode-wiring probes for every steer invocation, including resumes.
+
+The first generation persistence smoke failed the engine off-target gate
+(0.0018307163 versus the unchanged0.001 threshold), before full arms ran.
+Diagnosis reproduced nonzero movement for a bit-identical bf16 no-op on CPU:
+the readback compared a float32 direction before with a bf16-rounded direction
+after. The generic engine repair uses the same measurement basis on both sides;
+intervention arithmetic, tolerance and experimental gates are unchanged.
+The failed attempt and its runtime/source binding are preserved. A fresh
+execution namespace and new engine wheel require fresh qualification evidence.
+No candidate or held-out result informed these repairs.

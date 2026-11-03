@@ -24,6 +24,7 @@ STAGES = {
     "inspect": lambda c, a: stages.inspect_stage(c),
     "localize": lambda c, a: stages.localize_stage(c),
     "propose": lambda c, a: stages.propose_stage(c),
+    "check-decoys": lambda c, a: stages.check_decoys(c),
     "gen-static": lambda c, a: stages.gen_static(c),
     "gen-screen-candidates": lambda c, a: stages.gen_screen_candidates(c),
     "select": lambda c, a: stages.select_stage(c),
@@ -126,7 +127,7 @@ def main(argv=None) -> int:
             elif args.pool_command == "spot-pack":
                 files = json.loads(Path(args.grading_manifest).read_text())
                 rows = adjudication.spot_check_pack(ctx.cell, ctx.layout, {k: Path(v) for k, v in files.items()})
-                _say({"n": len(rows), "path": str(adjudication.Pool(ctx.layout).root / "spot_pack.private.jsonl")})
+                _say({"n": len(rows), "path": str(adjudication.Pool(ctx.layout).root / "spot_pack.blind.jsonl")})
             elif args.pool_command == "spot-record":
                 _say(adjudication.record_spot_check(ctx.cell, ctx.layout, read_jsonl(args.decisions),
                                                     accepted=args.accepted, note=args.note))

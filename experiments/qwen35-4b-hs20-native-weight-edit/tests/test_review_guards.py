@@ -58,10 +58,12 @@ def test_spot_acceptance_is_computed_and_cannot_be_overridden(project, cell):
     pack = [{"opaque_id": str(i), "grader_label": True} for i in range(30)]
     write_jsonl(A.Pool(layout).root / "spot_pack.private.jsonl", pack)
     decisions = [{"opaque_id": str(i), "lead_is_abstention": i < 27} for i in range(30)]
+    write_json(__import__("hs20_nwe.commitments", fromlist=["public_path"]).public_path(layout, "run_binding.json"), {"fixture": True})
     assert A.record_spot_check(cell, layout, decisions)["accepted"]
     decisions[26]["lead_is_abstention"] = False
-    assert not A.record_spot_check(cell, layout, decisions)["accepted"]
-    with pytest.raises(HarnessError, match="cannot override"):
+    with pytest.raises(HarnessError, match="SPOT_CHECK_FINAL"):
+        A.record_spot_check(cell, layout, decisions)
+    with pytest.raises(HarnessError, match="SPOT_CHECK_FINAL"):
         A.record_spot_check(cell, layout, decisions, accepted=True)
     report = A.apply(cell, layout, {}) if A.Pool(layout).manifest.exists() else None
     assert report is None
@@ -124,3 +126,22 @@ def test_unsigned_scored_run_is_refused(project, cell, monkeypatch):
     ctx = stages.Ctx(project.root, cell, Layout(project.root, SLUG))
     with pytest.raises(HarnessError, match="RUN_ADMISSION"):
         stages.require_run_admission(ctx)
+
+
+def test_baseline_cannot_run_directly_before_sign(project, cell, monkeypatch):
+    monkeypatch.setattr(integrity, "verify", lambda *a: {"passed": True})
+    ctx = stages.Ctx(project.root, cell, Layout(project.root, SLUG))
+    with pytest.raises(HarnessError, match="RUN_ADMISSION"):
+        stages.gen_static(ctx)
+
+
+def test_drill_evidence_cannot_cross_bindings_or_choose_its_own_count(project, cell):
+    from hs20_nwe.commitments import public_path
+    layout = Layout(project.root, SLUG)
+    evidence = synthetic_drill(cell, layout)
+    assert integrity.verify_drill(cell, layout, evidence)
+    evidence["drills"][0]["expected_rows"] += 1
+    assert not integrity.verify_drill(cell, layout, evidence)
+    evidence["drills"][0]["expected_rows"] -= 1
+    write_json(public_path(layout, "run_binding.json"), {"changed": True})
+    assert not integrity.verify_drill(cell, layout, evidence)

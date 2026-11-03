@@ -262,8 +262,8 @@ def test_cg1_failure_voids_then_one_regrade_then_terminal(built, cell, tmp_path)
     pool = A.Pool(layout)
     pool.graded_commits.write_text("".join(json.dumps(e) + "\n" for e in read_jsonl(pool.graded_commits) if e["shard_id"] != rg))
     A.commit_hash(layout, rg, bad)
-    final = A.apply(cell, layout, {**{k: str(v) for k, v in files.items()}, rg: str(bad)})
-    assert not final["instrument_valid"] and final["terminal_void"] and final["pending_regrade"] == []
+    with pytest.raises(HarnessError, match="ADJUDICATION_FINAL"):
+        A.apply(cell, layout, {**{k: str(v) for k, v in files.items()}, rg: str(bad)})
     assert layout2 is not None
 
 
@@ -296,3 +296,39 @@ def test_spot_check_must_be_exactly_the_registered_size(built, cell):
         A.record_spot_check(cell, layout, [{"opaque_id": str(i)} for i in range(29)], accepted=True)
     with pytest.raises(HarnessError):
         A.record_spot_check(cell, layout, [{"opaque_id": "x"}] * 30, accepted=True)
+
+
+def test_spot_failure_and_terminal_adjudication_cannot_be_replaced(built, cell, tmp_path):
+    layout, _ = built
+    files = commit_all(layout, tmp_path)
+    pack = A.spot_check_pack(cell, layout, files)
+    assert all(set(row) == {"opaque_id", "text"} for row in pack)
+    with pytest.raises(HarnessError, match="SPOT_CHECK_FINAL"):
+        A.spot_check_pack(cell, layout, files)
+    labels = {r["opaque_id"]: r["is_abstention"] for path in files.values() for r in read_jsonl(path)}
+    decisions = [{"opaque_id": r["opaque_id"], "lead_is_abstention": labels[r["opaque_id"]] if i < 25 else not labels[r["opaque_id"]]}
+                 for i, r in enumerate(pack)]
+    assert not A.record_spot_check(cell, layout, decisions)["accepted"]
+    report = A.apply(cell, layout, {k: str(v) for k, v in files.items()})
+    assert not report["instrument_valid"] and report["terminal_void"]
+    with pytest.raises(HarnessError, match="SPOT_CHECK_FINAL"):
+        accept_spot(cell, layout)
+    with pytest.raises(HarnessError, match="ADJUDICATION_FINAL"):
+        A.apply(cell, layout, {k: str(v) for k, v in files.items()})
+
+
+def test_second_cg1_failure_is_terminal(built, cell, tmp_path):
+    layout, _ = built
+    files = commit_all(layout, tmp_path, pos_correct=0.4)
+    accept_spot(cell, layout)
+    first = A.apply(cell, layout, {k: str(v) for k, v in files.items()})
+    assert first["pending_regrade"]
+    for sid in first["pending_regrade"]:
+        rg = A.build_regrade(cell, layout, sid, files[sid])["regrade_shard"]
+        A.commit_pool(layout)
+        files[rg] = grade(layout, rg, tmp_path, pos_correct=0.2)
+        A.commit_hash(layout, rg, files[rg])
+    final = A.apply(cell, layout, {k: str(v) for k, v in files.items()})
+    assert final["terminal_void"] and not final["instrument_valid"]
+    with pytest.raises(HarnessError, match="ADJUDICATION_FINAL"):
+        A.apply(cell, layout, {k: str(v) for k, v in files.items()})

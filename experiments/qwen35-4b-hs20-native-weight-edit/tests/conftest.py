@@ -131,6 +131,7 @@ def fake_engine_binding_boundary(request, monkeypatch):
         monkeypatch.setattr(stages, "require_run_admission", lambda *a: None)
         monkeypatch.setattr(integrity, "verify", lambda *a, **k: {"passed": True})
         monkeypatch.setattr(integrity, "report", lambda *a, **k: {"passed": True})
+        monkeypatch.setattr(integrity, "binding_digest", lambda *a: "f" * 64)
 
 
 def git_commit_public(layout, name):
@@ -151,7 +152,14 @@ def git_commit_public(layout, name):
 def lead_git_commits_in_adjudication_fixtures(request, monkeypatch):
     if request.module.__name__ not in {"test_adjudication", "test_end_to_end_fake_engine"}:
         return
-    from hs20_nwe import adjudication as A
+    from hs20_nwe import adjudication as A, integrity
+    monkeypatch.setattr(integrity, "binding_digest", lambda *a: "f" * 64)
+    original_spot = A.record_spot_check
+    def spot_wrapper(cell, layout, *args, **kwargs):
+        result = original_spot(cell, layout, *args, **kwargs)
+        git_commit_public(layout, "adjudication_spot_manifest.json")
+        return result
+    monkeypatch.setattr(A, "record_spot_check", spot_wrapper)
     for method, name in (("commit_pool", "adjudication_pool_manifest.json"),
                          ("commit_hash", "adjudication_graded_manifest.json")):
         original = getattr(A, method)
@@ -163,16 +171,21 @@ def lead_git_commits_in_adjudication_fixtures(request, monkeypatch):
 
 
 def synthetic_drill(cell, layout):
-    from hs20_nwe.util import write_jsonl, sha256_file
+    from hs20_nwe.util import write_jsonl, sha256_file, write_json
+    from hs20_nwe import integrity, commitments
+    binding = commitments.public_path(layout, "run_binding.json")
+    if not binding.exists():
+        write_json(binding, {"synthetic_fixture": True})
+    stamp = integrity.evidence_stamp(cell, layout)
     drills = []
     for module in ("extract", "generation", "localize"):
-        rows = [{"row_key": f"synthetic-{module}-{i}"} for i in range(8)]
+        rows = [{"row_key": f"synthetic-{module}-{i}"} for i in range(cell.cell["qualification"]["rows"])]
         refs = [layout.ref(f"tests/{module}-{suffix}.jsonl") for suffix in ("before", "after")]
         for ref, subset in zip(refs, (rows[:4], rows)):
             write_jsonl(layout.to_local(ref), subset)
-        drills.append({"module": module, "signal": 9, "killed_pid": 123,
-                       "resume_exit_code": 0, "expected_rows": 8,
+        drills.append({**stamp, "module": module, "signal": 9, "killed_pid": 123,
+                       "resume_exit_code": 0, "expected_rows": len(rows),
                        "before_journal": refs[0], "after_journal": refs[1],
                        "before_sha256": sha256_file(layout.to_local(refs[0])),
                        "after_sha256": sha256_file(layout.to_local(refs[1]))})
-    return {"schema_version": "hs20-nwe-kill-resume/v1", **cell.stamp(), "drills": drills}
+    return {"schema_version": "hs20-nwe-kill-resume/v1", **stamp, "drills": drills}

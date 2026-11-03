@@ -63,7 +63,7 @@ def test_04_baseline_generation_decoys_screen_and_selection(flow):
 
 def test_05_budget_counts_every_generated_row(flow):
     summary = flow.ctx.ledger.summary()
-    assert summary["generated_rows"] == 64 + 192 + 6 * 192 and summary["stopped"] is None
+    assert summary["generated_rows"] == 64 + 192 + 6 * 192 + 16 and summary["stopped"] is None
 
 
 def test_06_controls_export_heldout_generation(flow):
@@ -79,7 +79,7 @@ def test_06_controls_export_heldout_generation(flow):
     assert set(ex["fires"]) == {"confab", "known_correct"} and ex["fires"]["confab"] > 200
     stages.gen_heldout(ctx)
     summary = ctx.ledger.summary()
-    assert summary["generated_rows"] == 64 + 192 + 6 * 192 + 6 * 660 + 2 * (300 + 360) + 40
+    assert summary["generated_rows"] == 64 + 192 + 6 * 192 + 6 * 660 + 2 * (300 + 360) + 40 + 38
     for name in ("heldout_native", "heldout_controller", "heldout_random_20261111", "clamp_known_native"):
         assert (ctx.layout.local(f"grades/{name}.jsonl")).exists()
 
@@ -148,7 +148,8 @@ def test_10_pool_adjudication_parity_and_rollup(flow, tmp_path):
     for sid, f in files.items():
         A.commit_hash(ctx.layout, sid, f)
     pack = A.spot_check_pack(ctx.cell, ctx.layout, files)
-    A.record_spot_check(ctx.cell, ctx.layout, [{"opaque_id": r["opaque_id"], "lead_is_abstention": r["grader_label"]} for r in pack], accepted=True)
+    labels = {r["opaque_id"]: r["is_abstention"] for path in files.values() for r in read_jsonl(path)}
+    A.record_spot_check(ctx.cell, ctx.layout, [{"opaque_id": r["opaque_id"], "lead_is_abstention": labels[r["opaque_id"]]} for r in pack], accepted=True)
     rep = A.apply(ctx.cell, ctx.layout, {k: str(v) for k, v in files.items()})
     assert rep["instrument_valid"] and rep["n_core_credited"] == n_candidates
     # preflight parity evidence (zero patch, batch 1/4, export round trip), then the pre-sign drill evidence from the parent
@@ -191,4 +192,4 @@ def test_12_job_resume_after_midrun_failure_is_exact(flow, tmp_path):
     before = ctx.ledger.generated_rows()
     stages.run_job(ctx, job)
     assert len(read_jsonl(out)) == 660 and len({r["row_key"] for r in read_jsonl(out)}) == 660
-    assert ctx.ledger.generated_rows() == before                      # file count is the unit, not the call count
+    assert ctx.ledger.generated_rows() == before + 2                  # conservative probe bound; file count is the unit, not the call count

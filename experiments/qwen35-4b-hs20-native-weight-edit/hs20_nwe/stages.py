@@ -174,7 +174,7 @@ def require_run_admission(ctx: Ctx) -> None:
     manifest = yaml.safe_load((ctx.cell.directory / "experiment.yaml").read_text())
     evidence = _evidence(ctx)
     needed = ("zero_patch_token_parity", "batch_1_4_token_parity", "kill_resume_drill")
-    if manifest.get("status") != "signed" or not all(evidence.get(name, {}).get("passed") for name in needed):
+    if manifest.get("status") not in {"signed", "running"} or not all(evidence.get(name, {}).get("passed") for name in needed):
         raise HarnessError("RUN_ADMISSION", "sign and pass the measured preflight before scored extraction/candidates")
 
 
@@ -294,6 +294,7 @@ def validate_spec(ctx: Ctx, spec_path: Path, tag: str | None = None) -> weights.
     ref = ctx.layout.ref(str(spec_path.relative_to(ctx.layout.artifacts_root / ctx.layout.slug)), shared=True)
     rc, doc = ctx.engine.run_json(["weights-patch", "--weights-config", ref, "--validate", "--json"], out)
     if doc is None:
+        write_json(ctx.layout.local("results/instrument_failure.json"), {"stage": "validate", "code": "VALIDATE_NO_OUTPUT", "tag": tag})
         raise HarnessError("VALIDATE_NO_OUTPUT", f"weights-patch --validate produced no JSON for {tag} (exit {rc})")
     try:
         return weights.parse_validation(ctx.cell, doc)
@@ -382,7 +383,23 @@ def generate(ctx: Ctx, job_ids: list[str]) -> dict:
     return results
 
 
+def check_decoys(ctx: Ctx) -> dict:
+    # Decoys are held back from scored FIT selection/localization. This is
+    # constructibility qualification, not a FIT baseline aggregate.
+    generate(ctx, ["decoy_baseline"])
+    job = load_registry(ctx)["decoy_baseline"]
+    records = grading.load_job_records(job, ctx.layout.local(job.output_rel), expected_rows(ctx, job))
+    try:
+        pools = adjudication.decoy_pools(ctx.cell, records, read_jsonl(ctx.layout.local("grades/decoy_baseline.jsonl")))
+    except HarnessError as exc:
+        write_json(ctx.layout.local("results/instrument_failure.json"), {"stage": "decoys", "code": exc.code})
+        raise
+    return ctx.done("check_decoys", {"positive": len(pools["pos"]), "negative": len(pools["neg"])})
+
+
 def gen_static(ctx: Ctx) -> dict:
+    if ctx.layout.tag is None:
+        require_run_admission(ctx)
     res = generate(ctx, ["decoy_baseline", "screen_baseline"])
     reg = load_registry(ctx)
     decoy_records = grading.load_job_records(reg["decoy_baseline"], ctx.layout.local(reg["decoy_baseline"].output_rel),
@@ -480,6 +497,7 @@ def controls_stage(ctx: Ctx) -> dict:
     write_json(layout.local("controls/controls.json"), {"K": len(results), "all_matched": ok, "controls": results,
                                                           "native_candidate": cand["cand_id"], "native_delta": target})
     if not ok:
+        write_json(layout.local("results/instrument_failure.json"), {"stage": "controls", "code": "CONTROL_CONSTRUCTION"})
         raise HarnessError("CONTROL_CONSTRUCTION", "a norm-matched control failed; recorded, K is not reduced")
     return ctx.done("controls", {"all_matched": ok})
 
@@ -538,11 +556,13 @@ def require_export_parity(ctx: Ctx) -> None:
     if not path.is_file():
         raise HarnessError("EXPORT_PARITY", "selected export/token parity must pass before held-out generation")
     proof = read_json(path)
+    from .integrity import binding_digest
     selected = selection_doc(ctx)
     candidate = next(c for c in candidates_registry(ctx)["candidates"] if c["cand_id"] == selected["winner"])
     if (proof.get("passed") is not True or proof.get("basis") != "generated_token_ids"
             or proof.get("tensor_bytes_equal") is not True
             or proof.get("selected_spec_sha256") != candidate["spec_sha256"]
+            or proof.get("run_binding_sha256") != binding_digest(ctx.layout)
             or any(proof.get(k) != value for k, value in ctx.cell.stamp().items())):
         raise HarnessError("EXPORT_PARITY", "selected export proof is failed, stale or from another patch")
 
@@ -586,9 +606,10 @@ def _evidence(ctx: Ctx) -> dict:
     from .integrity import verify_drill
     drill = out.get("kill_resume_drill")
     out["kill_resume_drill"] = {"passed": verify_drill(ctx.cell, ctx.layout, drill)}
+    from .integrity import binding_digest
     for name, proof in out.items():
         if name != "kill_resume_drill" and proof:
-            if any(proof.get(k) != v for k, v in ctx.cell.stamp().items()) or proof.get("n") != ctx.cell.cell["generation"]["preflight_rows"]:
+            if proof.get("run_binding_sha256") != binding_digest(ctx.layout) or any(proof.get(k) != v for k, v in ctx.cell.stamp().items()) or proof.get("n") != ctx.cell.cell["generation"]["preflight_rows"]:
                 out[name] = {"passed": False}
     return out
 
@@ -739,6 +760,8 @@ def parity_prepare(ctx: Ctx, n_rows: int, *, include_selected: bool = False) -> 
 def parity_compare(ctx: Ctx) -> dict:
     from . import parity
 
+    from .integrity import evidence_stamp
+    stamp = evidence_stamp(ctx.cell, ctx.layout)
     layout = ctx.layout
     reg = load_registry(ctx)
 
@@ -749,8 +772,8 @@ def parity_compare(ctx: Ctx) -> dict:
 
     ze = parity.zero_patch_evidence(recs("parity_untouched_b4"), recs("parity_zero_b4"), True)
     ba = parity.compare(recs("parity_untouched_b1"), recs("parity_untouched_b4"))
-    parity.write_evidence(layout, "zero_patch_token_parity", {**ze, **ctx.cell.stamp()})
-    parity.write_evidence(layout, "batch_1_4_token_parity", {**ba, **ctx.cell.stamp()})
+    parity.write_evidence(layout, "zero_patch_token_parity", {**ze, **stamp})
+    parity.write_evidence(layout, "batch_1_4_token_parity", {**ba, **stamp})
     out = {"zero_patch": ze["passed"], "batch": ba["passed"]}
     if "parity_exported_b4" in reg and "parity_selected_b4" in reg:
         export_doc = read_json(layout.local("results/evidence/export_manifest_digest.json", shared=True)) \
@@ -762,6 +785,6 @@ def parity_compare(ctx: Ctx) -> dict:
         selected = selection_doc(ctx)
         candidate = next(c for c in candidates_registry(ctx)["candidates"] if c["cand_id"] == selected["winner"])
         parity.write_evidence(layout, "readback_and_export_roundtrip",
-                              {**ex, **ctx.cell.stamp(), "selected_spec_sha256": candidate["spec_sha256"]})
+                              {**ex, **stamp, "selected_spec_sha256": candidate["spec_sha256"]})
         out["export"] = ex["passed"]
     return ctx.done("parity_compare", out)

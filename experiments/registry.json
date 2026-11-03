@@ -6906,7 +6906,7 @@
         ],
         "persistence": {},
         "pins": {},
-        "runtime_image_digest": "sha256:35fc50d3e1878710147f5a0251a4d89c39958255263ed71f5d540fc6d88414e9"
+        "runtime_image_digest": "sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc"
       },
       "kg": [],
       "prediction": "A patch selected from six fixed candidates will pass held-out benefit, known-cost and native-specificity gates G1–G3 without an inference-time controller.",

@@ -36,7 +36,7 @@ def drill(ctx, module):
     tag = 'kill-resume'  # Same captured rows support the localize persistence drill.
     smoke = stages.Ctx.create(ctx.project_root, tag=tag, gpu_ack=ctx.gpu_ack)
     if module == 'extract':
-        stages.smoke_prepare(ctx, smoke, ['fit_l', 'fit_screen', 'decoy', 'heldout'], 24)
+        stages.smoke_prepare(ctx, smoke, ['fit_l', 'fit_screen', 'decoy', 'heldout'], int(ctx.cell.cell['qualification']['rows']))
         stages.emit_static(smoke)
     commands = {'extract': ['stage', 'extract-fit-l'],
                 'generation': ['drill-worker', 'generation'],
@@ -96,7 +96,8 @@ def drill(ctx, module):
             if child.poll() is None:
                 os.killpg(child.pid, signal.SIGKILL)
                 child.wait(timeout=30)
-    evidence = {'module': module, 'signal': 9, 'killed_pid': killed_pid, 'resume_exit_code': resumed.returncode,
+    from .integrity import evidence_stamp
+    evidence = {**evidence_stamp(ctx.cell, ctx.layout), 'module': module, 'signal': 9, 'killed_pid': killed_pid, 'resume_exit_code': resumed.returncode,
                 'expected_rows': expected, 'before_rows': len(before), 'after_rows': len(after),
                 'before_journal': before_ref, 'after_journal': after_ref,
                 'before_sha256': sha256_file(ctx.layout.to_local(before_ref)),
@@ -106,7 +107,7 @@ def drill(ctx, module):
     write_json(report_path, evidence)
     all_paths = [ctx.layout.local(f'results/evidence/drill_{m}.json', shared=True) for m in ('extract', 'generation', 'localize')]
     if all(p.exists() for p in all_paths):
-        combined = {'schema_version': 'hs20-nwe-kill-resume/v1', **ctx.cell.stamp(),
+        combined = {'schema_version': 'hs20-nwe-kill-resume/v1', **evidence_stamp(ctx.cell, ctx.layout),
                     'drills': [read_json(p) for p in all_paths]}
         from .integrity import verify_drill
         if not verify_drill(ctx.cell, ctx.layout, combined):

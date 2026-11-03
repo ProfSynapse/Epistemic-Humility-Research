@@ -1,7 +1,7 @@
 {
   "schema_version": "ehr-runtime-build/v1",
   "base_image": "sha256:b4166dbd15d0c7d9cad8a07c46be1301dc5941eb4b4d629ae754dc27cb03eb9c",
-  "engine_source_commit": "78aefc978f12e1af32b13a2268116f6f2cfa3c5a",
+  "engine_source_commit": "49a6b6b8a217b217bef95d3570f56a5444e10a85",
   "host_source_commit": "86ae2b68",
   "wheels": {
     "attrs-25.4.0-py3-none-any.whl": "adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373",
@@ -17,11 +17,11 @@
     "python_dotenv-1.2.1-py3-none-any.whl": "b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61",
     "referencing-0.37.0-py3-none-any.whl": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
     "rpds_py-0.28.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": "b1b553dd06e875249fd43efd727785efb57a53180e0fde321468222eabbeaafa",
-    "synaptic_tuner-1.1.0rc1-py3-none-any.whl": "b884aab4cfbb92da40ed4bd381dffee2325cd3d76107654308b20fbfd8421764",
+    "synaptic_tuner-1.1.0rc1-py3-none-any.whl": "9ef85baa6d0c5ccd8b407a40c371dea55ec550c4e70898bacea7be225a84e9dc",
     "tomli-2.3.0-py3-none-any.whl": "e95b1af3c5b07d9e643909b5abbec77cd9f1217e6d0bca72b0234736b9fb1f1b"
   },
-  "scope": "token-ID parity extension and explicit CLI stdout; no research data",
+  "scope": "Canonical readback basis repair; unchanged tolerance and intervention arithmetic",
   "host_wheel_sha256": "28511365e15a66f36ec34d57caf5b56c02398074cc516b22d99dddf976c44e7c",
-  "derived_image": "sha256:35fc50d3e1878710147f5a0251a4d89c39958255263ed71f5d540fc6d88414e9",
+  "derived_image": "sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc",
   "base_layers_verified": true
 }

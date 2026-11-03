@@ -95,9 +95,19 @@ def report(cell, layout):
         return {"passed": False, "reason": str(exc)}
 
 
+def binding_digest(layout):
+    return sha256_file(commitments.public_path(layout, BINDING_NAME))
+
+
+def evidence_stamp(cell, layout):
+    return {**cell.stamp(), "run_binding_sha256": binding_digest(layout)}
+
+
 def verify_drill(cell, layout, evidence):
     """Require actual before/after journals, signal evidence, and exact resume."""
     if not evidence or evidence.get("schema_version") != "hs20-nwe-kill-resume/v1" or not _stamp(cell, evidence):
+        return False
+    if evidence.get("run_binding_sha256") != binding_digest(layout):
         return False
     drills = evidence.get("drills", [])
     if {d.get("module") for d in drills} != {"extract", "generation", "localize"} or len(drills) != 3:
@@ -111,6 +121,8 @@ def verify_drill(cell, layout, evidence):
             before, after = read_jsonl(before_path), read_jsonl(after_path)
             keys = [r.get("row_key", r.get("key")) for r in after]
             if (drill["signal"] != 9 or drill["killed_pid"] <= 0 or drill["resume_exit_code"] != 0
+                    or drill.get("run_binding_sha256") != binding_digest(layout)
+                    or drill["expected_rows"] != cell.cell["qualification"]["rows"]
                     or len(before) < 4 or len(after) != drill["expected_rows"]
                     or len(after) <= len(before) or len(set(keys)) != len(after) or None in keys
                     or after[:len(before)] != before):

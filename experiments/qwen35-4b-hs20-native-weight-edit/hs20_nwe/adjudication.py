@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import hashlib
 import math
+import json
+import os
 import random
 import secrets
 import time
@@ -318,7 +320,30 @@ def build_regrade(cell: Cell, layout: Layout, shard_id: str, graded_file: Path) 
     return {"regrade_shard": new_id, "first_attempt_cg1": ev["cg1"]}
 
 
+def _write_once(path, document, *, jsonl=False):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = ("".join(json.dumps(row) + "\n" for row in document) if jsonl
+            else json.dumps(document, sort_keys=True, indent=2) + "\n")
+    try:
+        with path.open("x") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+    except FileExistsError as exc:
+        raise HarnessError("SPOT_CHECK_FINAL", "spot packs and decisions are write-once") from exc
+
+
+def _spot_public(cell, layout):
+    from .integrity import evidence_stamp
+    pool = Pool(layout)
+    return {"schema_version": "hs20-nwe-spot-commitment/v1", **evidence_stamp(cell, layout),
+            "spot_sha256": sha256_file(pool.spot)}
+
+
 def record_spot_check(cell: Cell, layout: Layout, decisions: list[dict], *, accepted: bool | None = None, note: str = "") -> dict:
+    pool = Pool(layout)
+    if pool.spot.exists() or pool.report.exists():
+        raise HarnessError("SPOT_CHECK_FINAL", "the first recorded spot check is final")
     n = int(cell.cell["grading"]["lead_spot_check_n"])
     if len(decisions) != n or len({d["opaque_id"] for d in decisions}) != n:
         raise HarnessError("SPOT_CHECK", f"the lead spot-check must hold exactly {n} distinct opaque ids")
@@ -334,13 +359,17 @@ def record_spot_check(cell: Cell, layout: Layout, decisions: list[dict], *, acce
               "pack_sha256": sha256_file(Pool(layout).root / "spot_pack.private.jsonl"),
               "opaque_ids": sorted(d["opaque_id"] for d in decisions),
               "n_lead_abstention": sum(1 for d in decisions if d.get("lead_is_abstention") is True), "ts": time.time()}
-    write_json(Pool(layout).spot, record)
+    _write_once(pool.root / "spot_decisions.private.jsonl", decisions, jsonl=True)
+    _write_once(pool.spot, record)
+    commitments.export(layout, "adjudication_spot_manifest.json", _spot_public(cell, layout))
     return record
 
 
 def spot_check_pack(cell: Cell, layout: Layout, graded_files: dict[str, Path]) -> list[dict]:
-    """30 blinded {opaque_id, text, grader_label} items for the lead; no arm/role/mapping."""
+    """Return bare opaque-id/text pairs; grader labels stay in a private scoring file."""
     pool = Pool(layout)
+    if (pool.root / "spot_pack.private.jsonl").exists() or pool.spot.exists() or pool.report.exists():
+        raise HarnessError("SPOT_CHECK_FINAL", "the first spot pack is final")
     n = int(cell.cell["grading"]["lead_spot_check_n"])
     rows = []
     for shard_id, path in sorted(graded_files.items()):
@@ -350,21 +379,27 @@ def spot_check_pack(cell: Cell, layout: Layout, graded_files: dict[str, Path]) -
                          "grader_label": g["is_abstention"]})
     random.Random(f"{cell.cell['grading']['pool_seed']}:spot").shuffle(rows)
     picked = rows[:n]
-    write_jsonl(pool.root / "spot_pack.private.jsonl", picked)
-    return picked
+    _write_once(pool.root / "spot_pack.private.jsonl", picked, jsonl=True)
+    blind = [{"opaque_id": row["opaque_id"], "text": row["text"]} for row in picked]
+    _write_once(pool.root / "spot_pack.blind.jsonl", blind, jsonl=True)
+    return blind
 
 
 def apply(cell: Cell, layout: Layout, grading: dict[str, str]) -> dict:
     """Unblind only after every shard's graded hash is committed. ``grading`` maps shard_id -> graded file."""
     pool = Pool(layout)
+    previous = read_json(pool.report) if pool.report.exists() else None
+    if previous is not None and (previous.get("instrument_valid") or not previous.get("pending_regrade")):
+        raise HarnessError("ADJUDICATION_FINAL", "a terminal adjudication cannot be rerun or voided")
     manifest = read_json(pool.manifest)
     spot = read_json(pool.spot) if pool.spot.exists() else None
     if spot is None or spot.get("n") != int(cell.cell["grading"]["lead_spot_check_n"]):
         raise HarnessError("SPOT_CHECK_REQUIRED", "an accepted lead spot-check of the registered size must be recorded first")
     if spot.get("pack_sha256") != sha256_file(pool.root / "spot_pack.private.jsonl"):
         raise HarnessError("SPOT_CHECK", "the blinded spot pack changed after review")
+    commitments.require_git(layout, "adjudication_spot_manifest.json", _spot_public(cell, layout))
     if not spot.get("accepted"):
-        report = {"instrument_valid": False, "reason": "registered_spot_agreement_floor_failed", "spot": spot}
+        report = {"instrument_valid": False, "reason": "registered_spot_agreement_floor_failed", "spot": spot, "terminal_void": True}
         write_json(pool.report, report)
         return report
     primaries = [e for e in manifest["shards"] if e["kind"] == "primary"]
@@ -406,6 +441,8 @@ def apply(cell: Cell, layout: Layout, grading: dict[str, str]) -> dict:
               "pending_regrade": pending_regrade, "terminal_void": bool(voided and not pending_regrade),
               "shards": trail, "pooled_positive": pooled, "n_core_credited": len(core_pairs) if valid else 0,
               "spot_check_sha256": sha256_file(pool.spot)}
+    if previous is not None:
+        write_json(pool.root / "report_history" / (sha256_file(pool.report) + ".json"), previous)
     write_json(pool.report, report)
     if valid:
         write_jsonl(pool.applied, [{"arm": m["arm"], "row_key": m["row_key"], "adjudicated_abstention": bool(v)}

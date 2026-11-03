@@ -39,7 +39,7 @@ class Ledger:
         return latest
 
     def generated_rows(self) -> int:
-        return sum(self.rows_by_file().values())
+        return sum(self.rows_by_file().values()) + sum(int(e["rows"]) for e in self.entries() if e["kind"] == "probe_rows")
 
     def gpu_seconds(self) -> float:
         return sum(float(e["seconds"]) for e in self.entries() if e["kind"] == "gpu_seconds")
@@ -97,6 +97,13 @@ class Ledger:
         if self.generated_rows() > self.max_rows:
             self.stop("generated_rows_cap", file=rel, cap=self.max_rows)
         return rows
+
+    def bill_probe_rows(self, token, rows):
+        # The engine can generate two short gen_stream wiring probes before
+        # writing any scored row. Bill their upper bound before launch so a
+        # hard kill cannot erase them. A resumed call is conservatively rebilled.
+        if rows:
+            append_jsonl(self.path, {"kind": "probe_rows", "token": token, "rows": int(rows), "ts": time.time()})
 
     def add_gpu_seconds(self, stage: str, seconds: float, *, timed_out: bool = False, token: str | None = None) -> None:
         append_jsonl(self.path, {"kind": "gpu_seconds", "stage": stage, "seconds": float(seconds), "token": token,
