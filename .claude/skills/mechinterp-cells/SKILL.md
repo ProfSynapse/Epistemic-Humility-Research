@@ -71,6 +71,9 @@ Read only the reference files needed for the task:
   - vLLM-first backend selection, parity exceptions, structured-output policy,
   batch-invariance smoke, and full-depth HF bridge.
 
+- [reference/weight-editor.md](reference/weight-editor.md) - prospective model-independent
+  editor discovery loop, enforced policy boundaries and complete transcript capture.
+
 ## Default Workflow
 
 For a new cell:

@@ -190,6 +190,18 @@ line from source evidence to paper text to experiment artifacts.
   checkout explicitly. Amendment worktrees live under
   `/home/profsynapse/code/ehr-worktrees/`.
 
+## Model-editor research
+
+For LLM-directed weight editing, use the model-independent workflow in
+`docs/architecture/weight-editor-research-workflow.md` and the canonical
+`mechinterp-cells/reference/weight-editor.md` skill reference. Pin the chosen
+editor/settings per study; never hardcode one model into the generic workflow.
+Retain the full emitted editor conversation, tool/effect receipts and artifacts
+privately, separately from target-model generations. The host must enforce the
+registered discovery envelope and held-out boundary; prompts alone do not.
+This proposed contract requires adapter/broker/recorder qualification before
+live editor research. It grants no launch authority.
+
 ## Boundaries
 
 - Work from the root project unless a task explicitly requires entering another
