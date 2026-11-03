@@ -5,6 +5,14 @@ description: Author, organize, and launch tuner-backed mechanistic-interpretatio
 
 # MechInterp Cells
 
+## Current installed-engine boundary
+
+For new work, first read
+[the installed-engine workflow](reference/installed-engine.md). Use the installed
+`engine_host` package and `synaptic.yaml`. MechInterp is a version-pinned CLI,
+not a public Python API v1 family. Historical signed cells retain their engine
+pin and original paths; do not migrate them by editing their instruments.
+
 Use this skill to design and operate new activation-reading or
 activation-writing cells through the `synaptic-tuner` `mechinterp` CLI family.
 The project supplies rows, renders, graders, gates, and experiment organization;
@@ -125,7 +133,7 @@ maintenance.
   location, the sha256-pinning convention, and the honored in-flight
   exception.
 - **Any local run longer than about 15 minutes writes per-item results
-  through the tuner's resumable run log** (`shared/utilities/run_log.py`
+  through the registered engine or host resumable run log** (`engine_host.runlog` for new host code; historical `shared/utilities/run_log.py`
   `RunLog`: append + fsync per item, atomic tmp+replace summary write) rather
   than buffering results in memory and writing only at the end. This applies
   to any module, GPU or CPU, whose projected wall-clock exceeds about 15

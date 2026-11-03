@@ -1,0 +1,17 @@
+{
+  "schema_version": "ehr-engine-build/v1",
+  "kind": "reviewed-local-build-not-release-artifact",
+  "repository": "https://github.com/ProfSynapse/Synaptic-Tuner",
+  "source_commit": "b11f0604feaabaed8113198ebf0c3dabeeefa8dd",
+  "source_dirty_at_build": false,
+  "pull_request": "https://github.com/ProfSynapse/Synaptic-Tuner/pull/281",
+  "wheel_filename": "synaptic_tuner-1.1.0rc1-py3-none-any.whl",
+  "wheel_sha256": "9b47c5a5100b02008e5b69194039f6950d9270ec1bdb690c074725fe6fc25715",
+  "retention": "Retain exact wheel in the private runtime bundle on T7 and the agent-box build artifact directory. A rebuilt wheel needs review and a new pin; wheel archive timestamps are not claimed reproducible.",
+  "checks": {
+    "cpu_tests": 815,
+    "ruff": "passed",
+    "skills_sync": "passed",
+    "gpu_qualification": "pending"
+  }
+}

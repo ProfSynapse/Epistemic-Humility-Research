@@ -6,6 +6,16 @@ allowed-tools: Read, Bash, Write, Grep, Glob
 
 # Locked Matrix Experiment Runner
 
+## Prospective installed-engine integration
+
+New work uses `engine_host` and the installed public `synaptic_tuner.api.v1`
+contracts. MechInterp and batch verbs use the host's version-pinned CLI boundary.
+Read `docs/architecture/tuner-api-v1-migration.md` and the mechinterp-cells
+`reference/installed-engine.md`. The locked-matrix scripts and the historical
+CLI-only rules below remain for signed reproduction; do not rewrite their pins.
+New work never imports engine internals or inserts its checkout into sys.path.
+
+
 Use the checked-in runner scripts to expand, gate, stage, and inspect locked
 matrix cells. This skill is orchestration glue: it talks to the
 `synaptic-tuner` submodule only through materialized recipe YAML and public tuner

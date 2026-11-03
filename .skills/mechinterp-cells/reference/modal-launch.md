@@ -1,5 +1,11 @@
 # Modal launch
 
+For new installed-engine work, [installed-engine.md](installed-engine.md)
+and [pipeline-workflow.md](pipeline-workflow.md) govern command and path usage.
+Older submodule snippets below are historical references, not instructions to
+put an engine checkout on Python's path. Preserve registered historical lanes.
+
+
 Read this before launching mechinterp cells on Modal or another paid/cloud GPU
 lane.
 

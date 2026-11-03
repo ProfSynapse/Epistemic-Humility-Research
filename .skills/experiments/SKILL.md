@@ -213,7 +213,7 @@ before signing, not after.
 persists per-row generation text -- the data-exhaust build-time requirement
 (`.skills/data-exhaust/SKILL.md`) made structural. `exp new` scaffolds
 `enabled`; a generation-bearing harness should open its row-level run log
-through `experiments/common/runlog_contract.py`'s `open_generation_runlog`,
+through `engine_host.generation_log (historical: experiments/common/runlog_contract.py)`'s `open_generation_runlog`,
 which enforces this at write time. Set `not-applicable` for an experiment
 with no generation step at all (pure analysis, probe-fit over existing
 extractions). Set `textless: <non-empty reason>` only when generation

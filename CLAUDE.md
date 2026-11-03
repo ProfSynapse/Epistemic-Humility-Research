@@ -12,6 +12,29 @@ instructions apply to this project root only. Do not install, copy, or rewrite
 these project instructions inside `synaptic-tuner/`; that directory is a
 separate git submodule with its own ownership boundary.
 
+## Current engine integration (prospective, 2026-11-03)
+
+For new work use the installed engine and EHR-owned `engine_host` package.
+Read `docs/architecture/tuner-api-v1-migration.md` first. Python imports use
+only the documented `synaptic_tuner.api.v1` public contracts. MechInterp and
+batch operations use `engine_host.cli_boundary.EngineCLI`; these CLI surfaces
+are separately version-pinned, not stable Python API families. Do not insert
+an engine checkout into `sys.path` or import its internal packages.
+
+The historical `synaptic-tuner/` gitlink, locked matrix, and signed instruments
+retain their original engine and paths. The older CLI-only rules below apply
+to those historical lanes. This prospective section governs new integration.
+Missing generic runtime capabilities go to the Tuner repo, never project-only
+engine monkey patches. `synaptic.yaml` describes new host-mode paths: source
+reads use `project://`, private outputs use `artifact://`. No raw data is
+committed. New logs use the EHR-owned `engine_host.generation_log` contract.
+
+Resolve the working root from git instead of assuming a machine-specific
+spelling: this server uses `~/Code`, while desktop WSL uses `~/code`.
+New desktop models/checkpoints use the owner's selected T7 E: drive through
+`configs/hosts/desktop-3090.yaml`. Never reuse the frozen F: checkout or the
+video-render staging directory for new research execution.
+
 ## Operating Rules (hook-enforced where possible)
 
 The highest-frequency mistakes, several blocked by PreToolUse hooks that name
@@ -30,9 +53,10 @@ often forgotten).
    plus the living-docs split in `.skills/experiment-wrapup/SKILL.md`. Read it
    before concluding something cannot go direct to main.
    [`main_protect_guard`: blocked; sanctioned bypass `EHR_MAIN_OK=1`]
-3. CANONICAL CHECKOUT ONLY. Work in `/home/profsynapse/code/Epistemic-Humility-
-   Research`; `/mnt/f/...` is a FROZEN read-only backup. `cd` to canonical
-   explicitly (the shell may start on /mnt/f). [`path_write_guard`: frozen-backup writes blocked]
+3. CANONICAL CHECKOUT ONLY. Resolve the actual project root from git; use your
+   isolated worktree for changes. `/mnt/f/...` is a FROZEN read-only backup.
+   Never assume server and desktop path casing matches.
+   [`path_write_guard`: frozen-backup writes blocked]
 4. NO TUNER POLLUTION. Never install root-project instructions/orchestration
    (`CLAUDE.md`, `AGENTS.md`, `.claude`/`.agents`/`.codex`/`.skills`) inside
    `synaptic-tuner/`. [`path_write_guard`: blocked]

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ehr-engine-host"
+version = "0.1.0"
+description = "Host-owned Synaptic Tuner integration for epistemic humility research"
+requires-python = ">=3.10"
+dependencies = ["synaptic-tuner>=1.1.0rc1,<2", "PyYAML>=6,<7", "packaging>=23,<27"]
+
+[project.scripts]
+ehr-engine = "engine_host.__main__:main"
+
+[tool.setuptools]
+packages = ["engine_host"]
+package-dir = {engine_host = "experiments/common/engine_host"}

@@ -1,0 +1,24 @@
+schema_version: synaptic-project/v1
+project:
+  id: epistemic-humility-research
+  name: Epistemic Humility Research
+engine:
+  requires: '>=1.1.0rc1,<2'
+  api: v1
+  cli_requires: '==1.1.0rc1'
+  source_commit: b11f0604feaabaed8113198ebf0c3dabeeefa8dd
+  wheel_sha256: 9b47c5a5100b02008e5b69194039f6950d9270ec1bdb690c074725fe6fc25715
+paths:
+  configs: project://experiments
+  artifacts: project://.synaptic/artifacts
+  state: project://.synaptic/state
+  tracking: project://.synaptic/tracking
+  cache: project://.synaptic/cache
+  tmp: project://.synaptic/tmp
+policies:
+  # Intent metadata. Engine 1.1.0rc1 does not enforce every policy key.
+  # EHR path checks and reviewed container mounts are separate controls.
+  engine_writes: deny
+  source_writes: deny
+  external_paths: deny
+  dirty_sources: deny_cloud

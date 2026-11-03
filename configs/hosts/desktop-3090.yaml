@@ -1,0 +1,27 @@
+schema_version: ehr-desktop-host/v1
+host: desktop-2a4u5kr
+wsl_distribution: Ubuntu-22.04
+storage:
+  volume_label: T7
+  windows_drive: 'E:'
+  wsl_mount: /mnt/e
+  project_root: /mnt/e/SynapticResearch/Epistemic-Humility-Research
+  model_root: /mnt/e/Models/Epistemic-Humility-Research
+  checkpoint_root: /mnt/e/SynapticResearch/Epistemic-Humility-Research/.synaptic/artifacts
+runtime:
+  provider: docker-desktop
+  gpu: NVIDIA GeForce RTX 3090
+  image_digest: null  # Bind the reviewed derived runtime before signing a run.
+  gpu_count: 1
+  maximum_run_hours: 14
+base_model:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  local_snapshot: /mnt/e/Models/Epistemic-Humility-Research/base/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  shard_sha256:
+    model.safetensors-00001-of-00002.safetensors: 26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61
+    model.safetensors-00002-of-00002.safetensors: cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188
+policy:
+  preserve_existing_checkouts: true
+  permit_paid_cloud: false
+  source_data_publication: false
