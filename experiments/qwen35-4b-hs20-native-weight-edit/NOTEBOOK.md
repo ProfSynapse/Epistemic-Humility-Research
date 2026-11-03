@@ -4,6 +4,36 @@ Running log for this experiment. Newest entry first. This is a lab notebook, not
 a claims surface; the signed prose lives in `AMENDMENT.md` and the machine state
 in `experiment.yaml`.
 
+## 2026-11-03 — native Astra fixed proposal and evaluation alignment (unsigned)
+
+The user selected ordinary T3 execution with native Codex transcripts and asked
+for one Astra-proposed edit followed by the established evaluation. The custom
+transport is parked. Astra proposed one block-19 sparse rank-one construction;
+`astra_r1.yaml` records the exact proposed formula, development rule, copied
+P-struct/P-rc prompts, datasets and prospective gates. It is not launch authority.
+The original six-candidate SOL pilot remains the current old instrument until
+this proposed replacement is wired and the unsigned AMENDMENT/manifest revised.
+No candidate or evaluation generation has occurred.
+
+Completed native design snapshot archived and hash-verified at
+`E:/SynapticResearch/editor-transcripts/01a1a24d-a9ce-75c0-9bee-756558e488f6/design-v1`.
+The original native transcript remains in its Codex session location. Hash/count
+provenance is in `analysis-committed/astra_design_provenance.json`.
+
+Metadata-only desktop audit confirms the established SelfAware 3,369 and screened
+AmbigQA 1,832 files and label counts. Excluding normalized-question evaluation
+matches leaves 887 confab and 239 historical known-correct FIT questions, enough
+for the fixed 64+64 development capture. The direction-building anchor source pool
+contains one SelfAware question and zero AmbigQA questions: exclude that question
+from NEW development selection and disclose inherited historical exposure. Retain
+the complete benchmarks for comparability; do not claim global unseen status.
+No target inference was used by this audit, and no row text/IDs went to Astra.
+
+The existing response-confidence format retry mentions "answer or abstention".
+Keep the unchanged retry instrument for comparability and report that affordance;
+P-struct identifies the initial prompt condition, not a guarantee that every
+possible retry contains zero abstention-related language.
+
 ## Entries
 
 - (add dated entries as the experiment progresses)
