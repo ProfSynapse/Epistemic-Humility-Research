@@ -5,9 +5,9 @@ project:
 engine:
   requires: '>=1.1.0rc1,<2'
   api: v1
-  cli_requires: '==1.1.0rc1'
-  source_commit: b11f0604feaabaed8113198ebf0c3dabeeefa8dd
-  wheel_sha256: 9b47c5a5100b02008e5b69194039f6950d9270ec1bdb690c074725fe6fc25715
+  cli_requires: ==1.1.0rc1
+  source_commit: 78aefc978f12e1af32b13a2268116f6f2cfa3c5a
+  wheel_sha256: b884aab4cfbb92da40ed4bd381dffee2325cd3d76107654308b20fbfd8421764
 paths:
   configs: project://experiments
   artifacts: project://.synaptic/artifacts
@@ -16,8 +16,6 @@ paths:
   cache: project://.synaptic/cache
   tmp: project://.synaptic/tmp
 policies:
-  # Intent metadata. Engine 1.1.0rc1 does not enforce every policy key.
-  # EHR path checks and reviewed container mounts are separate controls.
   engine_writes: deny
   source_writes: deny
   external_paths: deny

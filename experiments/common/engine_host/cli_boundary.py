@@ -54,7 +54,7 @@ class EngineCLI:
                 "--project-root", str(self.project_root),
                 "--manifest", str(self.project_root / "synaptic.yaml")]
 
-    def run(self, operation: str, arguments=(), *, timeout=None):
+    def run(self, operation: str, arguments=(), *, timeout=None, stdout=None, stderr=None):
         environment = os.environ.copy()
         if environment.get("EHR_HOST_CONFIG"):
             from .storage import configure_storage
@@ -66,7 +66,7 @@ class EngineCLI:
         if self.plugin_roots:
             environment["PYTHONPATH"] = os.pathsep.join(map(str, self.plugin_roots))
         return subprocess.run(self.command(operation, arguments), cwd=self.project_root,
-                              env=environment, check=True, timeout=timeout)
+                              env=environment, check=True, timeout=timeout, stdout=stdout, stderr=stderr)
 
     def plan_pipeline(self, config: str):
         return self.run("mechinterp", ["run", "--config", config, "--provider", "local", "--dry-run", "--json"])

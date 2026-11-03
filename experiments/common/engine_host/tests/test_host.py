@@ -286,3 +286,10 @@ def test_configured_snapshot_hash_is_verified(tmp_path):
     document["base_model"]["shard_sha256"]["model.safetensors"] = hashlib.sha256(b"synthetic fixture").hexdigest()
     config.write_text(yaml.safe_dump(document))
     assert local_model(config, "fixture/model", "a" * 40) == str(snapshot)
+
+
+def test_cli_supports_explicit_stdout_without_global_fd_changes(project, tmp_path):
+    output = tmp_path / "result.json"
+    with output.open("wb") as sink:
+        EngineCLI(project).run("project", ["validate", "--json"], stdout=sink)
+    assert json.loads(output.read_text())["data"]["valid"] is True
