@@ -1,5 +1,6 @@
-# Host-owned derived runtime. BASE_IMAGE must be an inspected local sha256 ID
-# or a registry digest. The build context contains reviewed wheels only.
+# Host-owned derived runtime. BASE_IMAGE must be a local tag
+# verified against its recorded full ID, or a registry digest. The build
+# context contains reviewed wheels only. BuildKit does not accept a bare image ID.
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 COPY wheels/ /opt/ehr-wheels/

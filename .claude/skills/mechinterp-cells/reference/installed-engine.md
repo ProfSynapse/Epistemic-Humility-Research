@@ -33,6 +33,10 @@ installed engine and its base dependencies. Record its digest separately from
 model revision, config hashes and wheel/source identity. On the desktop, use
 the caller-configured T7 E: paths. Do not infer engine readiness from images in
 the native WSL Docker store; verify the active daemon identity.
+Use `runtime/mechinterp/preflight.py` for the synthetic forward-only capture
+smoke before a new local instrument; see its runtime README. It loads through
+the installed CLI and records no scientific result. Set `EHR_HOST_CONFIG` for
+the real local run so host cache/output checks apply.
 
 New behavior remains config-first. A missing generic runtime capability belongs
 in a Tuner branch, never a project-specific import of its internals. Stable v1
