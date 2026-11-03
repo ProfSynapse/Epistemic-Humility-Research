@@ -1,58 +1,85 @@
 slug: qwen35-4b-hs20-native-weight-edit
-title: Qwen3.5-4B hs20 native weight edit
+title: Astra fixed hs20 weight edit for epistemic humility
 type: steer-cell
 status: draft
 registered: true
 created_at: '2026-11-03T11:22:20Z'
-question: Can a bounded direct edit to downstream MLP weights produce selective abstention
-  without an inference-time controller?
-prediction: "A patch selected from six fixed candidates will pass held-out benefit,\
-  \ known-cost and native-specificity gates G1\u2013G3 without an inference-time controller."
-falsifier: "No eligible FIT candidate, or a valid complete held-out test failing any\
-  \ of G1\u2013G3, falsifies this bounded-family prediction; no further rescoring\
-  \ or search is allowed."
+question: Can one Astra-designed sparse Qwen3.5-4B weight edit improve abstention
+  under P-struct while preserving known-answer accuracy on the existing humility benchmarks?
+prediction: The one frozen Astra edit passes all five primary SelfAware P-struct benefit
+  and cost gates; AmbigQA transfer and P-rc are reported separately.
+falsifier: A complete instrument-valid primary evaluation failing any registered benefit
+  or cost gate falsifies this one-edit prediction; no replacement edit, score-driven
+  revision or post-hoc rescoring is allowed.
 text_capture: enabled
 checkpoint:
   repo: Qwen/Qwen3.5-4B
   revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
 instrument:
   configs:
-  - cell.yaml
-  - gates.yaml
+  - astra_r1.yaml
+  - astra_runtime.yaml
+  - hs20_nwe/ASTRA_ORIGINS.json
   - hs20_nwe/ORIGINS.json
   - hs20_nwe/detector_v2_patterns.yaml
+  - runtime/Dockerfile.vllm
+  - runtime/inspect.yaml
   modules:
   - hs20_nwe/__init__.py
-  - hs20_nwe/__main__.py
-  - hs20_nwe/adjudication.py
-  - hs20_nwe/budget.py
+  - hs20_nwe/astra_fixed.py
+  - hs20_nwe/astra_capture.py
+  - hs20_nwe/astra_render.py
+  - hs20_nwe/astra_benchmark.py
+  - hs20_nwe/astra_run.py
+  - hs20_nwe/astra_analysis.py
+  - hs20_nwe/benchmark_scorers.py
+  - hs20_nwe/benchmark_ood.py
+  - hs20_nwe/benchmark_stats.py
   - hs20_nwe/capture.py
-  - hs20_nwe/cli.py
-  - hs20_nwe/commitments.py
-  - hs20_nwe/config.py
-  - hs20_nwe/detector_v2.py
-  - hs20_nwe/engine.py
-  - hs20_nwe/gen_lib.py
-  - hs20_nwe/grader.py
-  - hs20_nwe/grading.py
-  - hs20_nwe/inputs.py
-  - hs20_nwe/integrity.py
-  - hs20_nwe/jobs.py
-  - hs20_nwe/localize.py
-  - hs20_nwe/parity.py
-  - hs20_nwe/pipeline.py
-  - hs20_nwe/qualification.py
-  - hs20_nwe/render.py
-  - hs20_nwe/rollup.py
-  - hs20_nwe/selection.py
-  - hs20_nwe/sensor.py
-  - hs20_nwe/stages.py
-  - hs20_nwe/util.py
   - hs20_nwe/weights.py
+  - hs20_nwe/config.py
+  - hs20_nwe/util.py
+  - hs20_nwe/render.py
+  - hs20_nwe/grader.py
+  - hs20_nwe/detector_v2.py
+  - hs20_nwe/adjudication.py
+  - hs20_nwe/commitments.py
+  - hs20_nwe/integrity.py
   pins: {}
   persistence: {}
   runtime_image_digest: sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc
 inputs:
 - experiments/common/directions/qwen35-4b-hs20/provenance.json
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/inputs/capture_rows.jsonl
+  availability: local
+  source: astra_run materialize from pinned source bytes; T7 CPU feasibility 2026-11-03
+  sha256: 013b4b8a4742899be2dacea33ba9f8e0d7b1e53be1c1060e86d6c39f1ce49baa
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/inputs/roster.json
+  availability: local
+  source: astra_run materialize from pinned source bytes; T7 CPU feasibility 2026-11-03
+  sha256: 34df6b8d520f452904a28782a7b9420edf3112660e44b8c9157b2add86fcba11
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/inputs/selfaware.jsonl
+  availability: local
+  source: astra_run materialize from pinned source bytes; T7 CPU feasibility 2026-11-03
+  sha256: d8b08f786a3d7b7c262ef36c930895ed4599c4adb3ab5b0717375c44355d83e5
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/astra-r1/inputs/ambigqa.jsonl
+  availability: local
+  source: astra_run materialize from pinned source bytes; T7 CPU feasibility 2026-11-03
+  sha256: f0402da6763722a35751c2baee0b341479109b0d056acba465cd595f064f531e
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model/model.safetensors-00001-of-00002.safetensors
+  availability: local
+  source: T7 Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mount the
+    checkpoint read-only
+  sha256: 26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model/model.safetensors-00002-of-00002.safetensors
+  availability: local
+  source: T7 Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mount the
+    checkpoint read-only
+  sha256: cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188
+- path: .synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model/model.safetensors.index.json
+  availability: local
+  source: T7 Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mount the
+    checkpoint read-only
+  sha256: cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d
 verdict: ''
 kg: []

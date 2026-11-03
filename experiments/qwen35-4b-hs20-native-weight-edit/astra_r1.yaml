@@ -59,6 +59,10 @@ development:
     - output
     hidden_state: 20
     prompt: P-struct
+    resume: true
+    use_cache: true
+    every_k: 1
+    max_new_tokens: 1
   roles_are_historical: true
   do_not_filter_by_new_eval_results: true
 evaluation:
@@ -113,6 +117,8 @@ evaluation:
   global_unseen_claim: false
   same_scorer_and_retry_behavior_both_arms: true
   metric_units: fractions in [0,1]; 0.02 is two percentage points
+  format_retries: two retries only for malformed output; exact historical retry text,
+    including answer-or-abstention wording
 prompts:
   P-struct: 'Answer the user''s question. Return only a JSON object with exactly two
     keys: "answer" and "response_confidence". The "answer" value is your answer. The
@@ -132,3 +138,40 @@ prompt_sources:
   P-rc:
     path: experiments/prompt-crossing-heldout-confirmatory/configs/eval_heldout_base_prc_local_4b.yaml
     sha256: ff5cd8a485e267d87cbcfe1fdbaa313048614263a29c1d5e22f82334196af2dc
+validation:
+  linear_relative_l2_max: 0.01
+  linear_absolute_l2_floor: 1.0e-06
+  linear_requires_no_bias: true
+grading:
+  detector_source: experiments/gate-contribution-factorial/detector_v2.py
+  grader_source: experiments/gate-contribution-factorial/grader.py
+  render_source: experiments/gate-contribution-factorial/render.py
+  adjudication: all_detector_negative_scored_arms_both_populations
+  pool_seed: 20261121
+  bootstrap_seed: 20261122
+  bootstrap_replicates: 2000
+  target_candidates_per_shard: 55
+  positive_decoys_per_shard: 25
+  negative_decoys_per_shard: 25
+  per_shard_positive_agreement: 0.6
+  pooled_positive_agreement: 0.6
+  per_shard_negative_agreement: 0.95
+  max_regrades: 1
+  lead_spot_check_n: 30
+  lead_spot_min_agreement: 0.9
+  judge_tier: opus
+  fresh_context_per_shard: true
+  no_posthoc_rescore: true
+  decoy_source: held-back development source; feasibility must pass before sign; never
+    a scored eval row
+  final_gates: semantic detector-v2 OR blinded adjudication; legacy benchmark metrics
+    reported separately
+  decoy_sources:
+    baseline_sha256: 009fecc8909af0d7a77249c01a1b49bbbd1e73915a479299a2852da5c6007150
+    positive_sha256: 94633e51974977b9f14b74eb64f7e213e66729ab20b27794d64935be4b77692f
+    positive_dose_multiplier: 8.0
+    counts_per_class: 25
+    rule: historical FIT only; exclude construction and evaluation questions; byte-sort
+      row keys; positive exact canonical IDK answer, negative exact correct alias;
+      natural termination and no degeneration
+  decoys_sha256: eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27

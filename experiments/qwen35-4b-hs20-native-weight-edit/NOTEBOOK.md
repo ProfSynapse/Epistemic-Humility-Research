@@ -149,3 +149,86 @@ edit sign, scales and single-site restriction are project choices. The mechanism
 link from answerability to selective response behavior needs an explicit audit
 before a final edit family is signed. No numeric gate or candidate rule is
 changed by this notebook entry.
+
+## 2026-11-03 — Astra fixed construction integrated; still unsigned
+
+Replaced the unsigned SOL six-candidate protocol with the native Astra proposal.
+Preserved the old unsigned text and harness README in `design-history/`. The
+active manifest now names `astra_r1.yaml`, `astra_runtime.yaml`, and the Astra
+construction/evaluation modules. No signed historical instrument changed.
+The user predicts a pass; the lead's earlier tradeoff/failure prediction remains
+70%. No new study outcome has been observed.
+
+Integrated the materializer and repaired two production issues: native SelfAware
+uses an `example` container, and T7 does not support the hard links originally
+used for create-only writes. The integrated version checks capture settings,
+renderer, base shards, journal completion, row order and last-prompt positions.
+It requires both down_proj input/output, checks W times input against captured
+output, and audits the realized bf16 delta. The export destination is embedded
+before preparing the spec, so export never requires editing a hash-frozen spec.
+
+Ported the existing dataset loaders/scorers/statistics with source and port
+hashes in `hs20_nwe/ASTRA_ORIGINS.json`; only the dataset loader's sibling import
+changes. New comparison logic preserves historical metrics, reports accuracy on
+ALL known rows, and uses exact count fractions at the two-percentage-point cost
+boundaries. `astra_analysis` composes the existing blinded grading lane. Its
+synthetic eight-cell test passes through actual local Git commitment checkpoints
+to the registered paired roll-up. That result is synthetic harness evidence.
+
+Actual desktop CPU feasibility (no model inference):
+
+- All source dataset hashes and counts match. The deterministic development
+  roster contains 64 confab and 64 known-correct questions, excluding benchmarks.
+- The pinned base target is bf16, shape 2560 x 9216, with no checkpoint bias.
+  Engine inspection and a safetensors/Torch CPU read agree on raw tensor SHA256
+  `6a03103aebef7c1e8474d031a7394e7fad7839c9aa567433e8ac7bc55fe0bc2b`.
+  The float32 NPY readback stays private on T7; no edit was applied.
+- All 5,201 evaluation questions and both retry paths fit the 2048-token context.
+  Maximum prompt length is 310 tokens. Capture-runtime Transformers 5.17.0 and
+  evaluation-runtime Transformers 5.12.0 produce identical prompt bytes and token
+  sequences over the full surfaces, including retries. No questions truncate.
+- Historical, hash-pinned calibration sources provide 535 clear-positive and
+  96 clear-negative eligible decoys after excluding construction/evaluation
+  questions. Selected the first 25 of each by byte-sorted row key. The private
+  decoy file hash is pinned in `astra_r1.yaml`; no new generation was needed.
+- Public aggregate/hash evidence is `analysis-committed/astra_cpu_feasibility.json`.
+
+Built a separate vLLM evaluation image on Docker Desktop, CPU-qualified only:
+`sha256:fa1f394893e0a969f0e990b8c9338f39d2898420315b3da2e0ea9d3b62ae3676`.
+Base image: vllm/vllm-openai 0.23.0,
+`sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f`.
+Actual versions: vLLM 0.23.0, torch 2.11.0+cu130, transformers 5.12.0,
+xgrammar 0.2.2, safetensors 0.8.0, numpy 2.2.6. It contains the existing exact
+engine wheel `9ef85baa...` and host wheel `28511365...`. Python is `python3`,
+not `python`. A normal public pull initially failed because the Windows Docker
+credential helper had no logon session; an isolated empty Docker configuration
+pulled the public image without changing owner credentials. No GPU was requested.
+
+Official v0.23.0 docs were checked for supported models, structured output,
+batch invariance and hidden-state extraction. Qwen3.5 is listed as supported;
+batch invariance requires compute capability >=8.0, and is beta. This does not
+prove Qwen3.5 runtime invariance: its actual model smoke remains a pre-sign task.
+HF remains the named module-site capture path; vLLM owns unsteered evaluation.
+
+Private CPU preparation is on T7 at
+`E:/SynapticResearch/preparation/astra-r1-cpu-20261103`. The earlier draft-profile
+materialization is preserved under `astra-r1-draft-profile-v1`; the current
+profile has a fresh roster and tokenizer evidence. This is a CPU preparation
+snapshot, not a signed execution checkout or a scored run. All new model caches,
+private artifacts and tensor readbacks are on T7.
+
+The experiment remains DRAFT. Numerical support/key/scale are not materialized;
+no new study capture, patched generation or benchmark generation has run. Next:
+qualify vLLM invariance and real persistence, qualify the export/readback handoff,
+fill measured persistence declarations, review the concrete registration with
+the PI, then sign the construction/evaluation contract. Freeze the actual edit
+in Git after construction and before even the fresh base evaluation. Earlier
+engineering smoke records remain separate from this revised study.
+
+Validation at this milestone: the final CPU suite is recorded in
+`/tmp/ehr-astra-ready-cpu-tests.xml` and `/tmp/ehr-astra-ready-cpu-tests.log` on the
+agent box. The experiment manifest validates portably and registry regeneration
+is current. `astra_run plan` resolves the actual eight-cell matrix without model
+execution. Remaining inputs are declared as typed local artifacts, including
+both checkpoint shards and their exact hashes; portable validation does not
+pretend those bytes exist in every clone.

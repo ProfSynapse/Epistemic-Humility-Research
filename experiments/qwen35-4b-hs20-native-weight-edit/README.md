@@ -1,65 +1,101 @@
-# hs20 native weight edit: harness (build only)
+# Astra fixed hs20 edit (unsigned)
 
-Config-first orchestration for `AMENDMENT.md`, `cell.yaml`, `gates.yaml`. This code was built against the locked draft; it has
-**not been run on any model, GPU or private row**, and it carries no result. Parent owns protocol, signing, git, launch,
-verdict and Nexus writes.
+The active proposal is `astra_r1.yaml`, with runtime settings in
+`astra_runtime.yaml`. `AMENDMENT.md` defines the question, evaluation, gates and
+stop rules. This is one fixed edit of block-19 down_proj, not the earlier
+six-candidate pilot. The old harness remains for provenance and regression tests;
+its documentation is under `design-history/`.
 
-## What is here
+No numerical edit or scored evaluation exists. The source has CPU test evidence;
+real-model runtime qualification, decoy feasibility, persistence measurements,
+the remaining runtime/readback checks and PI sign-off are still required. `astra_run` refuses
+capture/evaluation while the experiment is draft.
 
-| path | role |
-|------|------|
-| `hs20_nwe/render.py grader.py detector_v2.py gen_lib.py detector_v2_patterns.yaml` | frozen ports of `experiments/gate-contribution-factorial/*`; origin/port sha256 in `ORIGINS.json` (render differs only in env var names) |
-| `hs20_nwe/inputs.py` | pinned input verification, roster check, allow-listed fields, exact seeded memberships, leakage checks |
-| `hs20_nwe/capture.py sensor.py localize.py` | manifest-only hash-checked capture reads, fresh hs20 fire rule, per-row resumable localization + column ranking |
-| `hs20_nwe/weights.py` | weights-inspect requests, six-proposal `add_rank_one` specs/payloads (NumPy + safetensors), receipts, norm-matched controls |
-| `hs20_nwe/jobs.py engine.py budget.py` | engine configs and job registry; `EngineCLI` wrapper; 7000-row / 12 h ledger with hard stop |
-| `hs20_nwe/grading.py selection.py adjudication.py rollup.py parity.py` | detector grading, FIT-screen selection, blinded lane (two code-enforced gates), G0-G4 roll-up, preflight parity evidence |
-| `hs20_nwe/stages.py cli.py pipeline.py` | stage runners, `python -m hs20_nwe`, `mechinterp-pipeline/v1` generator |
-| `persistence_declarations.yaml` | PROPOSED per-module persistence text (not wired into experiment.yaml) |
-| `tests/` | 129 CPU tests (+1 torch-gated file, skipped here) |
+Run from the EHR project snapshot with the experiment directory on PYTHONPATH.
+Use the installed `engine_host` and exact pinned engine wheel. Keep the project,
+`.synaptic` artifacts, exports and model cache on T7 E:. Existing public CLI
+verbs own model execution; this package imports no Tuner internals.
 
-## Layout and conventions
-
-* All private state lives under `artifact://qwen35-4b-hs20-native-weight-edit/…` (`.synaptic/artifacts/<slug>/…`); configs reference
-  only `artifact://` and `project://`. Staged inputs: `inputs/{fit_rows_for_dose,heldout_rows_for_steer,fit_rows_for_anchor}.jsonl`;
-  model: `base_model/` (local directory, real file copy). Promoted `c_hat.json`/`u_d.json` are read in place (bytes never copied).
-* `law.layer` is always the explicit decoder block 19 (the JSON `layer: 19` is a block index although the directory says hs20);
-  capture `layers` are hidden-state indices (20); `capture_sites` are decoder blocks 20/21/22.
-* Plugin root = the experiment directory (`hs20_nwe` package); render spec `hs20_nwe.render:render`.
-* The engine is called only through `engine_host.cli_boundary.EngineCLI`; GPU verbs need `--gpu-ack` on this CLI.
-* `--smoke-tag K` isolates outputs under `…/smoke/K/` (materialized rows are truncated copies; patches/base model are shared) while
-  the budget ledger stays shared, so smokes count against the 7000-row / 12 GPU-hour cap.
-
-## Commands
-
-```
-python -m hs20_nwe doctor                       # promoted directions, constants, index conventions (CPU)
-python -m hs20_nwe materialize                  # needs staged inputs
-python -m hs20_nwe plan-pipeline --python PY [--native-static]   # writes artifact://…/pipeline/pipeline.yaml
-python -m hs20_nwe smoke-prepare --smoke-tag K --limit-rows N
-python -m hs20_nwe [--smoke-tag K] [--gpu-ack] stage <emit-static|extract-fit-l|inspect|localize|propose|gen-static|
-      gen-screen-candidates|select|controls|export|extract-heldout|gen-heldout|build-pool|parity-prepare|parity-compare>
-python -m hs20_nwe pool commit | commit-hash --shard-id S --graded-file F | regrade … | spot-pack … | spot-record … | apply …
-python -m hs20_nwe rollup ; python -m hs20_nwe budget
+```bash
+python -m hs20_nwe.astra_run plan
+python -m hs20_nwe.astra_run materialize --fit FIT --selfaware SELF --ambigqa AMBIG
+python -m hs20_nwe.astra_run preflight --model BASE
 ```
 
-## Known limits (see the build report for the full list)
+These stages do not perform model inference. Materialization checks source
+hashes, excludes evaluation-question matches, writes the exact 64+64 development
+roster, strips old responses, and preserves existing benchmark labels/aliases.
+Preflight uses only the pinned tokenizer and reports aggregate context lengths.
 
-* `--model` is not path-reference-resolved by engine 1.1.0rc1; the generated pipeline therefore embeds the absolute staged path.
-* The registered engine extension retains generated_token_ids; parity refuses missing IDs and compares them exactly.
-* weights-inspect/patch need torch inside the engine; the CPU venv could only exercise argument/config acceptance
-  (`tests/test_engine_cli_with_torch.py` is the ready cross-check for the engine image).
+After the construction contract is signed, capture the development rows:
 
-Before any GPU call, export `stage bind-runtime` in the pinned image and commit
-its ID/hash-only `analysis-committed/run_binding.json`. Then run `stage
-check-binding`. This binds the installed engine and host bytes, runtime receipt,
-model shards, inputs, materialized populations, directions, source, and thresholds.
+```bash
+python -m hs20_nwe.astra_run capture --model BASE --gpu-ack
+```
 
-The measured pre-sign commands are `--gpu-ack drill extract`, `--gpu-ack drill
-generation`, `drill localize`, and `--gpu-ack stage preflight-parity` (after
-`stage inspect`). Each drill owns and SIGKILLs its process group, preserves the
-before/after journals privately, and verifies exact resume. Smoke rows count in
-the same cap under distinct physical output paths. `verify-selected` enforces
-export/readback token parity before held-out generation. Pool and graded hash
-exports require actual Git commits; private append logs alone cannot unlock the
-next grading step. Spot-check acceptance is computed from the registered rule.
+The engine persists each anchor row and its tensor hashes. It captures both
+block-19 down_proj input and output under P-struct. The helper checks the complete
+request/journal provenance and compares captured output with W times input.
+
+Use `ehr-engine cli mechinterp weights-inspect --weights-config INSPECT --json`
+for the target tensor/index/shard hashes. The inspect document uses schema
+`mechinterp-weights-inspect/v1`, the staged base checkpoint, `hash_files: true`,
+`hash_tensors: true`, and the exact target tensor. `astra_run read-tensor`
+converts that exact tensor to float32 NPY on CPU, checking the expected raw bf16
+hash and absence of a bias. It uses safetensors, not pickle or a model load.
+
+```bash
+python -m hs20_nwe.astra_run read-tensor --model BASE --expected-sha256 TENSOR_SHA --out BASE_NPY
+python -m hs20_nwe.astra_fixed --proposal PROPOSAL prepare \
+  --roster ROSTER --capture-dir CAPTURE --capture-binding REQUEST \
+  --c-hat DIRECTION --inspect-listing INSPECT_JSON --base-tensor-npy BASE_NPY \
+  --checkpoint-ref artifact://SLUG/base_model \
+  --payload-ref artifact://SLUG/astra-r1/patch/payload.safetensors \
+  --export-ref artifact://SLUG/astra-r1/checkpoints/edited --out-dir PATCH_DIR
+```
+
+Preparation is create-only. It emits one spec and payload; no search or rescale
+exists. A construction refusal ends the proposal. Validate/export through the
+existing `weights-patch --validate` / `--export` CLI. The `--export-ref` argument embeds `export.output_dir` in the original spec;
+never edit the emitted spec after preparation. Read back the exported tensor using its after-hash, then run
+`astra_fixed audit` with all preparation inputs plus `--edited-tensor-npy`.
+Its passed audit is required for the numerical freeze.
+
+```bash
+python -m hs20_nwe.astra_run freeze --base-model BASE --edited-model EDITED \
+  --audit-ref AUDIT_REF --spec-ref SPEC_REF --payload-ref PAYLOAD_REF --prepare-ref PREPARE_REF
+```
+
+The lead commits `analysis-committed/astra_patch_freeze.json` before generating
+any evaluation arm. It records exact factors/spec/audit/export hashes and checks
+unchanged tokenizer/config sidecars. Both arms use the base tokenizer.
+
+After runtime qualification, sign-off and that Git commitment:
+
+```bash
+VLLM_BATCH_INVARIANT=1 python -m hs20_nwe.astra_run eval-cell \
+  --surface selfaware --prompt P-struct --arm base \
+  --base-model BASE --edited-model EDITED --gpu-ack
+```
+
+Repeat for the eight registered surface/prompt/arm cells. Each uses the public
+`batch-generate` verb with pinned vLLM/scheduler/schema settings. Raw text, token
+IDs and finish reasons persist by batch. Only malformed rows get up to two
+format retries. Resume uses the same physical output paths and exact prompt
+rosters. No cells may be added in response to a score.
+
+`astra_benchmark` preserves the legacy metrics and separately builds the semantic
+acceptance vectors. Every detector-negative final response from all eight cells
+must pass through the existing committed/blinded adjudication lane before a
+final verdict. A legacy-detector score alone cannot establish success.
+
+Use `python -m hs20_nwe.astra_analysis` for `prepare-decoys`, `pool-build`,
+`pool-commit`, `commit-hash`, `spot-pack`, `spot-record`, `regrade`, `apply`, and
+`rollup`. These compose the existing adjudication implementation. The grader
+input has only opaque IDs and answer text. The lead owns the required public
+Git commitments and never commits the private pool, ID maps or raw grades.
+
+The current calibration pool uses 25 historical positives and 25 held-back
+historical negatives, with evaluation and construction questions excluded.
+Its exact bytes are pinned in `astra_r1.yaml`. `prepare-decoys` verifies both
+prior runlogs before selecting that pool; it performs no model inference.
