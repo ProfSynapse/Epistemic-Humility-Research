@@ -46,7 +46,7 @@ is part of the standard suite.
 
 This rule is now structurally enforced, not just procedural. Generation
 harnesses open their row-level run log through
-`experiments/common/runlog_contract.py`'s `open_generation_runlog`, which
+`engine_host.generation_log (historical: experiments/common/runlog_contract.py)`'s `open_generation_runlog`, which
 refuses to accept any record missing non-empty text unless the harness
 declares a `textless_reason` (durably recorded in the log's own meta
 fingerprint). `bin/exp validate` separately requires every experiment's

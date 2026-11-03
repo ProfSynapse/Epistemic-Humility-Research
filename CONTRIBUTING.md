@@ -49,6 +49,12 @@ probe, and eval harness are welcome as PRs. Training/eval infrastructure
 lives in the `synaptic-tuner` submodule, which is a separate repo with its
 own contribution flow; changes there must stay experiment-agnostic.
 
+New engine integration uses the installed `synaptic_tuner.api.v1` contracts and
+the EHR-owned `engine_host` package. MechInterp and batch operations use its
+version-pinned CLI boundary. Do not insert an engine source checkout into
+`sys.path`. See [the migration guide](docs/architecture/tuner-api-v1-migration.md).
+Historical signed instruments retain their original engine and paths.
+
 ## Ground rules
 
 These are not bureaucracy; they are what makes the papers defensible.

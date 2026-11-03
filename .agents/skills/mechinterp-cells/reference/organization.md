@@ -1,5 +1,11 @@
 # Organization
 
+For new installed-engine work, [installed-engine.md](installed-engine.md)
+and [pipeline-workflow.md](pipeline-workflow.md) govern command and path usage.
+Older submodule snippets below are historical references, not instructions to
+put an engine checkout on Python's path. Preserve registered historical lanes.
+
+
 Read this when deciding where configs, directions, renderers, graders, outputs,
 and signing pins belong.
 

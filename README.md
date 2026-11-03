@@ -170,8 +170,14 @@ Training and evaluation infrastructure lives in the
 git submodule update --init
 ```
 
-Keep `synaptic-tuner/` generic. Project-specific protocols, paper claims, and
-orchestration belong in the root repository, not inside the submodule.
+The submodule is the historical engine for signed experiments. Keep its gitlink
+and signed consumers pinned. New work uses the installed engine and the host
+integration in [the migration guide](docs/architecture/tuner-api-v1-migration.md).
+
+Use `synaptic_tuner.api.v1` for supported Python contracts. MechInterp and batch
+capture remain version-pinned CLI operations through `engine_host`; they do not
+have a stable v1 Python API. Project protocols, claims, rows, directions,
+graders, storage and orchestration belong in EHR.
 
 ## Public artifacts
 

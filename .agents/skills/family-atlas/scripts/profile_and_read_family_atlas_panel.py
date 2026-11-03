@@ -413,7 +413,7 @@ def run_cell(
 
 def cmd_score(args: argparse.Namespace) -> None:
     root = Path(__file__).resolve().parent
-    analysis_dir = root / "analysis" / args.cell_id
+    analysis_dir = root.parents[1] / ".synaptic" / "artifacts" / root.name / "atlas" / args.cell_id
     committed_dir = root / "analysis-committed" / args.cell_id
     result = run_cell(
         analysis_dir,

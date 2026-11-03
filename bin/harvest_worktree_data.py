@@ -14,7 +14,7 @@ that merges, in any worktree) and runnable by hand:
 
 Semantics (deliberately conservative):
 - Scope: files reported by `git ls-files --others --ignored
-  --exclude-standard` under experiments/ in each non-main worktree.
+  --exclude-standard` under experiments/ and the admitted .synaptic artifact/tracking roots in each non-main worktree.
 - Destination: the SAME relative path inside the main checkout.
 - Never overwrites: identical files (size+mtime, hash on suspicion) are
   skipped; a differing destination file is left untouched and the source is
@@ -46,7 +46,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SCOPE_PREFIXES = ("experiments/",)
+SCOPE_PREFIXES = ("experiments/", ".synaptic/artifacts/", ".synaptic/tracking/")
 
 # Regenerable build/tool caches are not data; never harvest them.
 EXCLUDE_PARTS = {"__pycache__", ".pytest_cache", "unsloth_compiled_cache", ".mypy_cache", ".ruff_cache"}

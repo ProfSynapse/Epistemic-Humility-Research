@@ -5,6 +5,15 @@ description: Standardize the per-model layer-mapping extraction (full-depth hidd
 
 # Family Atlas
 
+## Installed-engine prerequisite for new atlas cells
+
+Read `docs/architecture/tuner-api-v1-migration.md`. Install EHR's `engine_host`
+package alongside the reviewed Tuner wheel. The capture template now uses its
+version-pinned batch CLI boundary and stores private captures beneath
+`.synaptic/artifacts/<slug>/atlas/`. Historical signed copies keep their original
+paths and engine pin. Validate the host manifest before capture.
+
+
 ## Working hypothesis (not a fact)
 
 This program's actuation work rests on a hypothesis, not an established

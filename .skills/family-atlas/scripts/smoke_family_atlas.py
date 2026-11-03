@@ -23,7 +23,8 @@ fit_only, exactly like the real fleets this instrument has mapped so far).
 from __future__ import annotations
 
 import json
-import shutil
+import argparse
+import tempfile
 import sys
 from pathlib import Path
 
@@ -112,9 +113,12 @@ def build_synthetic_captures(rows: list[dict], analysis_dir: Path) -> None:
 
 
 def main() -> None:
-    tmp_root = Path("/tmp/claude-1000/-mnt-f-Code-Epistemic-Humility-Research/292064d8-cb30-460a-ad90-29559ab5cf7f/scratchpad/family_atlas_smoke")
-    if tmp_root.exists():
-        shutil.rmtree(tmp_root)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, help="Fresh directory for synthetic smoke artifacts")
+    args = parser.parse_args()
+    tmp_root = args.output_dir or Path(tempfile.mkdtemp(prefix="ehr-atlas-smoke-"))
+    if args.output_dir is not None:
+        tmp_root.mkdir(parents=True, exist_ok=False)
     analysis_dir = tmp_root / "analysis" / CELL_ID
     committed_dir = tmp_root / "analysis-committed" / CELL_ID
     analysis_dir.mkdir(parents=True, exist_ok=True)

@@ -558,7 +558,7 @@ def _text_capture_problems(data: dict) -> list[str]:
     the sanctioned opt-outs are `not-applicable` (no generation happens at
     all, e.g. a pure analysis/probe-fit pass) and `textless: <non-empty
     reason>` (generation happens but text capture is deliberately,
-    auditably disabled -- see `experiments/common/runlog_contract.py`,
+    auditably disabled -- see `engine_host.generation_log (historical: experiments/common/runlog_contract.py)`,
     whose `open_generation_runlog` folds that same reason into the run
     log's own meta fingerprint). This is a hard error, not a warning: unlike
     the persistence/header/outcome checks above, there is no legacy cohort
@@ -578,7 +578,7 @@ def _text_capture_problems(data: dict) -> list[str]:
         return [
             "text_capture is required for experiments created on/after "
             f"{TEXT_CAPTURE_REQUIRED_FROM} (see .skills/data-exhaust/SKILL.md's "
-            "build-time requirement and experiments/common/runlog_contract.py); "
+            "build-time requirement and engine_host.generation_log (historical: experiments/common/runlog_contract.py)); "
             "set it to 'enabled', 'not-applicable', or 'textless: <reason>'"
         ]
     v = value.strip()
@@ -590,7 +590,7 @@ def _text_capture_problems(data: dict) -> list[str]:
         f"text_capture value {value!r} is invalid -- must be 'enabled', "
         "'not-applicable', or 'textless: <non-empty reason>' (see "
         ".skills/data-exhaust/SKILL.md's build-time requirement and "
-        "experiments/common/runlog_contract.py)"
+        "engine_host.generation_log (historical: experiments/common/runlog_contract.py))"
     ]
 
 

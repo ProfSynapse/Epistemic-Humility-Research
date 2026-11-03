@@ -1,0 +1,22 @@
+schema_version: synaptic-project/v1
+project:
+  id: epistemic-humility-research
+  name: Epistemic Humility Research
+engine:
+  requires: '>=1.1.0rc1,<2'
+  api: v1
+  cli_requires: ==1.1.0rc1
+  source_commit: 49a6b6b8a217b217bef95d3570f56a5444e10a85
+  wheel_sha256: 9ef85baa6d0c5ccd8b407a40c371dea55ec550c4e70898bacea7be225a84e9dc
+paths:
+  configs: project://experiments
+  artifacts: project://.synaptic/artifacts
+  state: project://.synaptic/state
+  tracking: project://.synaptic/tracking
+  cache: project://.synaptic/cache
+  tmp: project://.synaptic/tmp
+policies:
+  engine_writes: deny
+  source_writes: deny
+  external_paths: deny
+  dirty_sources: deny_cloud

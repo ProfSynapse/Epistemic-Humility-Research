@@ -1,3 +1,7 @@
+> New work: use [installed-engine.md](installed-engine.md) and the installed
+> host boundary. Commands below preserve the historical signed-engine lane.
+> The current extension forwards the pinned dose model revision; the base release did not.
+
 # Dose calibration: locate the coherent window before the real ladder
 
 For `erase_write` steer cells. Read this when choosing `law` strengths / the

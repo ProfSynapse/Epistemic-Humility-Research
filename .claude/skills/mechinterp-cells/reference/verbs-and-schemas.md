@@ -1,5 +1,11 @@
 # Verbs and schemas
 
+For new installed-engine work, [installed-engine.md](installed-engine.md)
+and [pipeline-workflow.md](pipeline-workflow.md) govern command and path usage.
+Older submodule snippets below are historical references, not instructions to
+put an engine checkout on Python's path. Preserve registered historical lanes.
+
+
 Read this when choosing a mechinterp verb, writing a cell config, defining gates,
 or reasoning about direction JSONs and project plug-ins.
 

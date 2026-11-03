@@ -49,7 +49,7 @@ Per cell, this script only:
    under `analysis-committed/`.
 
 Private, gitignored outputs (safetensors + raw capture index + rendered
-token-id rows) go under `analysis/<cell_id>/`. This script never touches
+token-id rows) go under `.synaptic/artifacts/<slug>/atlas/<cell_id>/`. This script never touches
 `mechinterp steer`, never opens a write law, and never mutates any other
 experiment's own volume namespace; any source row pool it reads is read-only
 input.
@@ -62,7 +62,6 @@ import hashlib
 import importlib.util
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -73,7 +72,9 @@ ROOT = Path(__file__).resolve().parent
 # Assumes this script is copied into `experiments/<slug>/` (two levels below
 # the repo root); see SKILL.md's numbered procedure.
 REPO_ROOT = ROOT.parents[1]
-TUNER = REPO_ROOT / "synaptic-tuner" / "tuner.py"
+from engine_host.cli_boundary import EngineCLI
+from engine_host.engine_identity import inspect_engine
+from engine_host.storage import configure_storage, local_model
 
 
 def load_cell_yaml(path: Path) -> dict[str, Any]:
@@ -126,16 +127,8 @@ def write_json(path: Path, payload: Any) -> None:
     tmp.replace(path)
 
 
-def sh(cmd: list[str], *, cwd: Path = REPO_ROOT, env: dict[str, str] | None = None) -> None:
-    print(f"[capture-family-atlas] $ {' '.join(cmd)}", flush=True)
-    merged = {**os.environ, **(env or {})}
-    result = subprocess.run(cmd, cwd=str(cwd), env=merged)
-    if result.returncode != 0:
-        raise SystemExit(result.returncode)
-
-
 def private_dir(cell_id: str) -> Path:
-    return ROOT / "analysis" / cell_id
+    return REPO_ROOT / ".synaptic" / "artifacts" / ROOT.name / "atlas" / cell_id
 
 
 def committed_dir(cell_id: str) -> Path:
@@ -154,6 +147,10 @@ def cmd_capture(args: argparse.Namespace) -> None:
     cell_yaml_path = Path(args.cell_yaml) if args.cell_yaml else (ROOT / "cell.yaml")
     cfg = load_cell_yaml(cell_yaml_path)
     cell = cell_by_id(cfg, args.cell_id)
+    host_path = Path(args.host_config).resolve()
+    os.environ.update(configure_storage(REPO_ROOT, host_path))
+    model_source = local_model(host_path, cell["repo"], cell["revision"])
+    boundary = EngineCLI(REPO_ROOT)
     capture_cfg = cfg.get("capture") or {}
     engine = str(capture_cfg.get("engine", "hf-batched"))
     if engine == "vllm" and os.environ.get("VLLM_BATCH_INVARIANT") != "1":
@@ -179,13 +176,28 @@ def cmd_capture(args: argparse.Namespace) -> None:
     pdir.mkdir(parents=True, exist_ok=True)
     cdir.mkdir(parents=True, exist_ok=True)
 
-    os.environ["FAMILY_ATLAS_RENDER_MODEL"] = cell["repo"]
+    binding = {"engine": boundary.identity,
+               "rows_sha256": sha256_file(row_pool_path),
+               "cell_sha256": sha256_file(cell_yaml_path),
+               "render_sha256": sha256_file(Path(args.render_module)),
+               "model": cell["repo"], "revision": cell["revision"],
+               "model_source": model_source, "batch_size": args.batch_size}
+    binding_path = pdir / "capture_binding.json"
+    if binding_path.exists():
+        if json.loads(binding_path.read_text()) != binding:
+            raise SystemExit("capture source/engine identity changed; use a new output directory")
+    elif (pdir / "atlas_capture").exists() and any((pdir / "atlas_capture").iterdir()):
+        raise SystemExit("existing capture has no host binding; use a new output directory")
+    else:
+        write_json(binding_path, binding)
+
+    os.environ["FAMILY_ATLAS_RENDER_MODEL"] = model_source
     os.environ["FAMILY_ATLAS_RENDER_REVISION"] = cell["revision"]
 
     from transformers import AutoTokenizer
 
     tok = AutoTokenizer.from_pretrained(
-        cell["repo"],
+        model_source,
         revision=cell["revision"],
         token=os.environ.get("HF_TOKEN") or None,
         trust_remote_code=True,
@@ -217,19 +229,17 @@ def cmd_capture(args: argparse.Namespace) -> None:
     cap_dir = pdir / "atlas_capture"
     write_jsonl(cap_in, cap_rows)
 
-    sh(
+    boundary.run(
+        "batch-capture",
         [
-            sys.executable,
-            str(TUNER),
-            "batch-capture",
             "--rows",
-            str(cap_in),
+            "artifact://" + str(cap_in.relative_to(REPO_ROOT / ".synaptic" / "artifacts")),
             "--model",
-            cell["repo"],
+            model_source,
             "--model-revision",
             cell["revision"],
             "--out-dir",
-            str(cap_dir),
+            "artifact://" + str(cap_dir.relative_to(REPO_ROOT / ".synaptic" / "artifacts")),
             "--engine",
             engine,
             "--layers",
@@ -241,6 +251,8 @@ def cmd_capture(args: argparse.Namespace) -> None:
             "--resume",
         ]
     )
+    if inspect_engine(REPO_ROOT) != boundary.identity:
+        raise SystemExit("engine identity changed during capture")
 
     index = load_jsonl(cap_dir / "capture.jsonl")
     captured_ids = {rec["id"] for rec in index}
@@ -262,6 +274,8 @@ def cmd_capture(args: argparse.Namespace) -> None:
         "n_hidden_states": cell["n_hidden_states"],
         "layers_requested": "all",
         "engine": engine,
+        "engine_identity": boundary.identity,
+        "capture_binding_sha256": sha256_file(binding_path),
         "position_name": "anchor",
         "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
         "persist_dtype": "float32",
@@ -290,6 +304,8 @@ def main() -> None:
 
     p_capture = sub.add_parser("capture", help="full-depth anchor capture for one cell")
     p_capture.add_argument("--cell-id", required=True)
+    p_capture.add_argument("--host-config", default=str(REPO_ROOT / "configs/hosts/desktop-3090.yaml"),
+                           help="Reviewed local GPU host file; selects and enforces T7 model/cache/output paths.")
     p_capture.add_argument(
         "--row-pool",
         required=True,
