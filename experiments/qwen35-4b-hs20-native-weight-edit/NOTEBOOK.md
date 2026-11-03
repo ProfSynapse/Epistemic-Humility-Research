@@ -356,3 +356,34 @@ check; max error/bound ratio is0.2370663718674437 (must be<=1). This is a
 mechanical capture check, not an abstention benefit. The actual hard-kill and
 resume comparison is in progress. The eight-cell production pipeline also
 plans successfully through the installed public engine, without model execution.
+
+## 2026-11-03: engine ruling, final qualification and signing
+
+The PI asked whether vLLM was failing only because of an old pin. Checked upstream
+source: 0.23.0 is old, but v0.33.0 and main still have no batch-invariance
+declaration on `GDNAttentionBackend`, so the selector refuses at initialization.
+PR 60033 and PR 45819 are unmerged. PR 60033 was validated on H100, not on this
+RTX 3090. PI ruling: "ok fineee we'll start with HF". PI hold release: "and hold is
+lifted as well". `runtime/engine_capability_gap.yaml` pins this evidence.
+
+The r2 namespace failed capture resume parity. The r3 namespace passed, but was
+replaced before any study output. A pre-sign review found `evaluate_cell` still
+required `VLLM_BATCH_INVARIANT=1` on the HF path. Removing that guard changed
+hash-bound `astra_run.py`, so r4 was run from commit 2183407e, restored into the T7
+snapshot. The r3 repeat chain also stopped once when its launching SSH session
+ended; both completed runs were intact and the chain was resumed.
+
+Namespace r4 passed: four repeats in two orders and a SIGKILL-resumed run have
+identical token IDs and finish reasons, with whole-schema validity. A capture
+SIGKILL at 4 rows resumed with identical bytes across 60 compared tensors. Each
+20-row generation run took 89 to 100 s including model load. These were unscored
+development rows. Reports: `analysis-committed/astra_runtime_qualification.json`.
+
+The T7 snapshot now has a local Git object store at the pushed commit, so
+`commitments.require_git` can verify public commitments. Containers pass
+`safe.directory=/workspace` through the Git environment. `.synaptic/` is now
+ignored so private artifacts cannot be staged in a checkout.
+
+Signed by the lead under the PI's delegated authority. No study capture, numerical
+edit or benchmark output exists at signing.
+

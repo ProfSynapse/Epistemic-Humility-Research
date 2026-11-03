@@ -1,0 +1,159 @@
+{
+  "capture": {
+    "base_tensor_sha256": "6a03103aebef7c1e8474d031a7394e7fad7839c9aa567433e8ac7bc55fe0bc2b",
+    "kill_evidence": {
+      "before_rows": 4,
+      "before_sha256": "8a8678571c1853030a6da38467d8e37178698b1eeee73c72816b8358ad7eb168",
+      "container_exit_code": 137,
+      "container_id": "8c23eaa715a732a3e2d4d1889fcdf4495d372c7eab3e7c103ea9595f422d6b8a",
+      "execution_scope": "whole owned Docker container, including guarded engine subprocess",
+      "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+      "launcher_pid": 4414,
+      "signal": "SIGKILL"
+    },
+    "linear_consistency": {
+      "limits": {
+        "linear_absolute_l2_floor": 1e-06,
+        "linear_relative_l2_max": 0.01,
+        "linear_requires_no_bias": true
+      },
+      "max_error_to_bound_ratio": 0.2370663718674437,
+      "output_digest": "805d32e848d4d40ba85f50ae16a950de68044ed275de723a28c01c54d2a7a9cf",
+      "rows": 20
+    },
+    "passed": true,
+    "rows": 20,
+    "tensor_bytes_identical": true,
+    "tensors_compared": 60,
+    "verification_binding": {
+      "engine": {
+        "api": "v1",
+        "cli_requires": "==1.1.0rc1",
+        "requires": ">=1.1.0rc1,<2",
+        "source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+        "wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a"
+      },
+      "generation": {
+        "enable_thinking": false,
+        "max_new_tokens": 128,
+        "n_samples": 1,
+        "seed": 20240601,
+        "temperature": 0.0
+      },
+      "model_revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "model_shards": {
+        "model.safetensors-00001-of-00002.safetensors": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+        "model.safetensors-00002-of-00002.safetensors": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188"
+      },
+      "namespace": "astra-r1/qualification/hf-5.17.0-xgrammar-0.2.2-b1-r4",
+      "runtime": {
+        "batch_invariance": false,
+        "batch_size": 1,
+        "engine": "hf-batched",
+        "fallback_reason": "Pinned vLLM 0.23.0 refuses batch-invariant GDN_ATTN at initialization before generating rows; use the repository-authorized HF fallback.",
+        "format_is_interface": true,
+        "hardware": "RTX 3090",
+        "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+        "max_model_len": 2048,
+        "python_executable": "python",
+        "repeatability": "fixed single-request shapes; actual token repeat/permutation and kill-resume qualification required",
+        "structured_output_backend": "xgrammar",
+        "tensor_parallel_size": 1,
+        "torch": "2.9.1+cu128",
+        "transformers": "5.17.0",
+        "xgrammar": "0.2.2"
+      },
+      "schema_sha256": "1190f7b01a0b435a0f78c2f67199c3b176e4670e7d3c63e060fffc73ee575970",
+      "source_sha256": {
+        "astra_benchmark.py": "dca0f6c7898b3a856cc8ec291f425e24ffbd3bb27f80877897748352d90d9c9a",
+        "astra_capture.py": "b28fa89deb0846dd38ea4b2ce324314ee5a843da75be39d84cea7083282f9324",
+        "astra_qualification.py": "3ce619660bc3d4ed74d322ed1784c4cf291f9821f99f0885032cb37522a7bb8c",
+        "astra_render.py": "dc442b6f79eb07f4de07e9e2c526d5a09dd8e6ecdcdddd7475c3e4718cd500bf",
+        "astra_run.py": "5e8d5ad6cea99642703ab0e8aa12903c295d153888a8d80ae56b108648c112c0",
+        "capture.py": "6e73c7975799b21920818c154d13c37b6a132485d484d8c4bfbcedeaa854d4e5"
+      }
+    }
+  },
+  "capture_report_sha256": "5851e2731588beaa828cdf020fd5d5eedd66fa96cabbe70fb8786c0a753a15ac",
+  "date": "2026-11-03",
+  "generation": {
+    "binding": {
+      "engine": {
+        "api": "v1",
+        "cli_requires": "==1.1.0rc1",
+        "requires": ">=1.1.0rc1,<2",
+        "source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+        "wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a"
+      },
+      "generation": {
+        "enable_thinking": false,
+        "max_new_tokens": 128,
+        "n_samples": 1,
+        "seed": 20240601,
+        "temperature": 0.0
+      },
+      "model_revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+      "model_shards": {
+        "model.safetensors-00001-of-00002.safetensors": "26a93f066e1916adb13453dae5a0c707c0fbc71299ed98779571a907b8e74c61",
+        "model.safetensors-00002-of-00002.safetensors": "cb544bd9bfae93dc59b0f22b292f5933573854a7f9b97835c67060d7d910e188"
+      },
+      "namespace": "astra-r1/qualification/hf-5.17.0-xgrammar-0.2.2-b1-r4",
+      "runtime": {
+        "batch_invariance": false,
+        "batch_size": 1,
+        "engine": "hf-batched",
+        "fallback_reason": "Pinned vLLM 0.23.0 refuses batch-invariant GDN_ATTN at initialization before generating rows; use the repository-authorized HF fallback.",
+        "format_is_interface": true,
+        "hardware": "RTX 3090",
+        "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+        "max_model_len": 2048,
+        "python_executable": "python",
+        "repeatability": "fixed single-request shapes; actual token repeat/permutation and kill-resume qualification required",
+        "structured_output_backend": "xgrammar",
+        "tensor_parallel_size": 1,
+        "torch": "2.9.1+cu128",
+        "transformers": "5.17.0",
+        "xgrammar": "0.2.2"
+      },
+      "schema_sha256": "1190f7b01a0b435a0f78c2f67199c3b176e4670e7d3c63e060fffc73ee575970",
+      "source_sha256": {
+        "astra_benchmark.py": "dca0f6c7898b3a856cc8ec291f425e24ffbd3bb27f80877897748352d90d9c9a",
+        "astra_capture.py": "b28fa89deb0846dd38ea4b2ce324314ee5a843da75be39d84cea7083282f9324",
+        "astra_qualification.py": "3ce619660bc3d4ed74d322ed1784c4cf291f9821f99f0885032cb37522a7bb8c",
+        "astra_render.py": "dc442b6f79eb07f4de07e9e2c526d5a09dd8e6ecdcdddd7475c3e4718cd500bf",
+        "astra_run.py": "5e8d5ad6cea99642703ab0e8aa12903c295d153888a8d80ae56b108648c112c0",
+        "capture.py": "6e73c7975799b21920818c154d13c37b6a132485d484d8c4bfbcedeaa854d4e5"
+      }
+    },
+    "canonical_output_sha256": "5ff790f87603a4ca6928488b40a29ed9688f856232192f6b31b43c4435fb213b",
+    "completion_token_ids_identical": true,
+    "finish_reasons_identical": true,
+    "kill_evidence": {
+      "before_rows": 1,
+      "before_sha256": "a3a379c0c389cf647021edb4e802d318009a3b88136f79eeb5b3632cd6b749ee",
+      "container_exit_code": 137,
+      "container_id": "2967b3314aa281ac41497139cf753fa6c60792c9eb172ca56d279c31197ed227",
+      "execution_scope": "whole owned Docker container; includes all GPU worker descendants",
+      "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+      "launcher_pid": 4553,
+      "signal": "SIGKILL"
+    },
+    "passed": true,
+    "rows": 20,
+    "runs": 5,
+    "scored": false,
+    "whole_schema_valid": true
+  },
+  "generation_report_sha256": "3b08eedd7f49be720076c7d622f418b46d5fcf8bfe1c8698438a442c66d37b80",
+  "namespace": "hf-5.17.0-xgrammar-0.2.2-b1-r4",
+  "schema_version": "ehr-astra-runtime-qualification/v1",
+  "scored": false,
+  "source_commit": "2183407ed686c2c20f1127fe7711a6ccb11f3df7",
+  "wall_seconds": {
+    "original_a": 89.2,
+    "original_b": 100.4,
+    "permuted_a": 100.4,
+    "permuted_b": 100.0,
+    "resume": 97.1
+  }
+}

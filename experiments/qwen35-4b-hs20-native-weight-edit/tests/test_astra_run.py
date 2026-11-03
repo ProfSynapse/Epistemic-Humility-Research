@@ -20,9 +20,10 @@ def test_real_plan_has_eight_existing_benchmark_cells():
     assert not any('candidate' in s for s in plan['construction'])
 
 
-def test_current_draft_cannot_launch():
+def test_a_draft_cannot_launch(tmp_path):
+    (tmp_path / 'experiment.yaml').write_text(yaml.safe_dump({'status': 'draft'}))
     with pytest.raises(HarnessError, match='draft does not authorize'):
-        run.require_signed(EXPERIMENT, runtime_role='capture')
+        run.require_signed(tmp_path, runtime_role='capture')
 
 
 def test_admission_requires_pins_actual_image_and_qualification(tmp_path, monkeypatch):

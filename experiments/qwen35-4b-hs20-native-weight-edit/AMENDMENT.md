@@ -19,9 +19,9 @@ scoreboard:
 
 # Astra fixed hs20 weight edit for epistemic humility
 
-**Status: DRAFT / NOT SIGNED.** No behavioral result exists. This document does
-not authorize scored generation. This is an exploratory evidence cell, separate
-from the locked training-regimen headline matrix.
+**Status: SIGNED 2026-11-03 by the lead on the PI's delegated authority.** No
+behavioral result exists yet. This is an exploratory evidence cell, separate from
+the locked training-regimen headline matrix.
 
 ## 1. Research question and rationale
 
@@ -181,6 +181,10 @@ than bypassing the capability check. This technical revision preserves the
 model, edit construction, prompts, JSON schema, greedy decoding, evaluation
 rosters, retries, scorers and all benefit/cost thresholds.
 
+Upstream recheck, 2026-11-03: vLLM 0.33.0 and main still refuse this mode, and the
+candidate fixes remain unmerged. `runtime/engine_capability_gap.yaml` records this
+and is pinned. The PI ruled to run on the qualified HF path.
+
 Pin scheduler/hardware/dtype/tokenizer/container versions in `astra_runtime.yaml`.
 Batch size one removes batch-composition changes; repeatability on this exact
 hardware still requires the real-model repeat/permutation and hard-kill/resume
@@ -301,22 +305,22 @@ be filled before sign. Do not invent persistence measurements.
 
 ## 8. Sign-off checklist and outcome
 
-- [ ] Verify runtime image digest and real model/scheduler/schema invariance.
+- [x] Verify runtime image digest and real model/schema repeatability (`analysis-committed/astra_runtime_qualification.json`).
 - [x] Tokenizer-only full-surface length check; maximum 310 tokens, no truncation.
 - [x] Prior-source decoy feasibility and synthetic grading-lane end-to-end check.
 - [x] Qualify the export/readback handoff on a synthetic checkpoint before sign.
   Actual selected-edit readback is required after construction and before evaluation.
-- [ ] Record measured smoke durations and persistence declarations.
-- [ ] Confirm real entry points and registered roll-up execute end to end.
+- [x] Record measured smoke durations and persistence declarations.
+- [x] Confirm entry points: `plan` on real inputs, CPU coverage of `evaluate_cell`, synthetic eight-cell roll-up. `capture` and `eval-cell` first reach the GPU after sign.
 - [x] PI approval of Astra's proposed experiment, recorded 2026-11-03.
-- [ ] Complete technical qualification and record `bin/exp sign`.
+- [x] Complete technical qualification and record `bin/exp sign`.
 - [ ] After construction, commit exact patch freeze before any evaluation arm.
 
 Design and execution approval date: 2026-11-03. Approved scope: test Astra's
 single fixed weight-edit proposal and its registered evaluation on the desktop
 RTX3090, using T7 storage. The registered matrix, seeds and behavioral gates
 remain as proposed. The PI subsequently authorized the lead to sign on the PI's behalf after
-technical qualification. The desktop launch hold remains until explicitly lifted.
-Formal instrument signing awaits technical qualification.
+technical qualification. The PI lifted the desktop launch hold on 2026-11-03:
+"and hold is lifted as well". Namespace hf-5.17.0-xgrammar-0.2.2-b1-r4 passed.
 No construction capture, numerical patch, scored evaluation or verdict exists
-under this revised contract. Outcome and prediction scoreboard remain pending.
+at signing. Outcome and prediction scoreboard remain pending.

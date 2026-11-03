@@ -123,6 +123,8 @@ def test_pipeline_gpu_ack_is_a_global_argument(project, cell):
 
 def test_unsigned_scored_run_is_refused(project, cell, monkeypatch):
     monkeypatch.setattr(integrity, "verify", lambda *a: {"passed": True})
+    monkeypatch.setattr(stages, "_evidence", lambda ctx: {})
+    monkeypatch.setattr(stages.yaml, "safe_load", lambda text: {"status": "draft"})
     ctx = stages.Ctx(project.root, cell, Layout(project.root, SLUG))
     with pytest.raises(HarnessError, match="RUN_ADMISSION"):
         stages.require_run_admission(ctx)
@@ -130,6 +132,8 @@ def test_unsigned_scored_run_is_refused(project, cell, monkeypatch):
 
 def test_baseline_cannot_run_directly_before_sign(project, cell, monkeypatch):
     monkeypatch.setattr(integrity, "verify", lambda *a: {"passed": True})
+    monkeypatch.setattr(stages, "_evidence", lambda ctx: {})
+    monkeypatch.setattr(stages.yaml, "safe_load", lambda text: {"status": "draft"})
     ctx = stages.Ctx(project.root, cell, Layout(project.root, SLUG))
     with pytest.raises(HarnessError, match="RUN_ADMISSION"):
         stages.gen_static(ctx)

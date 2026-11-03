@@ -9,7 +9,7 @@ capture:
 evaluation:
   engine: hf-batched
   image_digest: sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224
-  qualified: false
+  qualified: true
   transformers: 5.17.0
   torch: 2.9.1+cu128
   xgrammar: 0.2.2
@@ -39,7 +39,8 @@ qualification:
   namespace: hf-5.17.0-xgrammar-0.2.2-b1-r4
   required: 20 non-evaluation rows, two repeats in each of two orders, exact token
     IDs/finish/schema; actual capture and generation SIGKILL/resume; no outcome screening
-  status: pending
+  status: passed
+  evidence: analysis-committed/astra_runtime_qualification.json
 sources:
 - https://docs.vllm.ai/en/v0.23.0/features/batch_invariance/
 - https://docs.vllm.ai/en/v0.23.0/models/supported_models/
