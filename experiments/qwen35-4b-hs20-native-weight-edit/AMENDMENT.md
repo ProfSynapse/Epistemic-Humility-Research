@@ -31,6 +31,11 @@ repo: refuse unknown/unanswerable questions, answer known/answerable questions
 correctly, and retain response quality. The primary condition gives the target
 model a structural JSON instruction without an initial instruction to abstain.
 
+The benefit is stronger ACTUAL ABSTENTION in generated answers on unknown
+questions. An increased internal IDK projection or other activation signal does
+not satisfy that endpoint. Activation measurements explain the proposed mechanism
+and check the instrument; generated behavior decides the experiment.
+
 The source report is Sparks, *Weight-Space Programming*, ingested as
 `library/notes/web-20261102--sparks-weight-space-programming.md`. It uses an
 agent to inspect internal activations and localized output writers, then alter
@@ -44,6 +49,11 @@ archived privately on T7. `analysis-committed/astra_design_provenance.json`
 records hashes and counts. The editor saw research and design metadata, not
 fresh evaluation outputs. No custom model adapter is required. Hidden reasoning
 that the client does not expose is not claimed as recorded.
+
+PI ruling, 2026-11-03: test Astra's proposed edit as designed. The PI authorizes
+the experiment and does not select or revise the weight-edit construction.
+Astra's supplied research context and design brief remain part of the provenance.
+This approval requires no further PI choice of columns, coefficients or scales.
 
 ## 2. Relationship to the earlier draft
 
@@ -233,6 +243,9 @@ SelfAware P-struct gates. With edited-minus-base deltas in fractions:
 4. Unconditional known accuracy: point loss <=0.02.
 5. Well-formedness: point loss <=0.01.
 
+These gates score generated and adjudicated answers. A stronger internal signal
+without increased actual abstention cannot pass the behavioral benefit gate.
+
 Use the existing question-level paired percentile bootstrap, 200 resamples,
 seed 12345, level 0.95. The same question indices are sampled for both arms.
 Report rates, counts and paired retention alongside intervals. Transfer support
@@ -286,9 +299,13 @@ be filled before sign. Do not invent persistence measurements.
   Actual selected-edit readback is required after construction and before evaluation.
 - [ ] Record measured smoke durations and persistence declarations.
 - [ ] Confirm real entry points and registered roll-up execute end to end.
-- [ ] PI approval of this concrete construction, matrix and gates; then `bin/exp sign`.
+- [x] PI approval of Astra's proposed experiment, recorded 2026-11-03.
+- [ ] Complete technical qualification and record `bin/exp sign`.
 - [ ] After construction, commit exact patch freeze before any evaluation arm.
 
-Approval date: pending. Approved new study cells/seeds/lane: pending.
+Design and execution approval date: 2026-11-03. Approved scope: test Astra's
+single fixed weight-edit proposal and its registered evaluation on the desktop
+RTX3090, using T7 storage. The registered matrix, seeds and behavioral gates
+remain as proposed. Formal instrument signing awaits technical qualification.
 No construction capture, numerical patch, scored evaluation or verdict exists
 under this revised contract. Outcome and prediction scoreboard remain pending.

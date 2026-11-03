@@ -241,3 +241,28 @@ checkpoint. An initial pytest setup failed because the explicit basetemp parent
 did not exist; creating that scratch parent fixed setup without a source change.
 This closes the CPU/torch fixture gap, not GPU invariance or export/reload
 qualification.
+
+## 2026-11-03 — PI approves Astra's proposal; actual abstention is the endpoint
+
+PI instruction:
+
+> So I'm fine with astras edit this is the experiment without my intervention we say edit weights directly and lets see what happens.
+>
+> also we're not just lookingh for a stronger abstention signal we're looking for STRONGER ABSTENTION
+
+Recorded approval to test Astra's proposed construction as designed. The PI
+provides authorization, not a new choice of tensor, columns, factors or scale.
+No further design-approval request is needed for this same scope. Astra's
+research context and supplied brief remain disclosed; the numerical patch will
+still follow the fixed construction before evaluation feedback.
+
+Clarified the AMENDMENT: benefit means increased actual abstention in generated
+answers on unknown questions. Internal IDK projections or other activation
+signals cannot substitute for that behavior. The existing known-answer cost,
+quality and truthful-rate gates remain unchanged. This is a wording and approval
+record, not a new score definition or a change to Astra's proposed edit.
+
+Formal signing remains pending the technical qualification checks already
+listed. Complete those checks, sign the instrument, construct and freeze the
+one edit, then execute the registered evaluation under this approval. No study
+capture, numerical patch or scored generation has run at this entry.
