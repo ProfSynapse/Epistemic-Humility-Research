@@ -1,0 +1,32 @@
+{
+  "files": {
+    "detector_v2.py": {
+      "change": "line 29 only: `import grader` -> `from . import grader` (package-relative import)",
+      "origin_sha256": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+      "port_sha256": "a2e1e056e92b0975ee632e33dcbf865437349cf00bcfbc86c9046454a6292a08"
+    },
+    "detector_v2_patterns.yaml": {
+      "change": "byte-identical",
+      "origin_sha256": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+      "port_sha256": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9"
+    },
+    "gen_lib.py": {
+      "change": "lines 28-29 only: sibling imports made package-relative",
+      "origin_sha256": "a4ee57ec67f187aefe1db67db3f051f9e1d402b87bab89bc4188af45f4940e2a",
+      "port_sha256": "8fab981f3e179159bb10adfd2fb7e60663296e511e5515d04b3bd5eefc252540"
+    },
+    "grader.py": {
+      "change": "byte-identical",
+      "origin_sha256": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+      "port_sha256": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9"
+    },
+    "render.py": {
+      "change": "environment namespace only: GATEFACT_RENDER_MODEL/REVISION -> HS20NWE_RENDER_MODEL/REVISION and log label; rendering logic unchanged (question only)",
+      "origin_sha256": "9df8c181475ded6b9029379bd49d8486c54314b35a529284fdc7a5d5f12ee87f",
+      "port_sha256": "f5c56351f1589c3dbf0c32ea03b43603b89a4b214c3460f810841485828ac924"
+    }
+  },
+  "origin_dir": "experiments/gate-contribution-factorial",
+  "origin_repo_head_at_port": "e1a0bdf84829ab2238e22d0ced7211b222123a47",
+  "schema_version": "hs20-nwe-frozen-origins/v1"
+}

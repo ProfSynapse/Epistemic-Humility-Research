@@ -1097,8 +1097,8 @@ def cmd_sign(root: Path, slug: str) -> int:
     # GENERATION-ENGINE GATE (PI ruling 2026-08-13, enforced): vLLM is the
     # forced default for every generation-bearing cell. A draft can only be
     # signed if instrument.engine declares vllm with a pinned version, OR
-    # instrument.engine_exception claims one of the two named exceptions
-    # with a reason. See experiment-runner reference/batched-generation.md.
+    # instrument.engine_exception claims a documented exception with a reason.
+    # A capability gap additionally requires a pinned local evidence record.
     GENERATION_BEARING_TYPES = {"steer-cell", "training-run", "eval", "probe-fit"}
     if data.get("type") in GENERATION_BEARING_TYPES:
         engine = instrument.get("engine")
@@ -1110,16 +1110,37 @@ def cmd_sign(root: Path, slug: str) -> int:
         )
         exception_ok = (
             isinstance(exception, dict)
-            and exception.get("kind") in ("parity-locked", "intervention")
+            and exception.get("kind") in ("parity-locked", "intervention", "capability-gap")
             and isinstance(exception.get("reason"), str)
             and exception["reason"].strip()
         )
+        if exception_ok and exception.get("kind") == "capability-gap":
+            evidence = exception.get("evidence")
+            evidence_ok = isinstance(evidence, str) and bool(evidence.strip())
+            if evidence_ok:
+                candidate = exp_dir / evidence
+                evidence_ok = (
+                    evidence in configs
+                    and not Path(evidence).is_absolute()
+                    and ".." not in Path(evidence).parts
+                    and not candidate.is_symlink()
+                    and candidate.resolve().is_relative_to(exp_dir.resolve())
+                    and candidate.is_file()
+                    and candidate.stat().st_size > 0
+                )
+            if not evidence_ok:
+                raise ExpError(
+                    f"{slug}: capability-gap signing requires a non-empty local evidence "
+                    "file inside the experiment, listed in instrument.configs for pinning; "
+                    "set engine_exception.evidence to that relative path"
+                )
         if not (engine_ok or exception_ok):
             raise ExpError(
                 f"{slug}: generation-engine gate (PI ruling 2026-08-13): "
                 "declare instrument.engine {name: vllm, version: <pinned>} "
                 "or instrument.engine_exception {kind: parity-locked|"
-                "intervention, reason: <why>} before signing. vLLM is the "
+                "intervention|capability-gap, reason: <why>} before signing. "
+                "A capability-gap additionally needs a pinned evidence file. vLLM is the "
                 "forced default for generation-bearing cells; see "
                 "experiment-runner reference/batched-generation.md."
             )

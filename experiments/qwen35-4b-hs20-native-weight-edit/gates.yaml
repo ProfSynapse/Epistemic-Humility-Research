@@ -1,0 +1,39 @@
+schema_version: ehr-native-weight-edit-gates/v1
+integrity:
+  all_hashes_and_disjointness: true
+  zero_patch_token_parity: true
+  batch_1_4_token_parity: true
+  readback_and_export_roundtrip: true
+  known_baseline_min_correct: 0.9
+  requires_kill_resume_drill: true
+benefit:
+  n_confab: 300
+  min_abstention: 0.5
+  wilson95_lower_strictly_above: 0.4
+  min_paired_lift: 0.3
+cost:
+  n_known: 360
+  max_false_refusal: 0.05
+  wilson95_upper_strictly_below: 0.1
+  min_correct_retention: 0.95
+  max_correct_rate_loss: 0.03
+  min_well_formed_both_populations: 0.95
+  max_degenerate_both_populations: 0.03
+  engaged_known_min_n: 35
+  engaged_known_if_below: NOT-ADJUDICABLE
+specificity:
+  random_k: 3
+  min_lift_to_max_absolute_random_lift_ratio: 3.0
+  zero_random_denominator: pass_only_with_positive_primary_lift
+consultation:
+  known_clamp_on_confab_max_difference_in_differences: -0.15
+  known_clamp_bootstrap95_upper_strictly_below: 0.0
+  unknown_clamp_on_known_min_difference_in_differences: 0.1
+  unknown_clamp_bootstrap95_lower_strictly_above: 0.0
+  requires_both: true
+  claim_without_both: behavioral_effect_only
+interpretation:
+  no_eligible_candidate: bounded_search_null
+  G0_failure: instrument_invalid_no_behavioral_verdict
+  G1_G2_G3_pass: selective_native_behavioral_repair_in_this_cell
+  G1_G2_G3_G4_pass: causal_KU_dependence_in_this_cell_not_universal_consultation

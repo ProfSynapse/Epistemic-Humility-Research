@@ -1,0 +1,11 @@
+# Public upstream runtime, pulled and inspected on Docker Desktop 2026-11-03.
+FROM vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+COPY wheels/ /opt/ehr-wheels/
+RUN python3 -m pip install --no-cache-dir --no-deps /opt/ehr-wheels/*.whl \
+    && python3 -c "import jsonschema, dotenv, packaging, engine_host; import synaptic_tuner"
+ENV PYTHONUNBUFFERED=1 VLLM_BATCH_INVARIANT=1 HF_HUB_OFFLINE=1 \
+    HF_HOME=/workspace/.synaptic/cache/huggingface \
+    HF_DATASETS_CACHE=/workspace/.synaptic/cache/datasets \
+    TRANSFORMERS_CACHE=/workspace/.synaptic/cache/huggingface \
+    VLLM_CACHE_ROOT=/workspace/.synaptic/cache/vllm
+ENTRYPOINT []

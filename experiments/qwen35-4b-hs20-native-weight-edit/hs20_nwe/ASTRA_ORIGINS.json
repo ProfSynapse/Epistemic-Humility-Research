@@ -1,0 +1,20 @@
+{
+  "hs20_nwe/benchmark_ood.py": {
+    "changes": "relative sibling import only",
+    "port_sha256": "5fe5af301dcf0c75bcf3fe6aed059c83aa9b2951696547d3eeb5120cdb9a36c1",
+    "source": "archive/experiment/phase1/eval/ood.py",
+    "source_sha256": "cfd6cf8be6c0a892056b4b339dd2b8725dc9050c5cf991d8ec184f2b216d7760"
+  },
+  "hs20_nwe/benchmark_scorers.py": {
+    "changes": "byte-identical",
+    "port_sha256": "75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a",
+    "source": "archive/experiment/phase1/eval/scorers.py",
+    "source_sha256": "75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a"
+  },
+  "hs20_nwe/benchmark_stats.py": {
+    "changes": "byte-identical",
+    "port_sha256": "9171d6ff8d8a9cec7549b46dc152c675efa2548800ab4fb0e63623170a4c8945",
+    "source": "archive/experiment/phase1/eval/stats.py",
+    "source_sha256": "9171d6ff8d8a9cec7549b46dc152c675efa2548800ab4fb0e63623170a4c8945"
+  }
+}

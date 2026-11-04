@@ -1,0 +1,84 @@
+{
+  "schema": "ehr-astra-design-provenance/v1",
+  "phase": "pre_run_design_unsigned",
+  "replaces": "unsigned_SOL_six_candidate_proposal_pending_instrument_revision",
+  "editor": {
+    "model": "gpt-6-astra",
+    "reasoning_effort": "max",
+    "provider_session_id": "01a1a24d-a9ce-75c0-9bee-756558e488f6",
+    "t3_thread_id": "thread:delegated-task:command%3Amcp%3Ac997529b-3f44-439c-a3ff-d1d95bce9b61%3Adelegate-task%3Aehr-native-astra-paper-strategy-20261103-v1",
+    "native_cli_version": "0.166.0"
+  },
+  "private_archive": "E:/SynapticResearch/editor-transcripts/01a1a24d-a9ce-75c0-9bee-756558e488f6/design-v1",
+  "files": {
+    "transcript.jsonl": {
+      "sha256": "9e43ae559629704637e191ffc30ba825123bee6cd7b4ac345482deb09948db32",
+      "bytes": 1315632
+    },
+    "plan.md": {
+      "sha256": "bae55bbc5b2c8dac3241de2da3473be3dcdea0a47c81bd6fc69141e18778d590",
+      "bytes": 28928
+    }
+  },
+  "input_feasibility": {
+    "schema": "ehr-astra-input-feasibility/v2",
+    "files": {
+      "fit": {
+        "sha256": "42db19f07d61075a2a57d0d53d23d333aa1565931cfce778b08e63f5392afe5f",
+        "rows": 1127
+      },
+      "anchor": {
+        "sha256": "4b2cba4c094ac479015ae746054a0caad39ce59bf7b4e798a5fcb6fbdb7dcb17",
+        "rows": 1308
+      },
+      "selfaware": {
+        "sha256": "b34a468549dc4c38d080af3a6871ba58ded7fbfc319b1ee606702f0354cee513",
+        "rows": 3369
+      },
+      "ambigqa": {
+        "sha256": "9b2699263b783ca3dd73330e6abe1618c75de49fdd7dfc8b5f146a42da0560eb",
+        "rows": 1832
+      }
+    },
+    "normalization": "NFKC/casefold/whitespace",
+    "fit_overlap_by_eval_and_role": {
+      "selfaware": {
+        "known_correct_answered": 1
+      },
+      "ambigqa": {}
+    },
+    "eligible_unique_fit": {
+      "confab": 887,
+      "known_correct_answered": 239
+    },
+    "anchor_overlap_by_eval": {
+      "selfaware": 1,
+      "ambigqa": 0
+    },
+    "selfaware_labels": {
+      "known": 2337,
+      "unknown": 1032
+    },
+    "ambigqa_labels": {
+      "known": 830,
+      "unknown": 1002
+    },
+    "target_inference": false
+  },
+  "proposal_summary": {
+    "tensor": "model.language_model.layers.19.mlp.down_proj.weight",
+    "columns": 32,
+    "method": "one fixed rank-one update from 64+64 development captures",
+    "primary": "P-struct SelfAware 3369",
+    "transfer": "P-struct AmbigQA 1832",
+    "secondary": "P-rc on both surfaces",
+    "initial_completions": 20804
+  },
+  "interpretation_notes": [
+    "No target inference or patch construction occurred in the editor planning session.",
+    "New development selection excludes normalized-question matches to either evaluation surface.",
+    "The archived source anchor pool bound by direction-building provenance contains one SelfAware question and zero AmbigQA questions; disclose this inherited exposure conservatively.",
+    "Existing response_confidence format retry mentions answer or abstention; report P-struct as the established initial-prompt condition, not absence of any abstention affordance across all retry calls.",
+    "This provenance packet does not sign an experiment or authorize a launch."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "hs20-nwe-attempt-qualification/v1",
+  "attempt": 1,
+  "status": "instrument_smoke_failed_no_scored_generation",
+  "run_binding_sha256": "dc9e24131ae2e7cbd0bfff03da20836c8ef5dd54be1a84f019cb19ec5c61f020",
+  "extract_drill": {
+    "after_journal": "artifact://qwen35-4b-hs20-native-weight-edit/qualification/extract.after.jsonl",
+    "after_rows": 24,
+    "after_sha256": "a5d04a34fd12487b3396b5b13ece1655d8ad0ead273f0ba0240ed8a527541902",
+    "before_journal": "artifact://qwen35-4b-hs20-native-weight-edit/qualification/extract.before.jsonl",
+    "before_rows": 4,
+    "before_sha256": "e8f89e7d62472d3eade39fce366e38f962d68092b12c06704b117513797498ee",
+    "expected_rows": 24,
+    "killed_pid": 24,
+    "module": "extract",
+    "resume_exit_code": 0,
+    "resume_wall_seconds": 133.83583935000024,
+    "signal": 9,
+    "total_wall_seconds": 270.87440341799993
+  },
+  "generation_smoke": {
+    "passed": false,
+    "config_sha": "e0e5f7981c1c806fd63a35646575b023239f4bc63d63069a2705e92adff3e7c6",
+    "readback": {
+      "commanded": [],
+      "measured": [],
+      "offtarget_abs_max": 0.0018307163191231268,
+      "passed": false,
+      "write_ok": true,
+      "parity_ok": false,
+      "max_write_error": 0.0,
+      "gen_stream_fired": null
+    }
+  },
+  "generated_scored_rows": 0,
+  "force_used": false,
+  "tolerance_changed": false
+}

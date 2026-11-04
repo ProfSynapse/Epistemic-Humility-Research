@@ -238,6 +238,14 @@ historical  # imported legacy record; not a launchable lifecycle state
    records them in `instrument.pins`, and flips the status to `signed`. From here
    on, `exp validate` fails if a pinned file changes, so the goalposts cannot
    drift silently. Signing refuses if `prediction` or `falsifier` is empty.
+   Generation-bearing cells declare pinned vLLM or a documented exception.
+   `engine_exception.kind: capability-gap` implements the batching reference's
+   HF fallback after an actual failed capability/invariance qualification.
+   Record the pinned attempted runtime, observed failure and qualified fallback
+   before scientific generation. Its `reason` is required; `evidence` names a
+   non-empty file inside the experiment listed in `instrument.configs`, so the
+   signer freezes it too. This does not waive fallback qualification or permit
+   changing a signed backend after outcomes.
 3. **running**: set by hand when the run is launched (the runner skills own the
    launch). Pins are still enforced.
 4. **resolved / null-result / falsified** (`exp resolve`): stamp the one-sentence

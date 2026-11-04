@@ -1,0 +1,44 @@
+{
+  "capture_image_digest": "sha256:aa9ddcd3307fd939077dbb2af1e3924d7a2ce9e7e02b60766d800f8cff993632",
+  "capture_parent": "sha256:a1d3995e353f24c783c9835f17146b4d168dc486bda6fa908f771c8e97f9a0bc",
+  "date": "2026-11-03",
+  "dependency_changes": "none; force-reinstall reviewed engine wheel with --no-deps",
+  "engine_source_commit": "43af9b407e009bf902220ae5b510f6f27d926644",
+  "engine_wheel_sha256": "0a385c486a63b8328e9e4d90eb3143e687ea33a90c1bd384f80b170eb1736efc",
+  "evaluation_image_digest": "sha256:1e44f7b4c043f78008ac6a971d0fba839beeec85eac855894e268daa481c54dc",
+  "evaluation_parent": "sha256:fa1f394893e0a969f0e990b8c9338f39d2898420315b3da2e0ea9d3b62ae3676",
+  "external_filesystem_export_fixture": {
+    "evidence": "E:/SynapticResearch/preparation/astra-r1-cpu-20261103/astra-exportfix-test.xml",
+    "gpu": false,
+    "model": false,
+    "passed": true,
+    "storage": "T7 E:",
+    "tests": 1,
+    "wall_seconds": 7.38
+  },
+  "gpu_runtime_qualified": false,
+  "hf_schema_fallback": {
+    "apache-tvm-ffi": "0.1.15.post2",
+    "desktop_cpu_tests": {
+      "evidence": "E:/SynapticResearch/builds/ehr-hf-schema-20261103/cpu-tests/hf-schema.xml",
+      "passed": true,
+      "tests": 3,
+      "wall_seconds": 6.27
+    },
+    "engine_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+    "engine_wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a",
+    "gpu_runtime_qualified": false,
+    "parent_image_digest": "sha256:aa9ddcd3307fd939077dbb2af1e3924d7a2ce9e7e02b60766d800f8cff993632",
+    "recipe": "runtime/Dockerfile.hf-schema",
+    "runtime_image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+    "vllm_failure": {
+      "durable_completion_rows": 0,
+      "message": "VLLM batch_invariant mode is not supported for GDN_ATTN.",
+      "phase": "initialization",
+      "version": "0.23.0"
+    },
+    "xgrammar": "0.2.2"
+  },
+  "recipe": "runtime/Dockerfile.engine-overlay",
+  "schema_version": "ehr-astra-runtime-build/v1"
+}

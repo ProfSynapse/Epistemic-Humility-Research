@@ -103,6 +103,14 @@ If the smoke is not invariant, change the unsigned config or fall back to HF.
 Never weaken an already signed gate or retry configurations until one happens
 to agree.
 
+For this documented fallback, declare `instrument.engine_exception` with
+`kind: capability-gap`, a precise `reason`, and `evidence` pointing to a non-empty
+experiment-local record listed in `instrument.configs`. The record identifies
+the attempted pinned runtime and actual capability/invariance failure, then the
+qualified HF runtime. Sign freezes that evidence alongside the fallback config.
+Do not label a static weight-edit comparison as a per-row hook exception merely
+to satisfy the signer. No scientific output may precede the fallback registration.
+
 For parity against an existing HF surface, add a cross-backend pass over the
 same rows. Exact prompt token IDs are mandatory. Exact completion token IDs are
 mandatory when the new run will be pooled or compared row-for-row with the HF

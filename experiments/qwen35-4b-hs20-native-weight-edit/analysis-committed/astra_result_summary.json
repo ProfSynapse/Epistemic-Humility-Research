@@ -1,0 +1,140 @@
+{
+ "base_vs_edited_first_pass": {
+  "ambigqa/P-rc": {
+   "first_pass_rows": 1832,
+   "first_pass_token_identical": 1563,
+   "first_pass_token_identical_fraction": 0.8531659388646288
+  },
+  "ambigqa/P-struct": {
+   "first_pass_rows": 1832,
+   "first_pass_token_identical": 1474,
+   "first_pass_token_identical_fraction": 0.8045851528384279
+  },
+  "selfaware/P-rc": {
+   "first_pass_rows": 3369,
+   "first_pass_token_identical": 2768,
+   "first_pass_token_identical_fraction": 0.8216087859899079
+  },
+  "selfaware/P-struct": {
+   "first_pass_rows": 3369,
+   "first_pass_token_identical": 2574,
+   "first_pass_token_identical_fraction": 0.7640249332146037
+  }
+ },
+ "cells": {
+  "ambigqa/P-rc/base": {
+   "detector_only_known": 22,
+   "detector_only_unknown": 42,
+   "known_abstained": 28,
+   "known_correct": 215,
+   "known_n": 830,
+   "rows": 1832,
+   "rows_retried": 63,
+   "total_generations": 1925,
+   "truthful_rate": 0.14410480349344978,
+   "unknown_abstained": 49,
+   "unknown_n": 1002,
+   "well_formed": 1802
+  },
+  "ambigqa/P-rc/edited": {
+   "detector_only_known": 23,
+   "detector_only_unknown": 43,
+   "known_abstained": 26,
+   "known_correct": 218,
+   "known_n": 830,
+   "rows": 1832,
+   "rows_retried": 59,
+   "total_generations": 1920,
+   "truthful_rate": 0.14683406113537117,
+   "unknown_abstained": 51,
+   "unknown_n": 1002,
+   "well_formed": 1803
+  },
+  "ambigqa/P-struct/base": {
+   "detector_only_known": 1,
+   "detector_only_unknown": 5,
+   "known_abstained": 3,
+   "known_correct": 227,
+   "known_n": 830,
+   "rows": 1832,
+   "rows_retried": 80,
+   "total_generations": 1943,
+   "truthful_rate": 0.1304585152838428,
+   "unknown_abstained": 12,
+   "unknown_n": 1002,
+   "well_formed": 1801
+  },
+  "ambigqa/P-struct/edited": {
+   "detector_only_known": 1,
+   "detector_only_unknown": 4,
+   "known_abstained": 4,
+   "known_correct": 228,
+   "known_n": 830,
+   "rows": 1832,
+   "rows_retried": 77,
+   "total_generations": 1939,
+   "truthful_rate": 0.13155021834061134,
+   "unknown_abstained": 13,
+   "unknown_n": 1002,
+   "well_formed": 1802
+  },
+  "selfaware/P-rc/base": {
+   "detector_only_known": 208,
+   "detector_only_unknown": 232,
+   "known_abstained": 250,
+   "known_correct": 686,
+   "known_n": 2337,
+   "rows": 3369,
+   "rows_retried": 149,
+   "total_generations": 3580,
+   "truthful_rate": 0.3217571979815969,
+   "unknown_abstained": 398,
+   "unknown_n": 1032,
+   "well_formed": 3307
+  },
+  "selfaware/P-rc/edited": {
+   "detector_only_known": 209,
+   "detector_only_unknown": 233,
+   "known_abstained": 245,
+   "known_correct": 691,
+   "known_n": 2337,
+   "rows": 3369,
+   "rows_retried": 155,
+   "total_generations": 3592,
+   "truthful_rate": 0.32146037399821903,
+   "unknown_abstained": 392,
+   "unknown_n": 1032,
+   "well_formed": 3301
+  },
+  "selfaware/P-struct/base": {
+   "detector_only_known": 35,
+   "detector_only_unknown": 24,
+   "known_abstained": 139,
+   "known_correct": 687,
+   "known_n": 2337,
+   "rows": 3369,
+   "rows_retried": 273,
+   "total_generations": 3786,
+   "truthful_rate": 0.27189076877411694,
+   "unknown_abstained": 229,
+   "unknown_n": 1032,
+   "well_formed": 3225
+  },
+  "selfaware/P-struct/edited": {
+   "detector_only_known": 34,
+   "detector_only_unknown": 25,
+   "known_abstained": 136,
+   "known_correct": 688,
+   "known_n": 2337,
+   "rows": 3369,
+   "rows_retried": 269,
+   "total_generations": 3784,
+   "truthful_rate": 0.27129712080736124,
+   "unknown_abstained": 226,
+   "unknown_n": 1032,
+   "well_formed": 3223
+  }
+ },
+ "schema_version": "ehr-astra-result-summary/v1",
+ "text_free": true
+}

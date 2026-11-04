@@ -1,0 +1,9 @@
+# Preserve the qualified HF stack; add the pinned optional grammar integration.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+RUN python -m pip install --no-cache-dir --no-deps xgrammar==0.2.2 apache-tvm-ffi==0.1.15.post2
+COPY wheels/ /opt/ehr-hf-schema/
+RUN python -m pip install --no-cache-dir --no-deps --force-reinstall /opt/ehr-hf-schema/*.whl \
+    && python -c "import xgrammar.contrib.hf, engine_host; from shared.utilities.text_model import load_text_generation_model"
+ENV TORCHINDUCTOR_CACHE_DIR=/workspace/.synaptic/cache/torchinductor \
+    TRITON_CACHE_DIR=/workspace/.synaptic/cache/triton

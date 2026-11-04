@@ -1,0 +1,50 @@
+schema_version: ehr-astra-runtime/v1
+capture:
+  engine: HF MechInterp module hooks
+  image_digest: sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224
+  torch: 2.9.1+cu128
+  transformers: 5.17.0
+  reason: down_proj input/output module sites require the registered hook capture;
+    no native vLLM module-site bridge has been qualified
+evaluation:
+  engine: hf-batched
+  image_digest: sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224
+  qualified: true
+  transformers: 5.17.0
+  torch: 2.9.1+cu128
+  xgrammar: 0.2.2
+  batch_size: 1
+  max_model_len: 2048
+  structured_output_backend: xgrammar
+  batch_invariance: false
+  repeatability: fixed single-request shapes; actual token repeat/permutation and
+    kill-resume qualification required
+  tensor_parallel_size: 1
+  hardware: RTX 3090
+  format_is_interface: true
+  python_executable: python
+  fallback_reason: Pinned vLLM 0.23.0 refuses batch-invariant GDN_ATTN at initialization
+    before generating rows; use the repository-authorized HF fallback.
+engine:
+  requires: '>=1.1.0rc1,<2'
+  api: v1
+  cli_requires: ==1.1.0rc1
+  source_commit: d03a15d62549c64cf46e10532d50a77accd32b26
+  wheel_sha256: 9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a
+storage:
+  models: E:/Models/Epistemic-Humility-Research
+  private_artifacts: E:/SynapticResearch
+  desktop_mount: /mnt/e
+qualification:
+  namespace: hf-5.17.0-xgrammar-0.2.2-b1-r4
+  required: 20 non-evaluation rows, two repeats in each of two orders, exact token
+    IDs/finish/schema; actual capture and generation SIGKILL/resume; no outcome screening
+  status: passed
+  evidence: analysis-committed/astra_runtime_qualification.json
+sources:
+- https://docs.vllm.ai/en/v0.23.0/features/batch_invariance/
+- https://docs.vllm.ai/en/v0.23.0/models/supported_models/
+- https://docs.vllm.ai/en/v0.23.0/features/structured_outputs/
+- https://docs.vllm.ai/en/v0.23.0/features/speculative_decoding/extract_hidden_states/
+- https://github.com/vllm-project/vllm/issues/48613
+- https://xgrammar.mlc.ai/docs/latest/start/quick_start.html

@@ -1,0 +1,8 @@
+schema_version: mechinterp-weights-inspect/v1
+checkpoint: artifact://qwen35-4b-hs20-native-weight-edit/base_model
+hash_files: true
+hash_tensors: true
+tensors:
+- model.language_model.layers.19.mlp.down_proj.weight
+max_listed_tensors: 4
+projections: []
