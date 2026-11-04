@@ -22,9 +22,23 @@ instrument:
   - astra_r2.yaml
   - astra_runtime.yaml
   - analysis-committed/astra_design_provenance.json
-  modules: []
+  - hs20_r2/ORIGINS.json
+  - analysis-committed/astra_constructor_synthetic_qualification.json
+  modules:
+  - hs20_r2/__init__.py
+  - hs20_r2/frozen.py
+  - hs20_r2/astra_r2.py
   pins: {}
-  persistence: {}
+  persistence:
+    hs20_r2/__init__.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 81.22
+    hs20_r2/frozen.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 81.22
+    hs20_r2/astra_r2.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 81.22
 inputs:
 - experiments/common/directions/qwen35-4b-hs20/c_hat.json
 - experiments/qwen35-4b-hs20-native-weight-edit/analysis-committed/astra_patch_freeze.json

@@ -6804,10 +6804,29 @@
           "gates.yaml",
           "astra_r2.yaml",
           "astra_runtime.yaml",
-          "analysis-committed/astra_design_provenance.json"
+          "analysis-committed/astra_design_provenance.json",
+          "hs20_r2/ORIGINS.json",
+          "analysis-committed/astra_constructor_synthetic_qualification.json"
         ],
-        "modules": [],
-        "persistence": {},
+        "modules": [
+          "hs20_r2/__init__.py",
+          "hs20_r2/frozen.py",
+          "hs20_r2/astra_r2.py"
+        ],
+        "persistence": {
+          "hs20_r2/__init__.py": {
+            "measured_smoke_wall_clock_s": 81.22,
+            "persistence": "short-run"
+          },
+          "hs20_r2/astra_r2.py": {
+            "measured_smoke_wall_clock_s": 81.22,
+            "persistence": "short-run"
+          },
+          "hs20_r2/frozen.py": {
+            "measured_smoke_wall_clock_s": 81.22,
+            "persistence": "short-run"
+          }
+        },
         "pins": {}
       },
       "kg": [],

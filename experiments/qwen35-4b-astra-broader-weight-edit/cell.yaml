@@ -3,7 +3,7 @@ proposal: astra_r2.yaml
 runtime: astra_runtime.yaml
 gates: gates.yaml
 launch_authority: false
-entrypoint_status: implementation_pending
+entrypoint_status: numerical_constructor_tested_runtime_integration_pending
 stages:
 - authenticate inherited base capture and ordered roster
 - construct one fixed-dose patch
@@ -16,3 +16,5 @@ stages:
 - grade and commit hashes
 - blind lead spot check
 - unblind once and run paired rollup
+numerical_entrypoint: python -m hs20_r2.astra_r2 {prepare,audit} --handoff ... --arrays
+  ... --out ...
