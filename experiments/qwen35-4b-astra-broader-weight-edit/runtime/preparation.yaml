@@ -1,0 +1,26 @@
+schema_version: ehr-astra-r2-preparation/v1
+origin_sha256: ab3ff74637e15635ef62d9ae611c20127be3c2d4bf8b124ca67eccc44c960ec6
+listing_sha256: 2503df2283abe90b850335e6cb26bd6cff8d4a2e2b820699b1237dd1fdaf8a61
+reads:
+  bundle_root: project://experiments/common/captures/astra-r1/analysis/private_bundle
+  origin: project://experiments/common/captures/astra-r1/origin.json
+  capture_root: project://experiments/common/captures/astra-r1/analysis/private_bundle/capture
+  freeze: project://experiments/common/captures/astra-r1/analysis/private_bundle/public/astra_patch_freeze.json
+  readiness: project://experiments/common/captures/astra-r1/analysis/private_bundle/public/astra_inherited_capture_readiness.json
+  roster: project://experiments/common/captures/astra-r1/analysis/private_bundle/inputs/roster.json
+  request: project://experiments/common/captures/astra-r1/analysis/private_bundle/capture_request.json
+  prepare_report: project://experiments/common/captures/astra-r1/analysis/private_bundle/patch/prepare_report.json
+  fit: project://experiments/common/captures/astra-r1/analysis/private_bundle/raw/fit.jsonl
+  selfaware: project://experiments/common/captures/astra-r1/analysis/private_bundle/raw/SelfAware.json
+  ambigqa: project://experiments/common/captures/astra-r1/analysis/private_bundle/raw/ambigqa_validation_screened.jsonl
+  direction: project://experiments/common/captures/astra-r1/analysis/private_bundle/directions/c_hat.json
+  listing: project://experiments/common/captures/astra-r1/analysis/private_bundle/listing/weights-inspect.json
+  qualification_original: project://experiments/common/captures/astra-r1/analysis/private_bundle/qualification/original.jsonl
+base_checkpoint: artifact://qwen35-4b-astra-broader-weight-edit/shared/base_model
+outputs:
+  inherited: artifact://qwen35-4b-astra-broader-weight-edit/astra-r2/inherited-inputs
+  construction: artifact://qwen35-4b-astra-broader-weight-edit/astra-r2/construction
+  edited: artifact://qwen35-4b-astra-broader-weight-edit/astra-r2/checkpoints/edited
+  qualification_rows: artifact://qwen35-4b-astra-broader-weight-edit/astra-r2/inputs/qualification_original.jsonl
+  audit: artifact://qwen35-4b-astra-broader-weight-edit/astra-r2/checkpoint_audit.json
+  phases: artifact://qwen35-4b-astra-broader-weight-edit/astra-r2/preparation

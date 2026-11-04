@@ -1,0 +1,95 @@
+{
+  "engine": {
+    "declared_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+    "installation_record_sha256": "9f3e9ae7bcd885f21322a13b01c8ed1516b848c44052b2ddf6cf0ea0d4273f3b",
+    "installed_files_verified": true,
+    "version": "1.1.0rc1",
+    "wheel_pin_verified": true,
+    "wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a"
+  },
+  "launch_authority": false,
+  "owned_hard_kill_qualification_complete": false,
+  "passed": true,
+  "private_evidence_root": "E:/SynapticResearch/qualification/astra-r2-constructor-runtime-cpu-20261104-v3",
+  "repair_evidence": {
+    "float32_base_and_edited_storage_rejected": true
+  },
+  "runtime": {
+    "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+    "packages": {
+      "numpy": "2.2.6",
+      "pytest": "8.4.2",
+      "safetensors": "0.8.0",
+      "threadpoolctl": "3.7.0",
+      "torch": "2.9.1+cu128",
+      "transformers": "5.17.0",
+      "xgrammar": "0.2.2"
+    }
+  },
+  "schema_version": "ehr-astra-r2-synthetic-qualification/v1",
+  "scope": "Synthetic constructor, actual numerical CLI, public engine export and eight-cell commitment/scoring path; no research model weights or target inference",
+  "source_files_sha256": {
+    "astra_r2.yaml": "98f4908c31a1baee384aea625bd41961ec7bfdb426e450cc3307e82c11c0c929",
+    "astra_runtime.yaml": "46babf5ede647333b5372dbdd08a3d7111c34f3c4198674e6308b0480fdd1446",
+    "hs20_r2/ORIGINS.json": "debb9aacb2b31d62a087dc8f2ca8a484a5be598df7a13c9534dd9ece66044094",
+    "hs20_r2/__init__.py": "ae080e91eb7c07260c4506751af1ac251ea2de8c148d686e048d135b3ceea530",
+    "hs20_r2/astra_r2.py": "b0b3675cfbdf8430c230638f9ddad846c5f60616864bee86d9a09cb2bdd591b4",
+    "hs20_r2/frozen.py": "1e2bd9e7234427778e383ea2a80fd6358657715ca05c70b36270e97934ad8af0",
+    "r2_runtime/ORIGINS.json": "8d3cb8c408bb2b01785437aa1a615908a460d1f74e6084e8eebd2e23c77e2df8",
+    "r2_runtime/README.md": "d3b09cb85c09ac8cced3ccf11ccb56a199715782f5c61be134cc64820234fd93",
+    "r2_runtime/__init__.py": "2be5d443cdd3107f69f12372f69d62a37088ae031591b7ea8bbeddfdbbb05ce6",
+    "r2_runtime/adjudication.py": "873074c3490f956a9c9a681a65008f80ffdc638e71d967ecc63701bc77aa31bd",
+    "r2_runtime/admission.py": "d2a419c94d56e88c59624cb8bfcde215ce2393c1c6fbc4766f74289bb80c3d8f",
+    "r2_runtime/astra_analysis.py": "a6d9a2a9b78bab072db88cfe81108361652095f39fff26d32bd3704dab8cc16b",
+    "r2_runtime/astra_benchmark.py": "dca0f6c7898b3a856cc8ec291f425e24ffbd3bb27f80877897748352d90d9c9a",
+    "r2_runtime/astra_capture.py": "ecd6b0f4d67a6e40abd2f26d2d60d84164ba972b3404b1f4ccc5e54c2a53d52a",
+    "r2_runtime/astra_fixed.py": "42fcdccbb1a9dc093a519f603e6d68c633e0f4825d052e230bd4f5c64900a8dd",
+    "r2_runtime/astra_qualification.py": "0aa261dec5327f5126711db79712d336919f920a81476020e065ce9e8e0f25be",
+    "r2_runtime/astra_render.py": "dc442b6f79eb07f4de07e9e2c526d5a09dd8e6ecdcdddd7475c3e4718cd500bf",
+    "r2_runtime/astra_run.py": "ee3d5c6f1a2e073d91972ce6c49a9d945fa41d7b002dad42596555315142742b",
+    "r2_runtime/benchmark_ood.py": "5fe5af301dcf0c75bcf3fe6aed059c83aa9b2951696547d3eeb5120cdb9a36c1",
+    "r2_runtime/benchmark_scorers.py": "75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a",
+    "r2_runtime/benchmark_stats.py": "e436fb34dfee64234db2873b90aefaf5494ff406505bbc399a55f1127e7a2285",
+    "r2_runtime/capture.py": "6e73c7975799b21920818c154d13c37b6a132485d484d8c4bfbcedeaa854d4e5",
+    "r2_runtime/checkpoint_audit.py": "5c6c483ed445387a344550d1fc900255fe104477a80e218dba3fc4ff366478fe",
+    "r2_runtime/commitments.py": "db50204479dca45f0359b52105452207607d8a48a0113fc7d05c1c1c34f4cf20",
+    "r2_runtime/config.py": "f86e6106f0a581e8cbb2de870d133fc97b5f510fac4d8c61e48c9f26f8990213",
+    "r2_runtime/constructor.py": "994e49c2b295a73819675fdb4a66b6c1138afb2ecf2ebce6881bd2e6c6418b7c",
+    "r2_runtime/detector_v2.py": "a2e1e056e92b0975ee632e33dcbf865437349cf00bcfbc86c9046454a6292a08",
+    "r2_runtime/detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+    "r2_runtime/grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+    "r2_runtime/integrity.py": "503e57915353fe31c0b88abc9d708f8885a90604993115e7b9bb76130f02036d",
+    "r2_runtime/qualification_compare.py": "e5af17d24cc71d56ae9d2ac4d0b8d8882f13a1aaeb76a8fcf0ddaff098e06ff5",
+    "r2_runtime/render.py": "fcbbb74351ab1be2b20a35695663558b768a4a727122962fcb69459402470b28",
+    "r2_runtime/util.py": "04f7396ff512259b5e53f4f75af0f40621e55e54f26b1afe3c0e614d0fe97280",
+    "tests/conftest.py": "69a53b2cec0798614f29d4a59734838b11dffdac7ef2750c6c78166ca64c9492",
+    "tests/r2_runtime_delivery.json": "4356a23ac08ea0744f4c3035b7081c7443841fe64d9a004226d6ee3379949b55",
+    "tests/test_public_export.py": "fdea163e4b5a85a1d272f0fdf71dff8714ee9a9d791627124afd41112f21187b",
+    "tests/test_r2.py": "ee378dc666ba27e4db600eedf03f484c7e0f7859bf8354db0487438a115b1987",
+    "tests/test_r2_runtime_analysis.py": "adec91597374b163787436d85008730e729e742f733641631edf55c0a3d7926c",
+    "tests/test_r2_runtime_entrypoints.py": "d0a1827d2b1400cd29cb1c8abdd444c41939b3fd995752f39bcd8c5923190aa4",
+    "tests/test_r2_runtime_resume.py": "d5499859aeac103e302425a2e53e87047a216254572da9c8b2ea3fb9097ff3f7",
+    "tests/test_r2_runtime_support.py": "cd533bcb7ae3c47f15eb02c0bc63c13e7afe621f5c0ca1d5fd7463d479a2dd9a"
+  },
+  "synthetic_export": {
+    "manifest_sha256": "3c6d3a7e0bb3f488e19a419909d5014d10d5f603f0752da5acbd1064fd5d8cee",
+    "payload_sha256": "91972333f039641346cb6c43dc6bdef0955aa671afd6b867020c3a06f0eb776d",
+    "spec_sha256": "8531512b862aead5fba351fe332b0d7198850d6d37f177882929ba4cc9738ee1",
+    "totals": {
+      "entries_changed": 2621440,
+      "noop": false,
+      "tensors_modified": 1
+    }
+  },
+  "target_inference_performed": false,
+  "target_weight_edit_performed": false,
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": "55e71f926077f35a449b7ea0aa80c2002ae2dae5a26d612e57624b1a80883f22",
+    "log_sha256": "117a0cf732db8d71dc4f22d91858b3f0d3c21d29ba8975585369359808d80b97",
+    "skipped": 0,
+    "tests": 48,
+    "wall_seconds": 125.868
+  }
+}

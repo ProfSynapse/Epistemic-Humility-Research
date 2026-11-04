@@ -44,10 +44,10 @@ Source of truth: [AMENDMENT section 9](https://github.com/ProfSynapse/Epistemic-
 same commit. PR #604 merged on 2026-11-04. The commit-pinned citations remain
 valid; the experiment is also available on main.
 
-The broader-weight successor is a separately authorized draft with no results.
-The cap-limited write reported in section 9 motivates it, without establishing
-that more weight coverage or a larger edit will help. Benchmark reuse is
-exploratory. The first study is not rescored.
+The separately registered [[qwen35-4b-astra-broader-weight-edit]] successor
+resolved as a construction refusal before export or evaluation. Its frozen
+ideal column-norm guard failed; it supplies no new behavioral result. The first
+study is not rescored.
 
 SUPERSEDES: none. Searches for Qwen hs20 weight edits, native refusal/preservation
 and permanent-edit abstention (including deprecated nodes; see handoff audit)

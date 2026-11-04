@@ -1,0 +1,55 @@
+{
+  "engine": {
+    "declared_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+    "installation_record_sha256": "9f3e9ae7bcd885f21322a13b01c8ed1516b848c44052b2ddf6cf0ea0d4273f3b",
+    "installed_files_verified": true,
+    "version": "1.1.0rc1",
+    "wheel_pin_verified": true,
+    "wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a"
+  },
+  "launch_authority": false,
+  "passed": true,
+  "private_evidence_root": "E:/SynapticResearch/qualification/astra-r2-constructor-cpu-20261104-v1",
+  "runtime": {
+    "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+    "packages": {
+      "numpy": "2.2.6",
+      "pytest": "8.4.2",
+      "safetensors": "0.8.0",
+      "threadpoolctl": "3.7.0",
+      "torch": "2.9.1+cu128",
+      "transformers": "5.17.0",
+      "xgrammar": "0.2.2"
+    }
+  },
+  "schema_version": "ehr-astra-r2-synthetic-qualification/v1",
+  "scope": "Synthetic numerical/CLI/public-engine checkpoint export only; no target inference or target weights",
+  "source_files_sha256": {
+    "astra_r2.yaml": "98f4908c31a1baee384aea625bd41961ec7bfdb426e450cc3307e82c11c0c929",
+    "hs20_r2/ORIGINS.json": "debb9aacb2b31d62a087dc8f2ca8a484a5be598df7a13c9534dd9ece66044094",
+    "hs20_r2/__init__.py": "ae080e91eb7c07260c4506751af1ac251ea2de8c148d686e048d135b3ceea530",
+    "hs20_r2/astra_r2.py": "a1a887100890f890b596ab6aba4b0ef3464ceef96fc0cd1a64d634154f0de58b",
+    "hs20_r2/frozen.py": "1e2bd9e7234427778e383ea2a80fd6358657715ca05c70b36270e97934ad8af0",
+    "tests/conftest.py": "69a53b2cec0798614f29d4a59734838b11dffdac7ef2750c6c78166ca64c9492",
+    "tests/test_public_export.py": "fdea163e4b5a85a1d272f0fdf71dff8714ee9a9d791627124afd41112f21187b",
+    "tests/test_r2.py": "a8ee89c6b958dd44c4c7cf7575f90d639ab70e8768abe931e497f4227dbee739"
+  },
+  "synthetic_export": {
+    "manifest_sha256": "3c6d3a7e0bb3f488e19a419909d5014d10d5f603f0752da5acbd1064fd5d8cee",
+    "payload_sha256": "91972333f039641346cb6c43dc6bdef0955aa671afd6b867020c3a06f0eb776d",
+    "spec_sha256": "8531512b862aead5fba351fe332b0d7198850d6d37f177882929ba4cc9738ee1",
+    "totals": {
+      "entries_changed": 2621440,
+      "noop": false,
+      "tensors_modified": 1
+    }
+  },
+  "target_inference_performed": false,
+  "target_weight_edit_performed": false,
+  "tests": {
+    "log_sha256": "1cf9fad426586c939e3650f4e2c216cdd2d7e226e6ad8dbde2a8e0168e4b6534",
+    "passed": 34,
+    "skipped": 0,
+    "wall_seconds": 81.22
+  }
+}

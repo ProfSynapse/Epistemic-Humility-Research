@@ -453,3 +453,16 @@ The column-norm cap limiting the first edit is a hypothesis for the successor,
 not evidence that a larger edit will work. Existing benchmark results are now
 known to the investigators, so reuse is labeled exploratory. Keep actual
 abstention and known-answer preservation as the behavioral endpoints.
+
+## 2026-11-04: additive input promotion for the successor
+
+The original base P-struct capture, roster/request/source provenance and original
+input bytes were authenticated and promoted for reuse. The shared public descriptor
+is experiments/common/captures/astra-r1/origin.json; private bytes are on T7.
+The manifest adds this shared input reference only. The original instrument,
+scientific pins, result, verdict and historical artifact identities are unchanged.
+
+The exact held-back calibration file was also promoted separately for R2 reuse:
+E:/SynapticResearch/shared/astra-r1-decoys-v1/decoys.json. The new common
+hash-only decoys-origin.json and additive input declaration preserve the original
+25/25 pool and its frozen bytes. No R1 instrument, gate, score or verdict changed.

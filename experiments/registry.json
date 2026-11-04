@@ -6792,6 +6792,273 @@
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
+      "created_at": "2026-11-04T12:49:33Z",
+      "falsifier": "An instrument-valid evaluation failing the registered behavioral benefit or preservation gates rejects this broader-edit proposal; no revision based on evaluation scores.",
+      "inputs": [
+        "experiments/common/directions/qwen35-4b-hs20/c_hat.json",
+        "experiments/common/captures/astra-r1/origin.json",
+        {
+          "availability": "local",
+          "path": "experiments/common/captures/astra-r1/analysis/private_bundle",
+          "source": "Private T7 promotion E:/SynapticResearch/shared/astra-r1-capture-v1; exact 308-file inventory pinned by common origin ab3ff74637e15635ef62d9ae611c20127be3c2d4bf8b124ca67eccc44c960ec6"
+        },
+        "experiments/common/captures/astra-r1/decoys-origin.json",
+        {
+          "availability": "local",
+          "path": "experiments/common/captures/astra-r1/analysis/decoys/decoys.json",
+          "sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27",
+          "source": "Exact original held-back calibration pool promoted to E:/SynapticResearch/shared/astra-r1-decoys-v1"
+        }
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "astra_r2.yaml",
+          "astra_runtime.yaml",
+          "analysis-committed/astra_design_provenance.json",
+          "hs20_r2/ORIGINS.json",
+          "analysis-committed/astra_constructor_synthetic_qualification.json",
+          "r2_runtime/ORIGINS.json",
+          "r2_runtime/detector_v2_patterns.yaml",
+          "analysis-committed/astra_constructor_runtime_synthetic_qualification.json",
+          "analysis-committed/astra_cpu_qualification_20261104_v6.json",
+          "analysis-committed/astra_inherited_capture_readiness.json",
+          "runtime/preparation.yaml",
+          "runtime/r2_host_binding.json",
+          "analysis-committed/astra_cpu_qualification_20261104_v9.json",
+          "analysis-committed/astra_pre_sign_readiness_20261104.json",
+          "analysis-committed/astra_pre_sign_review_20261104.json"
+        ],
+        "engine_exception": {
+          "kind": "parity-locked",
+          "reason": "Extend the registered R1 HF batch-1 surface verbatim: same image, engine wheel, renderer, schema, dtype and decode regime. New source closure is CPU-tested and reviewed; actual exported R2 checkpoint must pass fresh edited-model qualification and both Git commitments before any benchmark arm."
+        },
+        "modules": [
+          "hs20_r2/__init__.py",
+          "hs20_r2/frozen.py",
+          "hs20_r2/astra_r2.py",
+          "r2_runtime/__init__.py",
+          "r2_runtime/adjudication.py",
+          "r2_runtime/admission.py",
+          "r2_runtime/astra_analysis.py",
+          "r2_runtime/astra_benchmark.py",
+          "r2_runtime/astra_capture.py",
+          "r2_runtime/astra_fixed.py",
+          "r2_runtime/astra_qualification.py",
+          "r2_runtime/astra_render.py",
+          "r2_runtime/astra_run.py",
+          "r2_runtime/benchmark_ood.py",
+          "r2_runtime/benchmark_scorers.py",
+          "r2_runtime/benchmark_stats.py",
+          "r2_runtime/capture.py",
+          "r2_runtime/checkpoint_audit.py",
+          "r2_runtime/commitments.py",
+          "r2_runtime/config.py",
+          "r2_runtime/constructor.py",
+          "r2_runtime/detector_v2.py",
+          "r2_runtime/grader.py",
+          "r2_runtime/inherited_inputs.py",
+          "r2_runtime/integrity.py",
+          "r2_runtime/qualification_compare.py",
+          "r2_runtime/qualification_owned.py",
+          "r2_runtime/render.py",
+          "r2_runtime/util.py",
+          "r2_runtime/preparation.py"
+        ],
+        "persistence": {
+          "hs20_r2/__init__.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "hs20_r2/astra_r2.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "hs20_r2/frozen.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/__init__.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/adjudication.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/admission.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_analysis.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_benchmark.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_capture.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_fixed.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_qualification.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_render.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_run.py": {
+            "checkpoint_path": ".synaptic/artifacts/qwen35-4b-astra-broader-weight-edit/astra-r2/evaluation",
+            "persistence": "incremental"
+          },
+          "r2_runtime/benchmark_ood.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/benchmark_scorers.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/benchmark_stats.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/capture.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/checkpoint_audit.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/commitments.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/config.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/constructor.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/detector_v2.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/grader.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/inherited_inputs.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/integrity.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/preparation.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/qualification_compare.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/qualification_owned.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/render.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/util.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          }
+        },
+        "pins": {
+          "analysis-committed/astra_constructor_runtime_synthetic_qualification.json": "b7294748589fab70bc84fe6dc9e289cf5f8606f5d8e62aa04781b98158220a9c",
+          "analysis-committed/astra_constructor_synthetic_qualification.json": "076727ae867ebd56e7da503bc465a76b74a16c66c41e0fa8e557dee5ccf39c2a",
+          "analysis-committed/astra_cpu_qualification_20261104_v6.json": "47726271fd94fc2e081710bd25a08e9076876fcb74dc58735fd4062fa43a409d",
+          "analysis-committed/astra_cpu_qualification_20261104_v9.json": "950e0430d37f7492837bfaaa818bd4982c4fdf50a347c9ed87ad3f24b4599911",
+          "analysis-committed/astra_design_provenance.json": "938029ada267e999585f9ce7c9af6c8f0b955fff3d9cd83f807fa2585fa9d224",
+          "analysis-committed/astra_inherited_capture_readiness.json": "17ebedf1ff91de7906c3ee7e168536bfaaab59607f0437c59037944e2c584969",
+          "analysis-committed/astra_pre_sign_readiness_20261104.json": "8971cb5b41d6849fc0f16d170ff0d8073b6b6582597d1a1518a4bdbbaeead15a",
+          "analysis-committed/astra_pre_sign_review_20261104.json": "f1876f5af399ce294537f920d1323a709ba013d7a61e29a6a64a38372210a939",
+          "astra_r2.yaml": "98f4908c31a1baee384aea625bd41961ec7bfdb426e450cc3307e82c11c0c929",
+          "astra_runtime.yaml": "46babf5ede647333b5372dbdd08a3d7111c34f3c4198674e6308b0480fdd1446",
+          "cell.yaml": "84281988a5642225620d200823c98b03040fdd845964ae4c0e13b9cf291fcc31",
+          "gates.yaml": "1527d4f4cfdf1a5fa5926c27ee21c3689a9dab830b256b84ebda7714287ec214",
+          "hs20_r2/ORIGINS.json": "debb9aacb2b31d62a087dc8f2ca8a484a5be598df7a13c9534dd9ece66044094",
+          "hs20_r2/__init__.py": "ae080e91eb7c07260c4506751af1ac251ea2de8c148d686e048d135b3ceea530",
+          "hs20_r2/astra_r2.py": "b0b3675cfbdf8430c230638f9ddad846c5f60616864bee86d9a09cb2bdd591b4",
+          "hs20_r2/frozen.py": "1e2bd9e7234427778e383ea2a80fd6358657715ca05c70b36270e97934ad8af0",
+          "r2_runtime/ORIGINS.json": "8d3cb8c408bb2b01785437aa1a615908a460d1f74e6084e8eebd2e23c77e2df8",
+          "r2_runtime/__init__.py": "2be5d443cdd3107f69f12372f69d62a37088ae031591b7ea8bbeddfdbbb05ce6",
+          "r2_runtime/adjudication.py": "ec5dd89bc1494615b619239df69dccbf469e431a726cb44f18c909cda23d0b69",
+          "r2_runtime/admission.py": "da3848ddc99a6d8f8438d2f99968f5605e69ced20790709c5cd0ed4edd7a1782",
+          "r2_runtime/astra_analysis.py": "374d650f2f6ca421a4fa8b5d9f4115070b2f1a4130fbc11169e0ae5e5d8abdfa",
+          "r2_runtime/astra_benchmark.py": "dca0f6c7898b3a856cc8ec291f425e24ffbd3bb27f80877897748352d90d9c9a",
+          "r2_runtime/astra_capture.py": "ecd6b0f4d67a6e40abd2f26d2d60d84164ba972b3404b1f4ccc5e54c2a53d52a",
+          "r2_runtime/astra_fixed.py": "42fcdccbb1a9dc093a519f603e6d68c633e0f4825d052e230bd4f5c64900a8dd",
+          "r2_runtime/astra_qualification.py": "84d0bd3934e3d364eb55a2ef7a6aadfe2af3a65876358173549ba9efabef2591",
+          "r2_runtime/astra_render.py": "dc442b6f79eb07f4de07e9e2c526d5a09dd8e6ecdcdddd7475c3e4718cd500bf",
+          "r2_runtime/astra_run.py": "8fd48cf2cfcbe6723c273c854b9704bb26d3f587a31096d24074ee38b3e8b010",
+          "r2_runtime/benchmark_ood.py": "5fe5af301dcf0c75bcf3fe6aed059c83aa9b2951696547d3eeb5120cdb9a36c1",
+          "r2_runtime/benchmark_scorers.py": "75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a",
+          "r2_runtime/benchmark_stats.py": "e436fb34dfee64234db2873b90aefaf5494ff406505bbc399a55f1127e7a2285",
+          "r2_runtime/capture.py": "6e73c7975799b21920818c154d13c37b6a132485d484d8c4bfbcedeaa854d4e5",
+          "r2_runtime/checkpoint_audit.py": "5c6c483ed445387a344550d1fc900255fe104477a80e218dba3fc4ff366478fe",
+          "r2_runtime/commitments.py": "db50204479dca45f0359b52105452207607d8a48a0113fc7d05c1c1c34f4cf20",
+          "r2_runtime/config.py": "f86e6106f0a581e8cbb2de870d133fc97b5f510fac4d8c61e48c9f26f8990213",
+          "r2_runtime/constructor.py": "994e49c2b295a73819675fdb4a66b6c1138afb2ecf2ebce6881bd2e6c6418b7c",
+          "r2_runtime/detector_v2.py": "a2e1e056e92b0975ee632e33dcbf865437349cf00bcfbc86c9046454a6292a08",
+          "r2_runtime/detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "r2_runtime/grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+          "r2_runtime/inherited_inputs.py": "49a93a47fce54d4afabe3d8285ea046abb9935db376be3e11081b17c12ec8d69",
+          "r2_runtime/integrity.py": "503e57915353fe31c0b88abc9d708f8885a90604993115e7b9bb76130f02036d",
+          "r2_runtime/preparation.py": "8a3d28ed2af6972fba0e4eaaa891e1280fdc18f3f00f9650c259b4e1fdfd9292",
+          "r2_runtime/qualification_compare.py": "e5af17d24cc71d56ae9d2ac4d0b8d8882f13a1aaeb76a8fcf0ddaff098e06ff5",
+          "r2_runtime/qualification_owned.py": "035deaca6e69dd989d3f9387cb7712a5d36583b98c7381124c43b082c90f0850",
+          "r2_runtime/render.py": "fcbbb74351ab1be2b20a35695663558b768a4a727122962fcb69459402470b28",
+          "r2_runtime/util.py": "04f7396ff512259b5e53f4f75af0f40621e55e54f26b1afe3c0e614d0fe97280",
+          "runtime/preparation.yaml": "6a9bb95e688c8f4e36e5461f39c86999746d4025cdfeecad43bf56b93a6fea68",
+          "runtime/r2_host_binding.json": "286a2578593ae53566a1eba0962a4dca5094fe3c62c220f38f2889e45de55d2f"
+        }
+      },
+      "kg": [
+        "experiment:qwen35-4b-astra-broader-weight-edit",
+        "artifact:qwen35-4b-astra-broader-weight-edit-construction-evidence",
+        "claim:qwen35-4b-astra-broader-weight-edit-ideal-column-norm-refusal"
+      ],
+      "pr": 605,
+      "prediction": "The single Astra hs20-wide1024-fixed2sigma-r2 edit passes all five primary SelfAware P-struct behavioral gates; internal writing alone cannot pass.",
+      "question": "Can an Astra-designed edit with broader weight coverage increase actual abstention while preserving correct answers?",
+      "registered": true,
+      "slug": "qwen35-4b-astra-broader-weight-edit",
+      "status": "resolved",
+      "text_capture": "enabled",
+      "title": "Astra broader direct weight edit for epistemic humility",
+      "type": "steer-cell",
+      "verdict": "CONSTRUCTION_REFUSED: the sole fixed proposal exceeded the ideal per-column norm limit (0.457687 > 0.45); no weights were exported or evaluated, so behavioral prediction remains untested."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
       "created_at": "2026-07-24T00:16:16Z",
       "falsifier": "Fires if the profile peak lands in the outer 20% of depth on either end (early- or late-exterior, as in llama, mistral, gemma, and qwen3-4b), or if no layer inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes simultaneously. See AMENDMENT.md \"Falsifier\" for the full registered wording.",
       "inputs": [
@@ -6908,6 +7175,14 @@
           "path": ".synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model/model.safetensors.index.json",
           "sha256": "cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d",
           "source": "T7 Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mount the checkpoint read-only"
+        },
+        "experiments/common/captures/astra-r1/origin.json",
+        "experiments/common/captures/astra-r1/decoys-origin.json",
+        {
+          "availability": "local",
+          "path": "experiments/common/captures/astra-r1/analysis/decoys/decoys.json",
+          "sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27",
+          "source": "Exact original held-back calibration pool promoted to E:/SynapticResearch/shared/astra-r1-decoys-v1"
         }
       ],
       "instrument": {
@@ -7114,7 +7389,11 @@
         },
         "runtime_image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224"
       },
-      "kg": [],
+      "kg": [
+        "experiment:qwen35-4b-hs20-native-weight-edit",
+        "artifact:qwen35-4b-hs20-native-weight-edit-committed-evidence",
+        "claim:qwen35-4b-hs20-native-weight-edit-benefit-gates-failed"
+      ],
       "prediction": "The one frozen Astra edit passes all five primary SelfAware P-struct benefit and cost gates; AmbigQA transfer and P-rc are reported separately.",
       "question": "Can one Astra-designed sparse Qwen3.5-4B weight edit improve abstention under P-struct while preserving known-answer accuracy on the existing humility benchmarks?",
       "registered": true,
