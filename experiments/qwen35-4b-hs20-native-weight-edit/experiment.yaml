@@ -1,7 +1,7 @@
 slug: qwen35-4b-hs20-native-weight-edit
 title: Astra fixed hs20 weight edit for epistemic humility
 type: steer-cell
-status: running
+status: falsified
 registered: true
 created_at: '2026-11-03T11:22:20Z'
 question: Can one Astra-designed sparse Qwen3.5-4B weight edit improve abstention
@@ -247,5 +247,7 @@ inputs:
   source: T7 Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mount the
     checkpoint read-only
   sha256: cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d
-verdict: ''
+verdict: 'The one fixed Astra sparse edit failed the primary benefit gates on SelfAware
+  P-struct: refusal recall 229/1032 to 226/1032 and paired truthful CI -0.50 to +0.47
+  points, with cost gates passing and a valid instrument.'
 kg: []

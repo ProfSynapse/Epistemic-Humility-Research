@@ -11,17 +11,17 @@ predictions:
     call: Expect the edit to pass
     recorded: 2026-11-03
     quote: "Yes, I expect it to pass"
-outcome: pending
+outcome: primary prediction falsified
 scoreboard:
-  user: pending
-  orchestrator: pending
+  user: miss
+  orchestrator: no complete pass was right; the stated mechanism, known-answer cost, was wrong
 ---
 
 # Astra fixed hs20 weight edit for epistemic humility
 
-**Status: SIGNED 2026-11-03 by the lead on the PI's delegated authority.** No
-behavioral result exists yet. This is an exploratory evidence cell, separate from
-the locked training-regimen headline matrix.
+**Status: RESOLVED 2026-11-04, primary prediction falsified.** Signed 2026-11-03 by
+the lead on the PI's delegated authority. See section 9. This is an exploratory
+evidence cell, separate from the locked training-regimen headline matrix.
 
 ## 1. Research question and rationale
 
@@ -323,4 +323,46 @@ remain as proposed. The PI subsequently authorized the lead to sign on the PI's 
 technical qualification. The PI lifted the desktop launch hold on 2026-11-03:
 "and hold is lifted as well". Namespace hf-5.17.0-xgrammar-0.2.2-b1-r4 passed.
 No construction capture, numerical patch, scored evaluation or verdict exists
-at signing. Outcome and prediction scoreboard remain pending.
+at signing. The outcome is in section 9.
+
+## 9. Outcome
+
+Registered roll-up (`analysis-committed/astra_rollup.json`), quoted:
+`verdict: primary_prediction_falsified`, `transfer_supported: false`,
+`basis: frozen_detector_plus_committed_blinded_adjudication`.
+
+The instrument was valid. All 358 shards passed CG1 at attempt 1, pooled positive
+agreement 8950/8950, and the lead's blind spot check agreed 30/30. The decoys were exact
+canonical phrases and exact aliases, so this perfect agreement shows the lane worked, not
+that hard edge cases were all graded correctly.
+
+Primary, SelfAware P-struct, edited minus base:
+
+| Gate | Base | Edited | Delta | Result |
+|---|---:|---:|---:|---|
+| Paired truthful gain, 95% CI lower bound above 0 | 27.19% | 27.13% | -0.06 points, CI -0.50 to +0.47 | FAIL |
+| Unknown refusal recall, delta above 0 | 229/1032 | 226/1032 | -0.29 points | FAIL |
+| Known over-refusal, increase at most 2 points | 139/2337 | 136/2337 | -0.13 points | pass |
+| Unconditional known accuracy, loss at most 2 points | 687/2337 | 688/2337 | +0.04 points | pass |
+| Well-formedness, loss at most 1 point | 3225/3369 | 3223/3369 | -0.06 points | pass |
+
+The complete instrument-valid primary evaluation fails two gates, so the falsifier is
+met. AmbigQA P-struct transfer also fails: abstention on unknown 12/1002 to 13/1002,
+truthful CI lower bound -0.27 points. The P-rc comparisons are descriptive and also
+did not pass.
+
+Scope. The edit did reach generation: 23.6% of first-pass primary rows changed at least
+one token (`analysis-committed/astra_result_summary.json`). The effect on the registered
+behavior was still indistinguishable from zero, with no measurable known-answer cost.
+Format retries were balanced (273 and 269 rows), so the 128-token cap did not separate
+the arms.
+
+Unregistered observation, not a finding: the column-norm cap limited the mean write on U
+to alpha 0.268, about 0.17 sigma_c, against the registered nominal 2 sigma_c. This study
+does not establish whether a larger edit would change behavior. It tested one edit and
+does not support a claim about weight editing in general. No replacement edit or rescore
+is permitted under this registration; any further edit is a new registered round.
+
+Predictions. The PI predicted a pass: miss. The earlier lead predicted no complete pass
+at 70%, attributing it to known-answer cost. No complete pass occurred, but it failed
+on benefit, while the cost gates passed.

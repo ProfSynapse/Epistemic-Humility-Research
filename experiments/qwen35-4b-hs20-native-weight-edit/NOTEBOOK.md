@@ -431,3 +431,11 @@ audit across all 358: no Bash or script use, and zero file paths outside the gra
 directory. Seven graders rewrote their own output before finishing. The lead's blind
 30-item spot check agreed 30/30 with the graders (floor 0.90) and was committed before
 apply. No opaque-id map was read before these commitments.
+
+## 2026-11-04: applied and rolled up
+
+Apply: instrument valid, 358 of 358 shards passed at attempt 1, no regrades, pooled positive
+agreement 8950/8950. Roll-up: primary_prediction_falsified. Details are in AMENDMENT
+section 9. Aggregate per-cell counts are in `analysis-committed/astra_result_summary.json`;
+that summary script was unregistered descriptive reporting and decides nothing.
+Private rows, graded files and ID maps stay on T7.
