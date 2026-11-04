@@ -1,7 +1,7 @@
 slug: qwen35-4b-astra-column-budget-followup
 title: Astra fixed broad edit with revised ideal column budget
 type: steer-cell
-status: signed
+status: running
 registered: true
 created_at: '2026-11-04T16:01:40Z'
 question: Does the fixed broader Astra edit improve actual abstention after a prospective
@@ -236,3 +236,4 @@ inputs:
   sha256: 9a2d54cfbb77f8e4f516a84a1c6a1ec0bc670c659745b9dd6b663ab87b8f9c5c
 verdict: ''
 kg: []
+pr: 606

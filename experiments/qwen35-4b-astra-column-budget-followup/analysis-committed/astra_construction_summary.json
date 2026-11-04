@@ -1,0 +1,56 @@
+{
+  "base_tensor_sha256": "6a03103aebef7c1e8474d031a7394e7fad7839c9aa567433e8ac7bc55fe0bc2b",
+  "behavioral_outcome": "not_measured",
+  "benchmark_generation_performed": false,
+  "checkpoint_reloaded": true,
+  "edited_tensor_sha256": "f114d5809f696a9b1315ec8e54526764381dc58a716a09d3c0aaa93675bafeda",
+  "evidence_sha256": {
+    "checkpoint_audit.json": "c0b119c69f55effa020265e38d51c6068fd126098a1e803dacd34b5348f298a7",
+    "construction/patch/payload.safetensors": "3bef419f5be1ce1c5d1fdb1b36a62a31114ce55653bf1a099f838309e14257ac",
+    "construction/patch/spec.yaml": "4df96d505123ada2dabdf2552428e6f9ec3777fd52f91bb3b785751669ada122",
+    "construction/report.json": "12091d0e43bca8ed994d8e79103e6b92b8eba0b48da41727f3dfaa192a70674f",
+    "inherited-inputs/arrays.npz": "969ea8c59a41dd825003ed347b907ddba974a7c29b8223764b5ce54e11140a3b",
+    "inherited-inputs/complete.json": "0bc0e86671070ecfffea206ab7ae70f717b2cfb1a2453ea83fcae3a196a35579",
+    "inherited-inputs/handoff.json": "a56d3370032b5ed923e9d059eb31b2777929b1b9402644d01cc83efc9ad0833f",
+    "preparation/claim.json": "a0b22b60c18aa7be2bb50a3cf03eaec9173f35c631dfe2689ac291a0e2d8ca11",
+    "preparation/complete.json": "6da32c5bbf88d9d1eb77c5f255a1781e8e3125f3d04e0450f77d4b1815bab36a"
+  },
+  "export_manifest_sha256": "b0479677785fe93e561dbf6f6dc421b688362d913c14eefbe4a27a9b2dfbc30a",
+  "ideal_guards_passed": true,
+  "independent_preexport_guards_passed": true,
+  "modified_tensors": [
+    "model.language_model.layers.19.mlp.down_proj.weight"
+  ],
+  "passed": true,
+  "payload_sha256": "3bef419f5be1ce1c5d1fdb1b36a62a31114ce55653bf1a099f838309e14257ac",
+  "private_root": "E:/SynapticResearch/runs/qwen35-4b-astra-r3-20261104/.synaptic/artifacts/qwen35-4b-astra-column-budget-followup/astra-r3",
+  "realized_metrics": {
+    "K_max_sigma": 0.9246928401066958,
+    "K_rms_sigma": 0.26365000468949845,
+    "U_mean_sigma": 1.999928085632654,
+    "U_rms_sigma": 2.012330352972108,
+    "all_max_sigma": 2.399110831491837,
+    "broad_columns": 1024,
+    "entries_changed": 2489947,
+    "error_max_sigma": 0.0037791992757396204,
+    "error_rms_sigma": 0.0030813126819931,
+    "maximum_column_relative_l2": 0.457678645208204,
+    "off_c_relative": 0.027666774072595903,
+    "relative_frobenius_columns": 0.0601375256909258,
+    "relative_frobenius_full": 0.020171147049199253
+  },
+  "receipt_checked": true,
+  "reference_proposal": {
+    "identity_sha256": "366e968df32a0a2fdcabf1bcdaf7a1070e2fc6c16680561ded0ec97335c3d050",
+    "origin_sha256": "72c0dc4184959b4ec40108a882975c5f17cfe96b5c1247347a18f756cc076086",
+    "report_sha256": "9a2d54cfbb77f8e4f516a84a1c6a1ec0bc670c659745b9dd6b663ab87b8f9c5c"
+  },
+  "rescaled_or_replaced": false,
+  "schema_version": "ehr-astra-r3-construction-summary/v1",
+  "source_commit": "2f428adfdffe33e6f5c73250759231ad1ea6ed15",
+  "spec_sha256": "4df96d505123ada2dabdf2552428e6f9ec3777fd52f91bb3b785751669ada122",
+  "stage": "construction_export_audit",
+  "target_inference_performed": false,
+  "tensor_inventory_count": 738,
+  "unchanged_other_tensor_count": 737
+}

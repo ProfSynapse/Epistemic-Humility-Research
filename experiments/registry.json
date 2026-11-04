@@ -7056,11 +7056,12 @@
         }
       },
       "kg": [],
+      "pr": 606,
       "prediction": "Given a qualified checkpoint and valid complete evaluation, the one fixed R3 edit passes all five unchanged primary SelfAware P-struct gates.",
       "question": "Does the fixed broader Astra edit improve actual abstention after a prospective ideal-column budget revision?",
       "registered": true,
       "slug": "qwen35-4b-astra-column-budget-followup",
-      "status": "signed",
+      "status": "running",
       "text_capture": "enabled",
       "title": "Astra fixed broad edit with revised ideal column budget",
       "type": "steer-cell",

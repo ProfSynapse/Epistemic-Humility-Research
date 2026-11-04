@@ -47,3 +47,30 @@ retains exact completed bytes and verified gpt-6-astra/max metadata.
 The lead signs only after these checks. No R3 target computation or model run
 has occurred at signing; no scientific threshold other than the declared ideal
 column cap changed. Fresh actual export and qualification are still required.
+
+
+## 2026-11-04: one construction/export passed
+
+The one signed no-GPU/offline CPU attempt completed from source2f428adf.
+Reference identity matched the exact retained R2 mathematical proposal before
+serialization and in the audit. Ideal and independent preexport checks passed.
+The actual export changed2,489,947BF16 entries acrossall1024selected columns
+in one tensor; all737other tensors and required sidecars remained unchanged.
+The public engine receipt and full stored-byte/readback audit passed all guards.
+
+Actual mean U write was1.999928085632654sigma_c, known RMS0.26365000468949845,
+max-column norm ratio0.457678645208204 and full relativeFrobenius0.020171147049199253.
+These are construction quantities, not generated abstention/correctness outcomes.
+No inference or benchmark ran. The aggregate construction summary hash is
+26a40f65d4720fdabe58375ad8fd5efdf5895d91a5d5fa70716655b9fd1640c9.
+The full private audit is bound by c0b119c69f55effa020265e38d51c6068fd126098a1e803dacd34b5348f298a7.
+
+The immutable numerical freeze is being produced before any inference. The
+next stage requires a Git-committed freeze, then actual exported-model20-row
+qualification and both committed proofs before any benchmark arm. No signed
+instrument file or threshold changed.
+
+The numerical freeze completed and its exact bytes were copied/read back into
+analysis-committed/astra_patch_freeze.json. Parent verification matched all
+source hashes, spec/export identity, reference and audit hashes;50signedpins
+remain unchanged. Commit this freeze before the unscored qualification begins.
