@@ -3,7 +3,7 @@ id: task-62d2d6
 title: Build and run the bounded hs20 native weight-edit experiment
 status: in-progress
 assignee:
-- '@claude'
+- '@codex'
 tier: A
 priority: high
 experiment: ''
