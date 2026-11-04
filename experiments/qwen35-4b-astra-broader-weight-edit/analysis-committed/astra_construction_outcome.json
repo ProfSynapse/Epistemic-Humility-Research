@@ -1,0 +1,54 @@
+{
+  "behavioral_null": false,
+  "behavioral_prediction": "not_tested",
+  "benchmark_generation_performed": false,
+  "constructor_exit_code": 3,
+  "evidence_sha256": {
+    "construction/report.json": "9a2d54cfbb77f8e4f516a84a1c6a1ec0bc670c659745b9dd6b663ab87b8f9c5c",
+    "inherited-inputs/arrays.npz": "969ea8c59a41dd825003ed347b907ddba974a7c29b8223764b5ce54e11140a3b",
+    "inherited-inputs/complete.json": "f5e1cfe8074e58e5161bf674a60cad4a3de9c2228a7ebdb026131b4d24af8aa7",
+    "inherited-inputs/handoff.json": "e028b4bcd5e7e01d341ff7a8550c06f30e7a935fbc8dd273f8cedee90c889d32",
+    "preparation/bridge.json": "315465a98e79fa6e6127d6bf361818bc9367faf5a32e1e24fb6f1535d2818fed",
+    "preparation/claim.json": "62d864dff8cee9ee37c1ffc11ddf6b3b3fe205c4f2124a00bc9d7269f7627f56",
+    "preparation/construction.json": "6fd4e5f1396d0e36682cc6a420632ac3476e81197b5d9ccd04a2a0e716418a31",
+    "preparation/terminal.json": "7cbed7701e870bfd4708e0d00c628bb56f5da94fce4f50bd25e914a67237acec"
+  },
+  "failed_ideal_guards": [
+    "maximum_column_relative_l2"
+  ],
+  "guard": {
+    "maximum_inclusive": 0.45,
+    "metric": "maximum_column_relative_l2",
+    "observed": 0.45768700324076517
+  },
+  "ideal_metrics": {
+    "K_max_sigma": 0.9247130658339316,
+    "K_rms_sigma": 0.26365867161101847,
+    "U_mean_sigma": 2.0,
+    "U_rms_sigma": 2.0124029021460577,
+    "all_max_sigma": 2.399196091042231,
+    "ideal_nonzero_delta_entries": 2621440,
+    "maximum_column_relative_l2": 0.45768700324076517,
+    "relative_frobenius_columns": 0.06011677105537128,
+    "relative_frobenius_full": 0.020164185592090524
+  },
+  "image_digest": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+  "input_doctor_sha256": "cc3e4c556acd54abcfa705fe9a266d30f92dc4232ef4e63db979c59db4cf2bb2",
+  "linear_consistency": {
+    "maximum_l2_error": 0.017656288948876293,
+    "passed": true,
+    "rows": 128
+  },
+  "metrics_basis": "Ideal float64 delta; no bf16 patch was serialized or applied, so nonzero entries are not realized changed weights.",
+  "orchestrator_exit_code": 2,
+  "outcome": "construction_refused",
+  "patch_spec_emitted": false,
+  "phase": "construction",
+  "private_artifacts_root": "E:/SynapticResearch/runs/qwen35-4b-astra-r2-20261104/.synaptic/artifacts/qwen35-4b-astra-broader-weight-edit/astra-r2",
+  "rescaled_or_replaced": false,
+  "schema_version": "ehr-astra-r2-construction-outcome/v1",
+  "source_commit": "620942f5c2ef1256fed51c784e254985a8070ca7",
+  "target_inference_performed": false,
+  "terminal": true,
+  "weight_export_performed": false
+}

@@ -7038,17 +7038,21 @@
           "runtime/r2_host_binding.json": "286a2578593ae53566a1eba0962a4dca5094fe3c62c220f38f2889e45de55d2f"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:qwen35-4b-astra-broader-weight-edit",
+        "artifact:qwen35-4b-astra-broader-weight-edit-construction-evidence",
+        "claim:qwen35-4b-astra-broader-weight-edit-ideal-column-norm-refusal"
+      ],
       "pr": 605,
       "prediction": "The single Astra hs20-wide1024-fixed2sigma-r2 edit passes all five primary SelfAware P-struct behavioral gates; internal writing alone cannot pass.",
       "question": "Can an Astra-designed edit with broader weight coverage increase actual abstention while preserving correct answers?",
       "registered": true,
       "slug": "qwen35-4b-astra-broader-weight-edit",
-      "status": "signed",
+      "status": "resolved",
       "text_capture": "enabled",
       "title": "Astra broader direct weight edit for epistemic humility",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "CONSTRUCTION_REFUSED: the sole fixed proposal exceeded the ideal per-column norm limit (0.457687 > 0.45); no weights were exported or evaluated, so behavioral prediction remains untested."
     },
     {
       "checkpoint": {

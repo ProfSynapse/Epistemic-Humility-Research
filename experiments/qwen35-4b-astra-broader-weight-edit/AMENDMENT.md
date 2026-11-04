@@ -11,17 +11,18 @@ predictions:
   user:
     call: not elicited for R2
     quote: null
-outcome: pending
+outcome: construction_refused
 scoreboard:
-  user: pending
-  orchestrator: pending
+  user: not-elicited
+  orchestrator: not-scored
+  editor: not-scored
 ---
 
 # Astra broader direct weight edit for epistemic humility
 
-**Status: SIGNED, 2026-11-04.** The lead signs under delegated PI authority.
-The signed instrument authorizes only the frozen sequence below. Actual edited-model
-qualification and its committed evidence remain required before benchmark generation.
+**Status: RESOLVED — CONSTRUCTION_REFUSED, 2026-11-04.** The lead signed
+under delegated PI authority before calculation. The single fixed proposal then
+failed its ideal numerical guard. No checkpoint was exported or evaluated.
 
 ## 1. Question, authority and rationale
 
@@ -253,4 +254,30 @@ mandatory. No additional PI numerical choice is requested.
 
 ## 8. Outcome
 
-Pending. No R2 target inference, numerical patch construction, export or evaluation has run.
+The registered construction instrument returned a terminal numerical refusal.
+The sole failed ideal guard was `maximum_column_relative_l2`: the observed
+ratio was 0.45768700324076517, above the inclusive 0.45 limit. The largest
+ideal column delta was therefore about 45.77% of its original column norm.
+Every other ideal guard passed. The instrument did not proceed to bf16 patch
+serialization, public validation/export, realized readback or model generation.
+
+Other ideal aggregate quantities were whole-tensor relative Frobenius
+0.020164185592090524, selected-column relative Frobenius 0.06011677105537128,
+U mean writing 2.0 sigma_c and K RMS writing 0.26365867161101847 sigma_c.
+These describe a float64 mathematical proposal. They are not realized weight
+changes, observed generated abstention or preserved answer correctness.
+The captured-output linear check passed on all 128 anchors.
+
+Source commit 620942f5c2ef1256fed51c784e254985a8070ca7 was signed and pushed
+before the one attempt. Preparation retained the inherited-input complete
+receipt, construction report and terminal refusal. Public hash-only evidence:
+analysis-committed/astra_construction_outcome.json. Full factors, capture and
+arrays remain private on T7. Original model bytes were mounted read-only.
+
+No dose reduction, support replacement, new candidate, edited checkpoint,
+qualification or benchmark generation occurred. Under sections 3 and 7 this
+ends this proposal. It is a construction refusal, not a behavioral null or a
+failure of a measured abstention/correctness gate. The behavioral prediction
+remains untested, so no WIN/LOSS is assigned and the prediction tally stays
+unchanged. R1 remains a separate resolved experiment. Any changed construction
+or guard would require a new prospective design, not repair of this result.

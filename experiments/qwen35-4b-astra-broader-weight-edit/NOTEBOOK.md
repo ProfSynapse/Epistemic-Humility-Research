@@ -163,3 +163,32 @@ numerical construction, weight export or target inference had run at signing.
 The next authorized step is one CPU construction/export/audit in the signed
 snapshot. A refusal is terminal. After a passed export audit, commit the exact
 numerical freeze and qualify the exported model before any benchmark arm.
+
+
+## 2026-11-04: terminal numerical refusal before export
+
+Ran the one signed CPU preparation attempt in a fresh T7 checkout of
+620942f5c2ef1256fed51c784e254985a8070ca7, using image408fecc6 with no GPU
+access and no network. Input doctor, actual materialization, tokenizer preflight,
+complete inherited bridge and captured-output consistency all passed.
+
+The registered constructor exited3. The orchestrator exited2 and retained
+terminal.json with phase=construction and category=numerical_refusal.
+Only maximum_column_relative_l2 failed: 0.45768700324076517 >0.45.
+No patch spec/payload was emitted, no export exists in the T7 model directory,
+and no evaluation directory was created. Do not interpret the ideal nonzero
+delta entry count as weights actually changed. The run did not rescale or retry.
+
+Public evidence SHA256 is
+1f5f863b15ff1a5a4ce56b7510badecaa0708cd841130ceaa665fa748d56656d.
+It authenticates the private construction/phase/bridge artifacts and separates
+ideal metrics from unrealized edits. AMENDMENT section8 records the registered
+instrument result. Resolve as construction_refused with no behavioral score.
+The signed instrument and all47 pins remain unchanged.
+
+Closeout validation: all47 signed pins remain unchanged, and the public refusal
+file matches the read-back T7 hash. Three typed KG nodes record the experiment,
+construction evidence and limited numerical claim. No mechanism of behavioral
+failure is inferred. All three natural retrieval queries return the new result
+in the top hits. Library validation has0errors and228existing warnings; graph
+analysis has0conflicts and0orphan nodes. SUPERSEDES:none. Prediction tally unchanged.

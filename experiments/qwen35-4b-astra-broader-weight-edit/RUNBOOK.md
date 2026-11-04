@@ -1,7 +1,8 @@
 # R2 execution runbook
 
-The experiment is signed on delegated PI authority. The machine pins in
-experiment.yaml remain the admission boundary.
+The experiment is resolved as construction_refused. Do not rerun preparation.
+The commands below document the original signed attempt. The resolved manifest
+and retained terminal claim prevent further execution.
 Use AMENDMENT.md and astra_r2.yaml for the scientific contract. No R2 target
 weight edit or inference has run.
 
