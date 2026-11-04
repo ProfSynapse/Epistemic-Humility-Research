@@ -422,3 +422,12 @@ to ask for the opus [graders] I pre approve". Each grader gets one fresh context
 verbatim rubric, a private directory and bare opaque-id/text pairs. Graders use only
 file read and write tools, and may not build a pattern classifier. ID maps and the
 salt stay on T7.
+
+## 2026-11-04: grading complete; hashes committed before unblinding
+
+358 fresh Opus graders finished with no errors, in 19.5 minutes and about 15M tokens.
+Every graded file passed the lead's shape check before its hash was committed. Transcript
+audit across all 358: no Bash or script use, and zero file paths outside the grader's own
+directory. Seven graders rewrote their own output before finishing. The lead's blind
+30-item spot check agreed 30/30 with the graders (floor 0.90) and was committed before
+apply. No opaque-id map was read before these commitments.
