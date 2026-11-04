@@ -1,0 +1,8 @@
+# TODO: replace this placeholder with the pinned experiment instrument.
+# Keep this file in the experiment directory unless the runner skill for this
+# experiment type requires a different config layout.
+#
+# Before signing:
+# - fill the actual runner/tuner config
+# - list this file under experiment.yaml instrument.configs
+# - run `bin/exp sign <slug>` to pin the final bytes
