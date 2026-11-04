@@ -74,3 +74,21 @@ The numerical freeze completed and its exact bytes were copied/read back into
 analysis-committed/astra_patch_freeze.json. Parent verification matched all
 source hashes, spec/export identity, reference and audit hashes;50signedpins
 remain unchanged. Commit this freeze before the unscored qualification begins.
+
+
+## 2026-11-04: actual edited-checkpoint qualification passed
+
+The pinned RTX3090 container completed the original-order repeats, permuted-order
+repeats and owned SIGKILL/resume qualification. All five runs contain20rows.
+The interrupted run retained four complete rows before the confirmed hard kill.
+Its resumed20rows match the uninterrupted runs exactly, including completion
+token IDs, finish reasons, whole-schema validity and prompt-token commitments.
+This is unscored qualification, not evidence of stronger abstention.
+
+The lead rechecked all21 retained evidence-file hashes and matched the source,
+export, spec and freeze binding. Both public proofs are committed before any
+benchmark arm. Receipt SHA256:
+4bfaf931ef7236404ff0ef4e3cb6e14db40c6b9c62ca9c6150ebc6c63194f01e.
+Manifest SHA256:
+4865c10c3ede855de2f2ffe3d94aa3fad260afc3d82b837b86b8e4c7534fcd86.
+The50signed instrument pins and all behavioral thresholds remain unchanged.
