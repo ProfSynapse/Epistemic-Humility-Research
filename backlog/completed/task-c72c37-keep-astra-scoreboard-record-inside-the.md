@@ -1,7 +1,7 @@
 ---
 id: task-c72c37
 title: Keep Astra scoreboard record inside the existing table
-status: in-progress
+status: done
 assignee:
 - '@codex'
 tier: P
