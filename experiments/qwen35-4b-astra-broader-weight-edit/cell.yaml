@@ -1,8 +1,18 @@
-# TODO: replace this placeholder with the pinned experiment instrument.
-# Keep this file in the experiment directory unless the runner skill for this
-# experiment type requires a different config layout.
-#
-# Before signing:
-# - fill the actual runner/tuner config
-# - list this file under experiment.yaml instrument.configs
-# - run `bin/exp sign <slug>` to pin the final bytes
+schema_version: ehr-astra-study-plan/v1
+proposal: astra_r2.yaml
+runtime: astra_runtime.yaml
+gates: gates.yaml
+launch_authority: false
+entrypoint_status: implementation_pending
+stages:
+- authenticate inherited base capture and ordered roster
+- construct one fixed-dose patch
+- validate export and audit all raw tensor bytes
+- commit immutable patch freeze
+- qualify exported edited checkpoint
+- commit qualification binding
+- generate eight cells in registered order
+- commit blinded pool
+- grade and commit hashes
+- blind lead spot check
+- unblind once and run paired rollup
