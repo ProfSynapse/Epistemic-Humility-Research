@@ -816,6 +816,27 @@ covering task for the files being committed.
 
 ---
 
+## Exploratory direct weight edit (2026-11-04)
+
+The first Astra fixed hs20 edit is terminal `falsified`, with a valid instrument:
+SelfAware P-struct unknown refusal was 229/1032 before and 226/1032 after the edit;
+the truthful gain CI crossed zero. Both benefit gates failed while all three
+preservation/quality cost gates passed. AmbigQA transfer was unsupported.
+This is one sparse permanent edit, separate from the locked training-regimen
+headline matrix and from earlier conditional runtime steering claims.
+Source: [AMENDMENT section 9 at ef678d4f](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/ef678d4f068b1cede54af4141de92f445f43e400/experiments/qwen35-4b-hs20-native-weight-edit/AMENDMENT.md#9-outcome)
+(PR #604 merged on 2026-11-04).
+
+The PI authorized a separate broader-weight experiment. Its draft is in the
+`astra-broader-weight-edit` worktree at
+`experiments/qwen35-4b-astra-broader-weight-edit/`; no new results exist.
+The prior study's reported cap-limited write motivates the follow-up but does
+not show that a larger edit works. Reusing these benchmarks after seeing the
+first result is exploratory, not fresh unseen-data confirmation. No rescoring
+or revision of the first study is authorized by the new experiment.
+
+---
+
 ## Five-paper line (canonical as of 2026-07-01)
 
 | Paper | Scope | Draft |

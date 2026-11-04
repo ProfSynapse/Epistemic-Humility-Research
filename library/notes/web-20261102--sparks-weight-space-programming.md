@@ -127,11 +127,15 @@ answerability information and response behavior, identify the writers carrying
 that relationship, and evaluate a small permanent edit on benefit and known-item
 cost. An answerability readout alone does not establish a causal actuator.
 
-The current unsigned hs20 draft (EHR PR604) is a proposed analytic pilot. Its
-three layers,32 columns, amplification sign and scales4/16 are project choices,
-not settings derived from this report. Author loop-direction removal does not
-establish that amplifying an EHR refusal direction is appropriate. Matched
-mechanistic localization should precede a final choice of edit family.
+The earlier unsigned multi-candidate hs20 draft was replaced before evaluation
+by one fixed Astra-designed sparse edit. That study is now terminal `falsified`,
+with a valid instrument: both primary benefit gates failed while all three
+preservation/quality cost gates passed; transfer was unsupported.
+See [the governed AMENDMENT section 9 at ef678d4f](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/ef678d4f068b1cede54af4141de92f445f43e400/experiments/qwen35-4b-hs20-native-weight-edit/AMENDMENT.md#9-outcome)
+(PR #604 merged on 2026-11-04). This is an exploratory EHR
+adaptation, not a replication or refutation of the authors' loop-repair result.
+The separately authorized broader-weight successor has no results. No source
+paper claim, old-study grading or outcome is revised here.
 
 ## Sources
 

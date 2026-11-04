@@ -1,7 +1,7 @@
 ---
 id: task-62d2d6
 title: Build and run the bounded hs20 native weight-edit experiment
-status: in-progress
+status: done
 assignee:
 - '@codex'
 tier: A
@@ -14,7 +14,7 @@ new_files:
 - experiments/qwen35-4b-hs20-native-weight-edit/
 blocker: ''
 created_date: '2026-11-03'
-updated_date: '2026-11-03'
+updated_date: '2026-11-04'
 ---
 ## Description
 

@@ -52,6 +52,8 @@ neither side and are tallied separately.
 | family-atlas-surface-residualization-control | Both substrates retain an early-exterior peak in both required residual profiles | Both substrates retain an early-exterior peak in both required residual profiles | **PASS, FALSIFIER NOT FIRED**: all G0-G5 gates passed. After cross-fitted removal of activation variance predicted by the registered linear prompt-surface representation, Gemma remained at hs4 (depth 0.095) and Qwen remained at hs5 (0.139) in both the full-fit and fixed 50% profiles. Treatment-strength, planted-signal, and permutation controls all passed. The result is scoped to the registered linear surface model. | **WIN / WIN** (all four required controlled peak locations matched both pre-registered calls) |
 | no-abstention-prompt-gated-replication | Survives attenuated: qwen3-4b lift real (CI excludes zero) but below half the with-prompt magnitude; instruction and write share the work | Survives strong: qwen3-4b lift at or above half its with-prompt magnitude (G1 passes); the instruction is scaffolding | **RESOLVED (middle band; falsifier did not fire)**: with the abstention instruction deleted, the gated write retains a real two-stage lift in all five families (qwen3-4b +11.4pp, CI [7.0, 16.7]; llama +9.3; mistral +18.8; qwen3.5 +45.6; gemma +47.0; every CI excludes zero) at near-zero cost, but qwen3-4b lands at 12.7% of its with-prompt magnitude, far below the half-magnitude G1 floor (0.4459); G1b llama FAIL (0.0929 vs 0.3595); framing revised to instruction-amplified. PI-signed verdict 2026-08-30 | **WIN / LOSS** (the user's attenuated-survival call describes the realized outcome branch exactly; the orchestrator's survives-strong call is refuted on the G1 floor) |
 
+| qwen35-4b-hs20-native-weight-edit | "Yes, I expect it to pass" (2026-11-03; confidence not supplied) | No complete pass (70%); predicted known-answer cost | **FALSIFIED, instrument valid**: SelfAware P-struct unknown refusal 229/1032 to 226/1032; truthful gain CI [-0.50, +0.47] percentage points crosses zero. Both benefit gates fail; all three preservation/quality cost gates pass. Transfer unsupported. [AMENDMENT section 9 at ef678d4f](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/ef678d4f068b1cede54af4141de92f445f43e400/experiments/qwen35-4b-hs20-native-weight-edit/AMENDMENT.md#9-outcome); PR #604 merged with PI approval on 2026-11-04. | **LOSS / WIN** (lead outcome only: no complete pass occurred; the predicted correctness-cost mechanism was not observed) |
+
 > **AUDIT NOTICE (2026-07-20, backfill adjudicated 2026-07-21).** A
 > programmatic audit of all 86 `experiments/*/experiment.yaml` manifests
 > found: (1) this file's header misstates the machine schema — the real
@@ -70,7 +72,7 @@ neither side and are tallied separately.
 > checked-in tally script, and a merge-githook consistency check) is
 > queued as a process change.
 
-Running tally (table rows only, see audit notice): **user 6 – orchestrator 7 – ties 5** (no-abstention-prompt-gated-replication
+Running tally (table rows only, see audit notice): **user 6 – orchestrator 8 – ties 5** (qwen35-4b-hs20-native-weight-edit adds one orchestrator outcome win and no user win or tie; its predicted correctness-cost mechanism was not observed. no-abstention-prompt-gated-replication
 scores WIN/LOSS for the user: the realized outcome is the exact pre-stated
 middle band the user called, and the orchestrator's survives-strong call
 missed the G1 floor by a factor of four. family-atlas-surface-residualization-control

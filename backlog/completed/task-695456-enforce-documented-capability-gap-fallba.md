@@ -1,7 +1,7 @@
 ---
 id: task-695456
 title: Enforce documented capability-gap fallback at experiment signing
-status: in-progress
+status: done
 assignee:
 - '@claude'
 tier: P
@@ -18,7 +18,7 @@ new_files:
 - .skills/experiments/tests/test_capability_gap_signing.py
 blocker: ''
 created_date: '2026-11-03'
-updated_date: '2026-11-03'
+updated_date: '2026-11-04'
 ---
 ## Description
 
