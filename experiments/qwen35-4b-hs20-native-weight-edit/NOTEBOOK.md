@@ -410,3 +410,15 @@ whose instruction mentions abstention, so retry incidence per cell must be read 
 the result. PI ruling: "No it's fine keep it if it screws things up for us we can
 change on a second round". The cap stays as signed. Any change belongs to a separately
 registered round, not this one.
+
+## 2026-11-04: evaluation complete; blinded pool committed before grading
+
+All eight cells finished at 06:25 EST with driver exit code 0. No scores were read.
+Pool build found 19,663 detector-negative candidates and 358 shards at the registered
+55 candidates per shard, each with 25 clear-positive and 25 clear-negative decoys.
+`run_binding.json` and `adjudication_pool_manifest.json` were committed before any
+grader saw a row. PI pre-approval for the Opus grader fleet, 2026-11-04: "You fine ...
+to ask for the opus [graders] I pre approve". Each grader gets one fresh context, the
+verbatim rubric, a private directory and bare opaque-id/text pairs. Graders use only
+file read and write tools, and may not build a pattern classifier. ID maps and the
+salt stay on T7.
