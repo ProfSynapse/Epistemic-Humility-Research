@@ -1,7 +1,7 @@
 ---
 id: task-0981a5
 title: Complete Astra fixed-edit knowledge and scoreboard closeout
-status: in-progress
+status: done
 assignee:
 - '@codex'
 tier: P
