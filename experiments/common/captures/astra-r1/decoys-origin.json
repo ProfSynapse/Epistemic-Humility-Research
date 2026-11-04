@@ -1,0 +1,12 @@
+{
+  "counts": {
+    "neg": 25,
+    "pos": 25
+  },
+  "note": "Exact held-back calibration file from original Astra study. No new grading examples or target generation. Scientific hash also frozen in each proposal.",
+  "origin_experiment": "qwen35-4b-hs20-native-weight-edit",
+  "origin_path": "astra_decoys.private.json",
+  "private_destination": "E:/SynapticResearch/shared/astra-r1-decoys-v1/decoys.json",
+  "schema_version": "ehr-shared-calibration-origin/v1",
+  "sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27"
+}

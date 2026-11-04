@@ -1,0 +1,22 @@
+{
+  "source_commit": "fa47ea5dc7c1b29dfa8228065c3aeed9a4a5fdca",
+  "signed_execution_commit": "620942f5c2ef1256fed51c784e254985a8070ca7",
+  "sources": {
+    "astra_r2.py": {
+      "path": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-astra-broader-weight-edit/hs20_r2/astra_r2.py",
+      "sha256": "b0b3675cfbdf8430c230638f9ddad846c5f60616864bee86d9a09cb2bdd591b4"
+    },
+    "frozen.py": {
+      "path": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-astra-broader-weight-edit/hs20_r2/frozen.py",
+      "sha256": "1e2bd9e7234427778e383ea2a80fd6358657715ca05c70b36270e97934ad8af0"
+    },
+    "__init__.py": {
+      "path": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-astra-broader-weight-edit/hs20_r2/__init__.py",
+      "sha256": "ae080e91eb7c07260c4506751af1ac251ea2de8c148d686e048d135b3ceea530"
+    },
+    "ORIGINS.json": {
+      "path": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-astra-broader-weight-edit/hs20_r2/ORIGINS.json",
+      "sha256": "debb9aacb2b31d62a087dc8f2ca8a484a5be598df7a13c9534dd9ece66044094"
+    }
+  }
+}

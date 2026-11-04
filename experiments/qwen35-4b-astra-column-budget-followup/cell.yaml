@@ -1,0 +1,16 @@
+schema_version: ehr-astra-study-plan/v1
+proposal: astra_r3.yaml
+runtime: astra_runtime.yaml
+gates: gates.yaml
+launch_authority: false
+entrypoint_status: implemented_cpu_tested_independently_reviewed
+preparation_entrypoint: python -m r3_runtime.astra_run --project-root /project prepare
+  [--dry-run]
+stages:
+- authenticate original capture and R2 reference
+- construct identical treatment under ideal046
+- validate export and audit
+- commit freeze
+- qualify exact export and commit both proofs
+- generate8cells and blind grading
+- unblind once and roll up

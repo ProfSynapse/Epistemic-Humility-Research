@@ -6,6 +6,7 @@ history.
 
 | Task | Load |
 |------|------|
+| SSH/SCP timeout, LAN DNS versus Tailscale address, or host-key alias | [desktop-ssh.md](desktop-ssh.md) |
 | Docker Desktop, local trainer, GPU, cache/env, detached launch, or monitor behavior | [local-runtime.md](local-runtime.md) |
 | Dataset identity, leakage checks, recipe materialization, or staged tuner scratch paths | [data-and-staging-gotchas.md](data-and-staging-gotchas.md) |
 | Live eval, Qwen thinking tags, output contracts, scorer drift, or post-eval sanity checks | [eval-and-scoring-gotchas.md](eval-and-scoring-gotchas.md) |

@@ -1,0 +1,10 @@
+{
+  "origin_experiment": "qwen35-4b-astra-broader-weight-edit",
+  "origin_path": "astra-r2/construction/report.json",
+  "outcome_sha256": "1f5f863b15ff1a5a4ce56b7510badecaa0708cd841130ceaa665fa748d56656d",
+  "private_destination": "E:/SynapticResearch/shared/astra-r2-proposal-v1/report.json",
+  "purpose": "Authenticate identical S,c,v,alpha,inputs and roster in a separately registered budget-only follow-up; old refusal is retained, never copied as a new verdict.",
+  "report_sha256": "9a2d54cfbb77f8e4f516a84a1c6a1ec0bc670c659745b9dd6b663ab87b8f9c5c",
+  "schema_version": "ehr-previous-proposal-origin/v1",
+  "source_commit": "620942f5c2ef1256fed51c784e254985a8070ca7"
+}
