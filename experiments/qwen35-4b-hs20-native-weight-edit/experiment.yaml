@@ -250,4 +250,7 @@ inputs:
 verdict: 'The one fixed Astra sparse edit failed the primary benefit gates on SelfAware
   P-struct: refusal recall 229/1032 to 226/1032 and paired truthful CI -0.50 to +0.47
   points, with cost gates passing and a valid instrument.'
-kg: []
+kg:
+- experiment:qwen35-4b-hs20-native-weight-edit
+- artifact:qwen35-4b-hs20-native-weight-edit-committed-evidence
+- claim:qwen35-4b-hs20-native-weight-edit-benefit-gates-failed
