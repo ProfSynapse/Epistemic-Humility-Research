@@ -6796,7 +6796,19 @@
       "falsifier": "An instrument-valid evaluation failing the registered behavioral benefit or preservation gates rejects this broader-edit proposal; no revision based on evaluation scores.",
       "inputs": [
         "experiments/common/directions/qwen35-4b-hs20/c_hat.json",
-        "experiments/qwen35-4b-hs20-native-weight-edit/analysis-committed/astra_patch_freeze.json"
+        "experiments/common/captures/astra-r1/origin.json",
+        {
+          "availability": "local",
+          "path": "experiments/common/captures/astra-r1/analysis/private_bundle",
+          "source": "Private T7 promotion E:/SynapticResearch/shared/astra-r1-capture-v1; exact 308-file inventory pinned by common origin ab3ff74637e15635ef62d9ae611c20127be3c2d4bf8b124ca67eccc44c960ec6"
+        },
+        "experiments/common/captures/astra-r1/decoys-origin.json",
+        {
+          "availability": "local",
+          "path": "experiments/common/captures/astra-r1/analysis/decoys/decoys.json",
+          "sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27",
+          "source": "Exact original held-back calibration pool promoted to E:/SynapticResearch/shared/astra-r1-decoys-v1"
+        }
       ],
       "instrument": {
         "configs": [
@@ -6806,24 +6818,168 @@
           "astra_runtime.yaml",
           "analysis-committed/astra_design_provenance.json",
           "hs20_r2/ORIGINS.json",
-          "analysis-committed/astra_constructor_synthetic_qualification.json"
+          "analysis-committed/astra_constructor_synthetic_qualification.json",
+          "r2_runtime/ORIGINS.json",
+          "r2_runtime/detector_v2_patterns.yaml",
+          "analysis-committed/astra_constructor_runtime_synthetic_qualification.json",
+          "analysis-committed/astra_cpu_qualification_20261104_v6.json",
+          "analysis-committed/astra_inherited_capture_readiness.json",
+          "runtime/preparation.yaml",
+          "runtime/r2_host_binding.json",
+          "analysis-committed/astra_cpu_qualification_20261104_v9.json",
+          "analysis-committed/astra_pre_sign_readiness_20261104.json"
         ],
         "modules": [
           "hs20_r2/__init__.py",
           "hs20_r2/frozen.py",
-          "hs20_r2/astra_r2.py"
+          "hs20_r2/astra_r2.py",
+          "r2_runtime/__init__.py",
+          "r2_runtime/adjudication.py",
+          "r2_runtime/admission.py",
+          "r2_runtime/astra_analysis.py",
+          "r2_runtime/astra_benchmark.py",
+          "r2_runtime/astra_capture.py",
+          "r2_runtime/astra_fixed.py",
+          "r2_runtime/astra_qualification.py",
+          "r2_runtime/astra_render.py",
+          "r2_runtime/astra_run.py",
+          "r2_runtime/benchmark_ood.py",
+          "r2_runtime/benchmark_scorers.py",
+          "r2_runtime/benchmark_stats.py",
+          "r2_runtime/capture.py",
+          "r2_runtime/checkpoint_audit.py",
+          "r2_runtime/commitments.py",
+          "r2_runtime/config.py",
+          "r2_runtime/constructor.py",
+          "r2_runtime/detector_v2.py",
+          "r2_runtime/grader.py",
+          "r2_runtime/inherited_inputs.py",
+          "r2_runtime/integrity.py",
+          "r2_runtime/qualification_compare.py",
+          "r2_runtime/qualification_owned.py",
+          "r2_runtime/render.py",
+          "r2_runtime/util.py",
+          "r2_runtime/preparation.py"
         ],
         "persistence": {
           "hs20_r2/__init__.py": {
-            "measured_smoke_wall_clock_s": 81.22,
+            "measured_smoke_wall_clock_s": 357.087,
             "persistence": "short-run"
           },
           "hs20_r2/astra_r2.py": {
-            "measured_smoke_wall_clock_s": 81.22,
+            "measured_smoke_wall_clock_s": 357.087,
             "persistence": "short-run"
           },
           "hs20_r2/frozen.py": {
-            "measured_smoke_wall_clock_s": 81.22,
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/__init__.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/adjudication.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/admission.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_analysis.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_benchmark.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_capture.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_fixed.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_qualification.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_render.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/astra_run.py": {
+            "checkpoint_path": ".synaptic/artifacts/qwen35-4b-astra-broader-weight-edit/astra-r2/evaluation",
+            "persistence": "incremental"
+          },
+          "r2_runtime/benchmark_ood.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/benchmark_scorers.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/benchmark_stats.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/capture.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/checkpoint_audit.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/commitments.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/config.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/constructor.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/detector_v2.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/grader.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/inherited_inputs.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/integrity.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/preparation.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/qualification_compare.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/qualification_owned.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/render.py": {
+            "measured_smoke_wall_clock_s": 357.087,
+            "persistence": "short-run"
+          },
+          "r2_runtime/util.py": {
+            "measured_smoke_wall_clock_s": 357.087,
             "persistence": "short-run"
           }
         },
@@ -6962,6 +7118,14 @@
           "path": ".synaptic/artifacts/qwen35-4b-hs20-native-weight-edit/base_model/model.safetensors.index.json",
           "sha256": "cf3f798ee02ba45f9622aa8892a47369ab667d0afbf154ee7c2212de42e6302d",
           "source": "T7 Qwen/Qwen3.5-4B @ 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a; mount the checkpoint read-only"
+        },
+        "experiments/common/captures/astra-r1/origin.json",
+        "experiments/common/captures/astra-r1/decoys-origin.json",
+        {
+          "availability": "local",
+          "path": "experiments/common/captures/astra-r1/analysis/decoys/decoys.json",
+          "sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27",
+          "source": "Exact original held-back calibration pool promoted to E:/SynapticResearch/shared/astra-r1-decoys-v1"
         }
       ],
       "instrument": {

@@ -1,0 +1,46 @@
+{
+  "engine_identity": {
+    "api": "v1",
+    "backend_qualification": "not-established-by-import",
+    "cli_requires": "==1.1.0rc1",
+    "declared_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+    "direct_url": {
+      "archive_info": {
+        "hash": "sha256=9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a",
+        "hashes": {
+          "sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a"
+        }
+      },
+      "url": "file:///opt/ehr-hf-schema/synaptic_tuner-1.1.0rc1-py3-none-any.whl"
+    },
+    "families": [
+      "APIHost",
+      "DataAPI",
+      "EvaluationAPI",
+      "RunsAPI",
+      "TrainingAPI"
+    ],
+    "installation_record_sha256": "9f3e9ae7bcd885f21322a13b01c8ed1516b848c44052b2ddf6cf0ea0d4273f3b",
+    "installed_files_verified": true,
+    "manifest_path": "/project/synaptic.yaml",
+    "mechinterp_boundary": "version-pinned-cli",
+    "package_path": "/opt/venv/lib/python3.10/site-packages/synaptic_tuner/__init__.py",
+    "project_id": "epistemic-humility-research",
+    "schema_version": "ehr-engine-identity/v1",
+    "source_commit_evidence": "reviewed-wheel-ledger",
+    "version": "1.1.0rc1",
+    "wheel_pin_verified": true,
+    "wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a"
+  },
+  "host_module_sha256": {
+    "__init__.py": "6f8ccc935d0e7ba0cc22f9a5cc6556417b99ee7975a8a69af4016b9c3ffabb25",
+    "__main__.py": "6c2d49f5c8e8357c82d34fa98832b9a20080db11f1402c3bc12410cdb6bcc815",
+    "cli_boundary.py": "f2975edb68e70a3c33793d1aac7b3667fe3ddbc1e4404ef7634c9780db71e26c",
+    "engine_identity.py": "423b835a26552c1a8ae9f96185b56fff31f351d7bc17ff76ebf4341afc2abdcb",
+    "exec_guard.py": "1fdc9b36d3777f71b546705a1d7136dfede7b4106a8a0bef913cef5a87896455",
+    "generation_log.py": "12e64541501ec200229cc7ed4db9f7d12c0014d047c2592fe9b0ac6604135311",
+    "runlog.py": "ba74ccfc464954b718b2ac1bf9a1b867eed0c5959afd77b8d9fc784c1d45a415",
+    "storage.py": "d6200be7e195bbbb79cdfa6f8b65a5a41a42229ff5f1a8c52a0835c4b43c5341",
+    "training_request.py": "ccc310b7943f791ed927a98d0cb19b4605cc1cdb608100a014f341da134e5aa7"
+  }
+}

@@ -373,6 +373,11 @@ def audit_checkpoint(base_dir, edited_dir, con, prop, U, K, *, receipt_tensor, e
     failures=[]
     if set(bh)!=set(eh) or TENSOR not in bt or TENSOR not in et:
         raise HarnessError('EXPORT_INVENTORY','tensor inventory changed/missing target')
+    expected_storage=('torch.bfloat16',list(SHAPE))
+    if bh[TENSOR][:2]!=expected_storage or eh[TENSOR][:2]!=expected_storage:
+        raise HarnessError('EXPORT_TARGET_STORAGE','base and edited target must retain exact bf16 dtype and shape')
+    if bh[TENSOR][2]!=con.base_sha256:
+        raise HarnessError('BASE_HASH','stored target bytes differ from the construction base')
     changed=[key for key in bh if bh[key]!=eh[key]]
     if changed!=[TENSOR]: failures.append('MODIFIED_TENSORS')
     if bs!=prop.raw['model']['files_sha256']: failures.append('BASE_SHARDS')
@@ -382,7 +387,9 @@ def audit_checkpoint(base_dir, edited_dir, con, prop, U, K, *, receipt_tensor, e
     report=audit_realized(con,prop,U,K,bt[TENSOR],et[TENSOR],receipt_tensor=receipt_tensor)
     report['failures'].extend(failures)
     tensors=export_manifest.get('tensors',[])
-    if len(tensors)!=1 or tensors[0].get('name')!=TENSOR or tensors[0].get('after_sha256')!=report['edited_sha256']:
+    if (len(tensors)!=1 or tensors[0].get('name')!=TENSOR
+        or tensors[0].get('after_sha256')!=eh[TENSOR][2]
+        or eh[TENSOR][2]!=report['edited_sha256']):
         report['failures'].append('MANIFEST_TENSOR')
     report.update(base_shards=bs,edited_shards=es,base_tensors=bh,edited_tensors=eh,
                   sidecar_sha256={k:f.sha256_bytes(v) for k,v in bc.items()},checkpoint_reloaded=True)

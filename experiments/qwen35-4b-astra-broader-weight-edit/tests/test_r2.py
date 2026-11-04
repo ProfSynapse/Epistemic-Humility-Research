@@ -194,6 +194,24 @@ def test_checkpoint_inventory_and_sidecar_guards(fixture,tmp_path):
     assert 'SIDECARS' in report['failures']
 
 
+@pytest.mark.parametrize('wrong_dtype_role',['base','edited'])
+def test_checkpoint_rejects_float32_storage_even_for_exact_bf16_values(fixture,tmp_path,wrong_dtype_role):
+    import torch
+    from safetensors.torch import save_file
+    U,K,_,W,p,_,_,_,con=fixture
+    E=r.emulate(con,W)
+    base,edited=tmp_path/'base',tmp_path/'edited'
+    for role,root,target in [('base',base,W),('edited',edited,E)]:
+        root.mkdir()
+        dtype=torch.float32 if role==wrong_dtype_role else torch.bfloat16
+        save_file({r.TENSOR:torch.tensor(target,dtype=dtype)},str(root/'model.safetensors'))
+    p=r.proposal({**p.raw['model'],'files_sha256':{'model.safetensors':f.sha256_file(base/'model.safetensors')}},p.raw['development'],{})
+    receipt={'name':r.TENSOR,'entries_changed':2621440,'delta_frobenius':float(np.linalg.norm(E-W))}
+    manifest={'tensors':[{'name':r.TENSOR,'after_sha256':r.bf16_raw_sha256(E)}]}
+    with pytest.raises(r.HarnessError,match='EXPORT_TARGET_STORAGE'):
+        r.audit_checkpoint(base,edited,con,p,U,K,receipt_tensor=receipt,export_manifest=manifest)
+
+
 def test_cli_real_prepare_audit(fixture,tmp_path):
     U,K,c,W,p,uk,kk,old,con=fixture
     # Actual CLI, full arrays and no models, exported once via a public-format payload.

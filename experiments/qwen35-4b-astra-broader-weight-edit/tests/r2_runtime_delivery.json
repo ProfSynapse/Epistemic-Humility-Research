@@ -1,0 +1,59 @@
+{
+  "schema_version": "ehr-r2-runtime-fixture-delivery/v1",
+  "integration_path": "experiments/qwen35-4b-astra-broader-weight-edit/r2_runtime",
+  "files_sha256": {
+    "r2_runtime/ORIGINS.json": "8d3cb8c408bb2b01785437aa1a615908a460d1f74e6084e8eebd2e23c77e2df8",
+    "r2_runtime/README.md": "3cd6e2acb1434d31422f7a6d7606cad8698e448677521e49606d086f1345c06e",
+    "r2_runtime/__init__.py": "2be5d443cdd3107f69f12372f69d62a37088ae031591b7ea8bbeddfdbbb05ce6",
+    "r2_runtime/adjudication.py": "873074c3490f956a9c9a681a65008f80ffdc638e71d967ecc63701bc77aa31bd",
+    "r2_runtime/admission.py": "d2a419c94d56e88c59624cb8bfcde215ce2393c1c6fbc4766f74289bb80c3d8f",
+    "r2_runtime/astra_analysis.py": "a6d9a2a9b78bab072db88cfe81108361652095f39fff26d32bd3704dab8cc16b",
+    "r2_runtime/astra_benchmark.py": "dca0f6c7898b3a856cc8ec291f425e24ffbd3bb27f80877897748352d90d9c9a",
+    "r2_runtime/astra_capture.py": "ecd6b0f4d67a6e40abd2f26d2d60d84164ba972b3404b1f4ccc5e54c2a53d52a",
+    "r2_runtime/astra_fixed.py": "8853c7a9a761f76998bd8f2fec889dbd4dc6f3dee5f93ad7224a97dda53be6d4",
+    "r2_runtime/astra_qualification.py": "0aa261dec5327f5126711db79712d336919f920a81476020e065ce9e8e0f25be",
+    "r2_runtime/astra_render.py": "dc442b6f79eb07f4de07e9e2c526d5a09dd8e6ecdcdddd7475c3e4718cd500bf",
+    "r2_runtime/astra_run.py": "ee3d5c6f1a2e073d91972ce6c49a9d945fa41d7b002dad42596555315142742b",
+    "r2_runtime/benchmark_ood.py": "5fe5af301dcf0c75bcf3fe6aed059c83aa9b2951696547d3eeb5120cdb9a36c1",
+    "r2_runtime/benchmark_scorers.py": "75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a",
+    "r2_runtime/benchmark_stats.py": "e436fb34dfee64234db2873b90aefaf5494ff406505bbc399a55f1127e7a2285",
+    "r2_runtime/capture.py": "6e73c7975799b21920818c154d13c37b6a132485d484d8c4bfbcedeaa854d4e5",
+    "r2_runtime/checkpoint_audit.py": "5c6c483ed445387a344550d1fc900255fe104477a80e218dba3fc4ff366478fe",
+    "r2_runtime/commitments.py": "db50204479dca45f0359b52105452207607d8a48a0113fc7d05c1c1c34f4cf20",
+    "r2_runtime/config.py": "f86e6106f0a581e8cbb2de870d133fc97b5f510fac4d8c61e48c9f26f8990213",
+    "r2_runtime/constructor.py": "994e49c2b295a73819675fdb4a66b6c1138afb2ecf2ebce6881bd2e6c6418b7c",
+    "r2_runtime/detector_v2.py": "a2e1e056e92b0975ee632e33dcbf865437349cf00bcfbc86c9046454a6292a08",
+    "r2_runtime/detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+    "r2_runtime/grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+    "r2_runtime/integrity.py": "503e57915353fe31c0b88abc9d708f8885a90604993115e7b9bb76130f02036d",
+    "r2_runtime/qualification_compare.py": "e5af17d24cc71d56ae9d2ac4d0b8d8882f13a1aaeb76a8fcf0ddaff098e06ff5",
+    "r2_runtime/render.py": "fcbbb74351ab1be2b20a35695663558b768a4a727122962fcb69459402470b28",
+    "r2_runtime/util.py": "04f7396ff512259b5e53f4f75af0f40621e55e54f26b1afe3c0e614d0fe97280",
+    "tests/test_r2_runtime_analysis.py": "ab0cb878416a75ec0ff640d903dabcc73366117f0072430639c1bee6d609cfcf",
+    "tests/test_r2_runtime_entrypoints.py": "d72f0f228f0acb43367b2fe6327c359b345e1264bec63ac57c438b2f8055a705",
+    "tests/test_r2_runtime_resume.py": "d5499859aeac103e302425a2e53e87047a216254572da9c8b2ea3fb9097ff3f7",
+    "tests/test_r2_runtime_support.py": "8606dff59ad2e16c5015da7fdd2bb681e86047a34eb77a2791c56056413e41f8"
+  },
+  "validation": {
+    "cpu_synthetic_tests_passed": 12,
+    "real_engine_tested": false,
+    "model_calls": 0,
+    "gpu_calls": 0,
+    "qualification_passed": false,
+    "signed": false
+  },
+  "blockers": [
+    "PUBLIC_OWNED_KILL_TRANSPORT: no independently reviewed owned SIGKILL/resume integration; verify refuses",
+    "No installed engine_host in existing CPU environment; actual public API/schema compatibility remains parent-owned"
+  ],
+  "parent_owns": [
+    "constructor repairs",
+    "protocol/manifest/YAML",
+    "input promotion/authentication",
+    "real engine tests",
+    "Nexus",
+    "Git",
+    "signing",
+    "launches"
+  ]
+}

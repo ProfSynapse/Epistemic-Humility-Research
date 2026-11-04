@@ -1,0 +1,153 @@
+{
+  "source_root": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe",
+  "ports": {
+    "astra_run.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_run.py",
+      "sha256": "5e8d5ad6cea99642703ab0e8aa12903c295d153888a8d80ae56b108648c112c0",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "astra_analysis.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_analysis.py",
+      "sha256": "b0c8d4a1696ca806407a0f8abde178024ce366ae9a4df391d9068a73e7cc8f71",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "astra_benchmark.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_benchmark.py",
+      "sha256": "dca0f6c7898b3a856cc8ec291f425e24ffbd3bb27f80877897748352d90d9c9a",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "astra_capture.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_capture.py",
+      "sha256": "b28fa89deb0846dd38ea4b2ce324314ee5a843da75be39d84cea7083282f9324",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "astra_qualification.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_qualification.py",
+      "sha256": "3ce619660bc3d4ed74d322ed1784c4cf291f9821f99f0885032cb37522a7bb8c",
+      "port": "R2 orchestration rewrite; exact R1 compare is retained in qualification_compare.py"
+    },
+    "astra_render.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_render.py",
+      "sha256": "dc442b6f79eb07f4de07e9e2c526d5a09dd8e6ecdcdddd7475c3e4718cd500bf",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "adjudication.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/adjudication.py",
+      "sha256": "873074c3490f956a9c9a681a65008f80ffdc638e71d967ecc63701bc77aa31bd",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "commitments.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/commitments.py",
+      "sha256": "db50204479dca45f0359b52105452207607d8a48a0113fc7d05c1c1c34f4cf20",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "config.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/config.py",
+      "sha256": "f86e6106f0a581e8cbb2de870d133fc97b5f510fac4d8c61e48c9f26f8990213",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "util.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/util.py",
+      "sha256": "04f7396ff512259b5e53f4f75af0f40621e55e54f26b1afe3c0e614d0fe97280",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "benchmark_ood.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/benchmark_ood.py",
+      "sha256": "5fe5af301dcf0c75bcf3fe6aed059c83aa9b2951696547d3eeb5120cdb9a36c1",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "benchmark_scorers.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/benchmark_scorers.py",
+      "sha256": "75e690f583d83d654cb88a3b066b39acb7e9e1b954c9d5677d4b887d6c30905a",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "benchmark_stats.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/benchmark_stats.py",
+      "sha256": "9171d6ff8d8a9cec7549b46dc152c675efa2548800ab4fb0e63623170a4c8945",
+      "port": "whole module; explicit R2 adaptations recorded in README",
+      "selected_definitions": [
+        "BootstrapCI",
+        "_mean_statistic",
+        "bootstrap_ci",
+        "paired_bootstrap_diff_ci"
+      ]
+    },
+    "detector_v2.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/detector_v2.py",
+      "sha256": "a2e1e056e92b0975ee632e33dcbf865437349cf00bcfbc86c9046454a6292a08",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "grader.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/grader.py",
+      "sha256": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "capture.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/capture.py",
+      "sha256": "6e73c7975799b21920818c154d13c37b6a132485d484d8c4bfbcedeaa854d4e5",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "detector_v2_patterns.yaml": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/detector_v2_patterns.yaml",
+      "sha256": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+      "port": "whole module; explicit R2 adaptations recorded in README"
+    },
+    "render.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/render.py",
+      "sha256": "f5c56351f1589c3dbf0c32ea03b43603b89a4b214c3460f810841485828ac924",
+      "selected_definitions": [
+        "assert_no_think_scaffolding"
+      ]
+    },
+    "integrity.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/integrity.py",
+      "sha256": "7f7122221082143df70daf8843d15a9d31a09434cdebc87d255ed5f9a695c2d3",
+      "selected_definitions": [
+        "binding_digest",
+        "evidence_stamp"
+      ]
+    },
+    "astra_fixed.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_fixed.py",
+      "sha256": "37376d5ef8f80c7b21fbe4b4b4fd7cf2733b1469297dbade15d948b2ee7cd295",
+      "selected_definitions": [
+        "_create_only",
+        "_json_bytes",
+        "_read_question_rows",
+        "_questions",
+        "prepare_roster",
+        "load_roster"
+      ]
+    },
+    "qualification_compare.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/hs20_nwe/astra_qualification.py",
+      "sha256": "3ce619660bc3d4ed74d322ed1784c4cf291f9821f99f0885032cb37522a7bb8c",
+      "port": "selected unchanged function",
+      "selected_definitions": [
+        "compare"
+      ]
+    }
+  },
+  "constructor_observation": {
+    "__init__.py": "ae080e91eb7c07260c4506751af1ac251ea2de8c148d686e048d135b3ceea530",
+    "astra_r2.py": "ff99f410c9ccdf000472e87485cfb8a4ba831e528a484bb079a8b85a4fdf00d8",
+    "frozen.py": "1e2bd9e7234427778e383ea2a80fd6358657715ca05c70b36270e97934ad8af0"
+  },
+  "constructor_note": "Read-only observation; parent may repair; no constructor files delivered or modified by runtime agent.",
+  "tests": {
+    "test_r2_runtime_analysis.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/tests/test_astra_analysis.py",
+      "sha256": "a95757104aa14845737c312c0f11a01804c3018c1abe34f6ff213bcb67cd0f09"
+    },
+    "test_r2_runtime_support.py": {
+      "source": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-hs20-native-weight-edit/tests/conftest.py",
+      "sha256": "f11d0f27c3b79a536504a18e749e2d26f6d444acc3ff754da99ff03829dd59ec"
+    }
+  },
+  "new_modules": [
+    "__init__.py",
+    "admission.py",
+    "checkpoint_audit.py",
+    "constructor.py"
+  ]
+}

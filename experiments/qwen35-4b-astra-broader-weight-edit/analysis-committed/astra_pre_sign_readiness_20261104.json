@@ -1,0 +1,138 @@
+{
+  "decoys": {
+    "byte_equal_to_original": true,
+    "neg": 25,
+    "pos": 25,
+    "private_promotion": "E:/SynapticResearch/shared/astra-r1-decoys-v1/decoys.json",
+    "sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27"
+  },
+  "evidence_sha256": {
+    "materialization-summary.json": "bd793e160493606280b76076f13681ad04489fc9a6f46789dc4843f87416fdf1",
+    "r2_host_binding.json": "286a2578593ae53566a1eba0962a4dca5094fe3c62c220f38f2889e45de55d2f",
+    "tokenizer-summary.json": "6fef58a73d008a230a93ea132b26be46db36f6cecffa9034d0756890fe565c72"
+  },
+  "launch_authority": false,
+  "materialization": {
+    "counts": {
+      "ambigqa": 1832,
+      "selfaware": 3369
+    },
+    "files": {
+      "ambigqa.jsonl": "f0402da6763722a35751c2baee0b341479109b0d056acba465cd595f064f531e",
+      "capture_rows.jsonl": "013b4b8a4742899be2dacea33ba9f8e0d7b1e53be1c1060e86d6c39f1ce49baa",
+      "roster.json": "14fe79bacf9364133be4ec94f8ff320398fbb03452343299d340dd0ff7dd200d",
+      "selfaware.jsonl": "d8b08f786a3d7b7c262ef36c930895ed4599c4adb3ab5b0717375c44355d83e5"
+    },
+    "proposal_sha256": "ec4d382b16b2e874d07a89c069c986b893ee11a35c6dcf9a14389b0359458cc1",
+    "roster_sha256": "9bc7873492fe07d50e2127920c7ad411381373a05251411f6cc651a6805dc9c0"
+  },
+  "original_lineage": {
+    "basis": "Pinned-container original_lineage and authenticated_origin checks on the real read-only bundle; no arrays or weights constructed.",
+    "origin_sha256": "ab3ff74637e15635ef62d9ae611c20127be3c2d4bf8b124ca67eccc44c960ec6",
+    "verified_origin_members": 308,
+    "verified_rows": 128
+  },
+  "passed": true,
+  "preparation_dryrun": {
+    "all_inputs_present": true,
+    "all_output_selections_absent": true,
+    "config_sha256": "6a9bb95e688c8f4e36e5461f39c86999746d4025cdfeecad43bf56b93a6fea68",
+    "passed": true,
+    "report_sha256": "2fc5a4199d30c91e79fe3c8836b0730807e45a6f008d047fce8d359bea3c455d"
+  },
+  "private_evidence_root": "E:/SynapticResearch/qualification/astra-r2-preparation-readiness-20261104-v1",
+  "production_executable_sources_unchanged_in_v9": true,
+  "schema_version": "ehr-astra-r2-pre-sign-readiness/v1",
+  "source_snapshot": "astra-r2-preparation-cpu-20261104-v8",
+  "target_inference_performed": false,
+  "target_weight_edit_performed": false,
+  "target_weights_read": false,
+  "tokenizer_preflight": {
+    "context_limit": 2048,
+    "passed": true,
+    "proposal_sha256": "ec4d382b16b2e874d07a89c069c986b893ee11a35c6dcf9a14389b0359458cc1",
+    "surfaces": [
+      {
+        "fits": true,
+        "max_prompt_tokens": 198,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "60a92127e54c402dde12136734e420e608f8e6b5ed75bf8eb4e5a2ad7ce03f3a",
+        "retry": false,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "0dcac2fe487c965182c06d344ddf394e8d79833cf21ad27f44b124bfdd44713a"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 279,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "c6e761a2f585b25f21c4b8a690d686fe4f1851a8262f2a739a3b373ea629a629",
+        "retry": true,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "3b6619309979d84e1b4eae17a948388bedea32b3992dd130354f3e7bb5aa9e63"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 229,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "e2dd399d3da19df136f6988faf1a4ecc02189508bc94864e36b011636d54d209",
+        "retry": false,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "27ee24221968d0e21db48db512a02f5a036ac9c5368deccb3434e9ef957e876e"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 310,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "3be4a1192ace5510635e66ee28f2d4a40ce6d4126f41fb780961be6bc64d86e6",
+        "retry": true,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "7a6ea97423d38e43ed105c8fd0d8d668d3bf5d00c7dd4d3e94e3e76214a97cb7"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 124,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "4e8063e6b6846b00719806dbfa3bb6eac14dc23c2d18153b04c909dd9c94b919",
+        "retry": false,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "a88c2bb47acfec89fb4702439649e768ddae4f3c686415546d7ef2747ae38406"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 205,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "3da97ca02ebff522ab5fbcd87365fc511259bf266138f017cea07a0a5e16a317",
+        "retry": true,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "6327c4e9a410bab0bdfa75c5e1ff677e394a0247302b57bb714b792f32f24055"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 155,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "26d88b3d4debdcde82a97c636e9ae36a18a536ce1ed97ea0b1178531d7f5b947",
+        "retry": false,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "131b77521590efdb5bf96a5192ee62ae8cb68beb5ff292dbc4b028348d1f2d86"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 236,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "438fc0730450edd539ca9f45114e27c55954bc9847792fe231368f685480bf5a",
+        "retry": true,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "aff99348a906a5b611de0455d7e555dd980011c193869bd0ff9d7a026db53f4d"
+      }
+    ],
+    "tokenizer_revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+  }
+}
