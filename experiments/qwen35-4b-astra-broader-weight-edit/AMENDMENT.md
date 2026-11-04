@@ -19,8 +19,9 @@ scoreboard:
 
 # Astra broader direct weight edit for epistemic humility
 
-**Status: DRAFT, NOT SIGNED.** One prospective numerical proposal is specified.
-Implementation and qualification remain pending. This document is not launch authority.
+**Status: SIGNED, 2026-11-04.** The lead signs under delegated PI authority.
+The signed instrument authorizes only the frozen sequence below. Actual edited-model
+qualification and its committed evidence remain required before benchmark generation.
 
 ## 1. Question, authority and rationale
 
@@ -242,10 +243,13 @@ known row or decode dynamics. A 2-sigma additive increment differs from the
 historical 8-sigma erase-write setpoint. More hedging without abstention fails.
 Simple-decoy agreement does not prove difficult cases are perfectly graded.
 
-Pending before sign: implementation, independent checks, input authentication,
-source dependency comparison, tokenizer feasibility, synthetic full path and
-measured persistence. Pending after patch freeze: fresh edited qualification.
-No additional PI numerical choice is requested. Authority does not waive checks.
+Pre-sign checks passed: the 125-test pinned-image suite, independent preparation
+review, original-input authentication, exact installed-host binding, full-surface
+tokenizer feasibility, synthetic public export/readback and measured persistence.
+Hash-only evidence is pinned in analysis-committed/astra_cpu_qualification_20261104_v9.json,
+astra_pre_sign_readiness_20261104.json and astra_pre_sign_review_20261104.json.
+After patch freeze, fresh edited qualification and both Git commitments remain
+mandatory. No additional PI numerical choice is requested.
 
 ## 8. Outcome
 

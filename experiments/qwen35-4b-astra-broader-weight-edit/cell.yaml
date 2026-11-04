@@ -3,7 +3,7 @@ proposal: astra_r2.yaml
 runtime: astra_runtime.yaml
 gates: gates.yaml
 launch_authority: false
-entrypoint_status: implemented_and_cpu_tested_independent_review_pending
+entrypoint_status: implemented_cpu_tested_independently_reviewed
 stages:
 - authenticate inherited base capture and ordered roster
 - construct one fixed-dose patch

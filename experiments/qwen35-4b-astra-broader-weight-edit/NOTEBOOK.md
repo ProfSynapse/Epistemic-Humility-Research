@@ -145,3 +145,21 @@ journals; synthetic owned SIGKILL/resume and retained-claim tests passed. Real
 edited-checkpoint qualification remains mandatory after freeze and before any
 benchmark arm. Final preparation/freeze independent review is pending. The
 experiment remains draft; no R2 target construction, export or inference ran.
+
+## 2026-11-04: signed before numerical construction
+
+The final independent preparation/freeze review found no launch-blocking mismatch.
+It traced the actual emitted spec and public receipt interfaces against engine
+commit d03a15d6 and independently passed 28 preparation tests. Its environment
+had no Torch, so the review does not substitute for the pinned-image 125-test
+suite. The public review record binds the exact reviewed production files.
+
+The lead signed under the PI's delegated signing authority. bin/exp sign pinned
+47 instrument files. The declared parity-locked exception preserves the exact
+registered HF batch-1 surface; it does not claim new model qualification. The
+signed evaluation qualified:false field stays unchanged. No numerical setting,
+behavioral gate, prompt or evaluation population changed at signing. No R2
+numerical construction, weight export or target inference had run at signing.
+The next authorized step is one CPU construction/export/audit in the signed
+snapshot. A refusal is terminal. After a passed export audit, commit the exact
+numerical freeze and qualify the exported model before any benchmark arm.

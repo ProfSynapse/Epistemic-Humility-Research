@@ -1,6 +1,7 @@
 # R2 execution runbook
 
-The experiment remains draft until final review and `bin/exp sign` complete.
+The experiment is signed on delegated PI authority. The machine pins in
+experiment.yaml remain the admission boundary.
 Use AMENDMENT.md and astra_r2.yaml for the scientific contract. No R2 target
 weight edit or inference has run.
 
