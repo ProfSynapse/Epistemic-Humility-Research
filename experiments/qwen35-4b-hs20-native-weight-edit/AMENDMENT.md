@@ -314,7 +314,7 @@ be filled before sign. Do not invent persistence measurements.
 - [x] Confirm entry points: `plan` on real inputs, CPU coverage of `evaluate_cell`, synthetic eight-cell roll-up. `capture` and `eval-cell` first reach the GPU after sign.
 - [x] PI approval of Astra's proposed experiment, recorded 2026-11-03.
 - [x] Complete technical qualification and record `bin/exp sign`.
-- [ ] After construction, commit exact patch freeze before any evaluation arm.
+- [x] After construction, commit exact patch freeze before any evaluation arm (`analysis-committed/astra_patch_freeze.json`).
 
 Design and execution approval date: 2026-11-03. Approved scope: test Astra's
 single fixed weight-edit proposal and its registered evaluation on the desktop

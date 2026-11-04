@@ -439,3 +439,17 @@ agreement 8950/8950. Roll-up: primary_prediction_falsified. Details are in AMEND
 section 9. Aggregate per-cell counts are in `analysis-committed/astra_result_summary.json`;
 that summary script was unregistered descriptive reporting and decides nothing.
 Private rows, graded files and ID maps stay on T7.
+
+
+## 2026-11-04: closeout and authorization for a separate broader edit
+
+PI instruction: "wrap up then yeah lets spin up a new experiment to change more weights."
+The first experiment remains terminal and falsified. Its frozen edit, thresholds
+and outcome will not be revised. A successor is authorized to investigate a
+broader weight edit. Astra will propose the construction before its numerical
+edit and evaluation; the PI is not choosing its numerical parameters.
+
+The column-norm cap limiting the first edit is a hypothesis for the successor,
+not evidence that a larger edit will work. Existing benchmark results are now
+known to the investigators, so reuse is labeled exploratory. Keep actual
+abstention and known-answer preservation as the behavioral endpoints.
