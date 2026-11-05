@@ -1,0 +1,62 @@
+{
+  "schema_version": "ehr-astra-r3-storage-interruption/v1",
+  "benchmark_driver_exit_code": 2,
+  "benchmark_relaunched": false,
+  "container_running_after_exit": false,
+  "wsl_e_access_errno": 19,
+  "windows_volume": {
+    "drive": "E:",
+    "label": "T7",
+    "filesystem": "exFAT",
+    "health": "Warning",
+    "operational_status": "Full Repair Needed"
+  },
+  "windows_physical_disk": {
+    "health": "Healthy",
+    "operational_status": "Online"
+  },
+  "observed_system_event_ids": {
+    "exfat": [
+      50
+    ],
+    "disk": [
+      153
+    ]
+  },
+  "completed_cells": [
+    {
+      "manifest_sha256": "a7896cd12f02d57c1d7d787214a071081656ba2c55cc069ba1f28308a53f4d34",
+      "matches_saved_manifest": true,
+      "cell": "selfaware\\P-struct\\base",
+      "generation_attempts": 3786,
+      "output_sha256": "0aa4d0f29960d0c8d76ad167c08fdf58a77a50af2fca6e5001c108881dbf766f",
+      "rows": 3369
+    },
+    {
+      "manifest_sha256": "3d245dac07b8326896a645395013434545df4dc0f7ebda23afbf8922160235fb",
+      "matches_saved_manifest": true,
+      "cell": "selfaware\\P-struct\\edited",
+      "generation_attempts": 3791,
+      "output_sha256": "cbb25a078ba32ccc9ac5b65395fd64ed0c5347bd805ee74c728b1d1f178349b3",
+      "rows": 3369
+    },
+    {
+      "manifest_sha256": "b5cf2b8c86ccd6281200776fce1c7e8cab9f93c56e78f1f3b959ac883e90f272",
+      "matches_saved_manifest": true,
+      "cell": "ambigqa\\P-struct\\base",
+      "generation_attempts": 1943,
+      "output_sha256": "4a43bbe639e3522234dc5c6b28bb0e63880b7381028f3df054b6b3aedee0c809",
+      "rows": 1832
+    }
+  ],
+  "partial_cell": {
+    "cell": "ambigqa/P-struct/edited",
+    "attempt": 0,
+    "saved_rows": 371,
+    "integrity_not_yet_verified": true
+  },
+  "remaining_prc_cells_started": false,
+  "behavioral_scores_inspected": false,
+  "scientific_outcome": "pending",
+  "recovery": "Owner Windows filesystem check required; then restore WSL access and verify complete checkpoint/source/journal bindings before deciding whether authenticated resume is admissible. Do not overwrite or replay uncertain work."
+}

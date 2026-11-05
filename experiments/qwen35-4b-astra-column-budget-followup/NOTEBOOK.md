@@ -92,3 +92,23 @@ benchmark arm. Receipt SHA256:
 Manifest SHA256:
 4865c10c3ede855de2f2ffe3d94aa3fad260afc3d82b837b86b8e4c7534fcd86.
 The50signed instrument pins and all behavioral thresholds remain unchanged.
+
+
+## 2026-11-04: benchmark interrupted with T7 storage errors
+
+The foreground driver exited2 during AmbigQA P-struct edited generation. Its
+container is no longer running. WSL returns errno19, No such device, for/mnt/e.
+Windows still reads E:/T7, but reports filesystem Warning/Full Repair Needed.
+The physical USB disk remains Healthy/Online; these observations do not prove
+a physical-device fault. Recent System events include exfat50 and disk153.
+No drive repair, model rerun or journal rewrite was attempted.
+
+Windows read-only checks found three complete cells: both SelfAware P-struct
+arms and AmbigQA P-struct base. Their final outputs still match all three saved
+manifest hashes. The interrupted AmbigQA edited initial journal has371rows;
+its integrity remains unverified. No P-rc cell has started and no behavioral
+scores were inspected. Public storage metadata and hash evidence are retained
+in analysis-committed/astra_storage_interruption.json. Owner filesystem check,
+restored WSL access and complete source/checkpoint/journal revalidation precede
+any recovery decision. This is an execution interruption, not a scientific
+verdict. Signed pins and gates remain unchanged.
