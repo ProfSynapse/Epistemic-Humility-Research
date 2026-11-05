@@ -112,3 +112,27 @@ in analysis-committed/astra_storage_interruption.json. Owner filesystem check,
 restored WSL access and complete source/checkpoint/journal revalidation precede
 any recovery decision. This is an execution interruption, not a scientific
 verdict. Signed pins and gates remain unchanged.
+
+
+## 2026-11-05: storage recovered; authenticated resume launched
+
+After the owner repaired T7 and restarted Ubuntu WSL, E: reports Healthy/OK
+and WSL reads the original files again. All three completed output hashes
+still match. The partial journal has371complete unique-ID rows and SHA256
+ff86551cdef3d91698513c491bc108cdc581258a19bf2744bdcd7d957d9de068.
+
+The existing qualification verifier completed with exit0 in the pinned offline
+CPU container. It rechecked full frozen checkpoint/source bindings and all21
+retained qualification evidence files. Its report equals the committed proof.
+This did not regenerate qualification answers or grant a changed instrument.
+
+The Linux Docker socket was unavailable after the WSL restart. The documented
+Windows docker.exe CLI reached the same Docker Desktop engine and exact image.
+Windows E:/bind sources retain the identical logical/project destinations.
+No socket permissions, runtime package, signed source or decode setting changed.
+A foreground-owned resume driver now uses the unchanged public eval-cell CLI
+in original order. Completed cells validate and return; the partial journal
+must pass the engine fingerprint check before additional generation. New
+create-only recovery logs preserve the original interruption logs. No behavioral
+scores have been inspected. Recovery metadata is retained in
+analysis-committed/astra_storage_recovery_20261105.json.
