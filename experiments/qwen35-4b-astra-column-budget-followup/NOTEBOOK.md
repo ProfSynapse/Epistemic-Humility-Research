@@ -136,3 +136,26 @@ must pass the engine fingerprint check before additional generation. New
 create-only recovery logs preserve the original interruption logs. No behavioral
 scores have been inspected. Recovery metadata is retained in
 analysis-committed/astra_storage_recovery_20261105.json.
+
+
+## 2026-11-06: generation complete; blind-pool checkpoint before grading
+
+The final foreground driver completed exit0 after the owner repaired T7 again
+and restarted Docker Desktop to refresh its stale E:mount. The failed earlier
+container-create attempt ran no model. The successful driver first reverified
+the frozen checkpoint and qualification bindings, then completed the remaining
+three cells through the unchanged fingerprinted resume path. No saved rows or
+original failure logs were overwritten. Storage stayed on the PI-selected T7.
+
+All eight cells now have the registered row counts and matching final-output
+hashes. There are20,804initial answers and22,470generation attempts including
+format retries, below the registered maximum. No interim behavioral arm deltas
+were inspected. This is generation completion, not a behavioral verdict.
+
+The registered analysis CLI authenticated all output rosters and built the
+blinded detector-negative pool using the frozen25+25held-back decoys. It has
+19,630candidates across357shards. The public run_binding.json and
+adjudication_pool_manifest.json record exact output hashes, ordered opaque IDs
+and shard hashes. They must be committed before any fresh Opus-tier grader sees
+a shard. All question text, answers, salts and ID maps remain private on T7.
+The50signed instrument pins and all acceptance gates remain unchanged.

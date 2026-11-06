@@ -1,0 +1,19 @@
+{
+  "cell_sha256": "000bbb677275690266d29d426ed2dd4252a011d0c98ff880048e45d507adcf1f",
+  "decoys_sha256": "eb65c07c22de267f1f013db4c125e63470e2af090e4b3be6b0b18a038db72c27",
+  "engine_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+  "engine_wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a",
+  "gates_sha256": "63ac324158efa4967df3414a404b4b34819894d4bae852ec31c9838cc0f26f32",
+  "outputs": {
+    "ambigqa/P-rc/base": "a01d79a498725b598842cb041e5ee3c2e418b4680c916dafb7e8df3162ff6bcd",
+    "ambigqa/P-rc/edited": "9761993bfb4f27dd9ee48717d9a5fb4336a29fd95901e05def1b384349b1717b",
+    "ambigqa/P-struct/base": "4a43bbe639e3522234dc5c6b28bb0e63880b7381028f3df054b6b3aedee0c809",
+    "ambigqa/P-struct/edited": "56330145a8d846b0733a3b05b766501c15269004c8c18e44d5a1bf7f567c07d9",
+    "selfaware/P-rc/base": "33f606b23925aea4c478738b8a97f35d35ae2d680c5131b669af08a9c16e08db",
+    "selfaware/P-rc/edited": "cda9de3a67fdd15e5bbdeabe8e3e92fbac2cd7e8c8a9c64b0b9fe9af031ae9d5",
+    "selfaware/P-struct/base": "0aa4d0f29960d0c8d76ad167c08fdf58a77a50af2fca6e5001c108881dbf766f",
+    "selfaware/P-struct/edited": "cbb25a078ba32ccc9ac5b65395fd64ed0c5347bd805ee74c728b1d1f178349b3"
+  },
+  "patch_freeze_sha256": "3d9635efee9b363fceccc954dc69e9aeec4576915804236d3142291a19d802ab",
+  "schema_version": "ehr-astra-evaluation-binding/v1"
+}

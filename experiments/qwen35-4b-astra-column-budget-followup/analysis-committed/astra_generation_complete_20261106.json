@@ -1,0 +1,25 @@
+{
+  "schema_version": "ehr-astra-r3-generation-complete/v1",
+  "completed_cells": 8,
+  "initial_answers": 20804,
+  "generation_attempts_including_format_retries": 22470,
+  "all_output_hashes_match": true,
+  "output_sha256": {
+    "ambigqa/P-rc/base": "a01d79a498725b598842cb041e5ee3c2e418b4680c916dafb7e8df3162ff6bcd",
+    "ambigqa/P-rc/edited": "9761993bfb4f27dd9ee48717d9a5fb4336a29fd95901e05def1b384349b1717b",
+    "ambigqa/P-struct/base": "4a43bbe639e3522234dc5c6b28bb0e63880b7381028f3df054b6b3aedee0c809",
+    "ambigqa/P-struct/edited": "56330145a8d846b0733a3b05b766501c15269004c8c18e44d5a1bf7f567c07d9",
+    "selfaware/P-rc/base": "33f606b23925aea4c478738b8a97f35d35ae2d680c5131b669af08a9c16e08db",
+    "selfaware/P-rc/edited": "cda9de3a67fdd15e5bbdeabe8e3e92fbac2cd7e8c8a9c64b0b9fe9af031ae9d5",
+    "selfaware/P-struct/base": "0aa4d0f29960d0c8d76ad167c08fdf58a77a50af2fca6e5001c108881dbf766f",
+    "selfaware/P-struct/edited": "cbb25a078ba32ccc9ac5b65395fd64ed0c5347bd805ee74c728b1d1f178349b3"
+  },
+  "grading_pool_candidates": 19630,
+  "grading_shards": 357,
+  "behavioral_arm_deltas_inspected": false,
+  "scientific_outcome": "pending_blinded_adjudication",
+  "storage": "T7 E:; original physical source and checkpoint paths retained after owner repairs",
+  "execution_source_commit": "6b8ace57cc78a9ef09fcacdfe553d16788c8b42d",
+  "successful_final_driver": "ehr-astra-r3-desktop-recovered-20261106",
+  "frozen_configuration_changed": false
+}
