@@ -226,3 +226,17 @@ after Docker cp did not expose files inside its tmpfs. No model was loaded,
 no generation repeated, and no rubric, threshold or pinned instrument changed.
 The existing hash check reads ID-map bytes only for their sealed hashes; no
 ID mapping was parsed before the grade commitment.
+
+
+## 2026-11-07: blinded lead spot check passed before unblinding
+
+After grade-hash commit4007c016, the registered write-once spot-pack CLI
+selected30bare opaque-ID/answer pairs. The lead read that blind pack only
+and recorded30direct rubric judgments before any grader-label or ID-map
+inspection. The spot-record CLI reports agreement30/30, accepted=true,
+against the unchanged0.90floor. The public spot manifest SHA256 is
+6f30f833b7fda0547d17abb1716f0bc4a36fdc4631b0efa025a8c9dd1e525e02.
+Private decisions, packs and the score record are retained on T7. This
+manifest is committed before applying grades or calculating arm outcomes.
+The PI-approved ID-metadata deviation remains disclosed; no judgment value
+or behavioral gate changed.

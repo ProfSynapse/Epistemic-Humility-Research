@@ -1,0 +1,9 @@
+{
+  "cell_sha256": "000bbb677275690266d29d426ed2dd4252a011d0c98ff880048e45d507adcf1f",
+  "engine_source_commit": "d03a15d62549c64cf46e10532d50a77accd32b26",
+  "engine_wheel_sha256": "9ec0896923da5a8c3e22fe79c950a1d0431fc9b527f1429d3b1d62416a2d632a",
+  "gates_sha256": "63ac324158efa4967df3414a404b4b34819894d4bae852ec31c9838cc0f26f32",
+  "run_binding_sha256": "ce4fe78aea4e218053d31fe482904aa4a8e71306048342408ca3a0734024bbbd",
+  "schema_version": "hs20-nwe-spot-commitment/v1",
+  "spot_sha256": "18021f57d5867891aa840dfcab843e0752e4bee7683af0d044899000874768c3"
+}
