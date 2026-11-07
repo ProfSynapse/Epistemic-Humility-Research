@@ -827,13 +827,27 @@ headline matrix and from earlier conditional runtime steering claims.
 Source: [AMENDMENT section 9 at ef678d4f](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/ef678d4f068b1cede54af4141de92f445f43e400/experiments/qwen35-4b-hs20-native-weight-edit/AMENDMENT.md#9-outcome)
 (PR #604 merged on 2026-11-04).
 
-The PI authorized a separate broader-weight experiment. Its draft is in the
-`astra-broader-weight-edit` worktree at
-`experiments/qwen35-4b-astra-broader-weight-edit/`; no new results exist.
-The prior study's reported cap-limited write motivates the follow-up but does
-not show that a larger edit works. Reusing these benchmarks after seeing the
-first result is exploratory, not fresh unseen-data confirmation. No rescoring
-or revision of the first study is authorized by the new experiment.
+The separate broader follow-up R3 is resolved on its experiment branch on
+2026-11-07. Its fixed two-sigma edit changed 2,489,947 BF16 entries in 1024
+columns of one down-projection tensor. The registered primary prediction is
+falsified: SelfAware P-struct actual unknown abstentions rose from 195/1032 to
+201/1032, while known-correct totals stayed 687/2337. The truthful-gain 95% CI
+[-0.3874, +0.7421] percentage points crosses zero. The recall point-gain gate
+and all three cost gates pass; the truthful-gain gate fails. Equal accuracy
+totals include 15 baseline-correct losses and 15 gains, not perfect preservation.
+
+Secondary SelfAware P-rc passes all five gates. AmbigQA P-struct has 10/1002
+unknown abstentions in both arms and supplies no transfer support. Grading
+passed all 357 shard calibration gates and the blinded 30/30 lead spot check.
+A PI-approved one-byte opaque-ID repair changed no judgment values and was
+committed before unblinding. The grading deviation and its row-attribution
+limit must accompany this result. Source: [R3 AMENDMENT sections 7–8](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/8184c32d93eda1e5d0b50787bdd4d15de4e3c509/experiments/qwen35-4b-astra-column-budget-followup/AMENDMENT.md#7-outcome),
+with committed semantic aggregates and registered roll-up at the same commit.
+PR #606 remains separate and unmerged.
+
+Broader weight coverage did not establish the primary benefit. These reused
+benchmarks remain exploratory, not fresh unseen-data confirmation. The first
+study is not rescored or superseded by the separate R3 result.
 
 ---
 

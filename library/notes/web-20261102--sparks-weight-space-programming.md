@@ -134,8 +134,14 @@ preservation/quality cost gates passed; transfer was unsupported.
 See [the governed AMENDMENT section 9 at ef678d4f](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/ef678d4f068b1cede54af4141de92f445f43e400/experiments/qwen35-4b-hs20-native-weight-edit/AMENDMENT.md#9-outcome)
 (PR #604 merged on 2026-11-04). This is an exploratory EHR
 adaptation, not a replication or refutation of the authors' loop-repair result.
-The separately authorized broader-weight successor has no results. No source
-paper claim, old-study grading or outcome is revised here.
+The separate broader R3 follow-up [[qwen35-4b-astra-column-budget-followup]] is now terminal `falsified`,
+with a disclosed PI-approved grading deviation. Its primary truthful-gain gate
+fails; the other four primary gates pass. Secondary P-rc success does not rescue
+the primary and transfer is unsupported. See [R3 Outcome and grading deviation](https://github.com/ProfSynapse/Epistemic-Humility-Research/blob/8184c32d93eda1e5d0b50787bdd4d15de4e3c509/experiments/qwen35-4b-astra-column-budget-followup/AMENDMENT.md#7-outcome).
+Its governed record is pushed on PR #606, not merged at this update. This
+exploratory EHR adaptation does not refute the authors' loop-repair result or
+establish that permanent editing generally fails. No source-paper claim, R1
+grading or R1 outcome is revised here.
 
 ## Sources
 
