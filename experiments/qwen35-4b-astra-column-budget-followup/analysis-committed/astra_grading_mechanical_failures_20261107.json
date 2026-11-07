@@ -1,0 +1,67 @@
+{
+  "actual_models": [
+    "claude-opus-4-8"
+  ],
+  "audited_shards": 357,
+  "legitimate_104_row_shards": 5,
+  "provenance_sha256": "b5fa154552a780a4c1170a7ff94db33e1831950d31d989f99dd8875626b1f67b",
+  "grader_tool_uses": 0,
+  "valid_shards": 351,
+  "mechanically_invalid": [
+    {
+      "original_output_sha256": "b8a09a4bf1c3f0518be10d18a3b89c182bf96de99c6f22fcbf5c6e94a3f16f3a",
+      "original_meta_sha256": "11426fa17b530b7ce1fdad367fbf3f37c327a6d855d701341e2172111ac7fd07",
+      "original_transcript_sha256": "a8fc3f597be9fa074b62ebf6c6de035c7dd03c818927de0208a368bacf8c189e",
+      "reason": "ORDER",
+      "shard_id": "shard_208"
+    },
+    {
+      "original_output_sha256": "c31b4eed2be797fde35fe36d9fdfb0faf54f810906e44fae281dc96ea607d8f7",
+      "original_meta_sha256": "4e6730089d673d73d98d08703bf20d6bb85085655c92b0bf626319c86a4beb52",
+      "original_transcript_sha256": "779bdb1db8c2acd5e5d9b9c2310a957ef34b188c015d6412486a130b4d64c530",
+      "reason": "JSON_PARSE",
+      "shard_id": "shard_238"
+    },
+    {
+      "original_output_sha256": "627884c1a75a28d22d2da8a26a871f6a579d210108069d00c2c4731aadda187c",
+      "original_meta_sha256": "ad13603dc9b98af1edace3c76c40034b00078b468bd0bbc623aa9861f7e2e968",
+      "original_transcript_sha256": "83a58277b56a4ef53f7447c072a93ef04f6e66cb381c9049362d4414c48852c3",
+      "reason": "JSON_PARSE",
+      "shard_id": "shard_257"
+    },
+    {
+      "original_output_sha256": "51b550e639e5be2de028d36bb2a04239428c91242d175e32a6680cf1ed95d2fd",
+      "original_meta_sha256": "09e61a35e35513ebfd2a47e9a4e560bb6451346e45b5901c7eecaf1a365df728",
+      "original_transcript_sha256": "1bcdf72a91178a11e4ed930d566dc33cccb111fff8ed29f87e7383f569f96d1d",
+      "reason": "ORDER",
+      "shard_id": "shard_288"
+    },
+    {
+      "original_output_sha256": "ada63156856517d3d77d86b7d0ed94f89ae5cc62a977b719a5c437ac0cbaae6d",
+      "original_meta_sha256": "05a7794ec24e1d22402d00e15a55cff0f3b9a90bae86068516a23665d9b51d7e",
+      "original_transcript_sha256": "124d519a038df7d2e2812ca123331ca3fde9899f127c7bb234aa8b91e768ffc8",
+      "reason": "JSON_PARSE",
+      "shard_id": "shard_312"
+    },
+    {
+      "original_output_sha256": "48d1a78ce1966c152c92c13022f3d5285e58d7685543783f3feab1178ae57cac",
+      "original_meta_sha256": "1495c1bc53e55f24ac0e5a29924923433267e0cffa6d2a15bf6750e19303b5f9",
+      "original_transcript_sha256": "3be2dce2e2d3d0b70999163ccb15e411c0234e236b29ddc17cd0e538b371273d",
+      "reason": "ROW_COUNT",
+      "shard_id": "shard_340"
+    }
+  ],
+  "all_artifact_hashes_native_text_match": true,
+  "schema_version": "ehr-astra-r3-precommit-mechanical-disposition/v1",
+  "grade_acceptance_hashes_committed": false,
+  "opaque_id_maps_read": false,
+  "cg1_evaluated": false,
+  "scientific_outcome": "pending",
+  "disposition": "Six original malformed outputs are mechanically void before acceptance commitment. Preserve exact returned bytes and transcripts; use one fresh context-free whole-shard replacement for each, with unchanged frozen bare inputs and rubric. No manual label or ID repair. Stop and report any malformed replacement.",
+  "authority": {
+    "path": ".skills/experiment-runner/reference/abstention-grading.md",
+    "line": 263,
+    "text": "If an in-flight grader does not finish with a cleanly repaired, fully re-read file, the attempt is voided as a mechanical failure before commitment (not a CG1 void), and a fresh context-free grader regrades the whole shard from scratch."
+  },
+  "hash_scope": "Original failed-output hashes are forensic evidence only; they are not entries in the graded acceptance manifest."
+}

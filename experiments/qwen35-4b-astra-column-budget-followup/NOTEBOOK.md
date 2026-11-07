@@ -159,3 +159,29 @@ adjudication_pool_manifest.json record exact output hashes, ordered opaque IDs
 and shard hashes. They must be committed before any fresh Opus-tier grader sees
 a shard. All question text, answers, salts and ID maps remain private on T7.
 The50signed instrument pins and all acceptance gates remain unchanged.
+
+
+## 2026-11-07: original grading audit; six mechanical failures before commitment
+
+All357original grading contexts completed. The lead independently checked the
+committed pool binding, ordered IDs, two-key boolean records, file hashes and
+full native transcript linkage. All357archives identify claude-opus-4-8 and
+contain zero grader tool uses. Graded bytes match the native assistant text.
+There are351structurally valid outputs. Five legitimate tail pools have104rows;
+their outputs match those counts. An auxiliary fixed105-row audit assumption
+cannot invalidate the actual committed tail pools and does not enter the lane.
+
+Six original outputs fail ID/JSON/row-shape acceptance: shard_208, shard_238,
+shard_257, shard_288, shard_312 and shard_340. No grade acceptance hashes were
+committed, no ID maps were read, and no CG1 or behavioral rates were computed.
+The original bytes and transcripts remain private and unchanged. Forensic
+hashes and the lead disposition are recorded in
+analysis-committed/astra_grading_mechanical_failures_20261107.json.
+
+The inherited grading reference explicitly distinguishes a pre-commit
+mechanical void from a CG1 void and calls for a fresh context-free whole-shard
+grade. Apply that existing rule to these six only: one fresh replacement each,
+identical frozen bare inputs and rubric, separate create-only private outputs,
+no manual ID or label repair. A malformed replacement stops for lead review.
+The351valid originals are retained. This remedy is determined before unblinding
+and changes no scientific gate, input family, rubric or signed instrument.
