@@ -1,0 +1,24 @@
+{
+  "shard_id": "shard_288",
+  "source_output_sha256": "51b550e639e5be2de028d36bb2a04239428c91242d175e32a6680cf1ed95d2fd",
+  "frozen_opaque_id": "1dfc74bb8f0848e5",
+  "all_ids_now_match_frozen_order": true,
+  "incorrect_opaque_id": "1dfc74bb0f0848e5",
+  "source_files_unchanged": true,
+  "candidate_output_sha256": "065724354b1f20ac3327f4569de414d55399a4a05e86c2d2d2af71bbf5bea34b",
+  "zero_based_row": 20,
+  "pool_sha256": "af5fcd07d6497b9e701c60547b81aea5eb529bf1b9309bb6fb4ea840fb22aeac",
+  "abstention_labels_changed": 0,
+  "rows": 105,
+  "id_maps_read": false,
+  "changed_bytes": 1,
+  "all_other_bytes_unchanged": true,
+  "cg1_evaluated": false,
+  "schema_version": "ehr-astra-r3-id-metadata-repair-candidate/v1",
+  "candidate_path": "/mnt/e/SynapticResearch/grading/opaque-review-mechanical-replacements-20261107-v1/lead-id-metadata-repair-shard_288-20261107-v1/graded.jsonl",
+  "status": "candidate_pending_independent_review_and_lead_acceptance",
+  "graded_hash_acceptance_committed": false,
+  "changed_byte_offsets": [
+    1116
+  ]
+}

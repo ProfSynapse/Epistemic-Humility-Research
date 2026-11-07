@@ -205,3 +205,29 @@ checkpoint qualification remains after numerical freeze.
 
 Pending. No R3 target computation, patch serialization/export, qualification,
 inference or benchmark generation has run.
+
+
+## 8. Approved grading deviation, 2026-11-07
+
+After independent review and before any grade acceptance commitment, ID-map
+read, calibration or unblinding, the PI replied "Approved" to the proposed
+one-character opaque-ID correction as a documented grading exception.
+The lead records and signs this narrow exception under delegated PI authority.
+It supersedes the earlier no-manual-ID-repair operating restriction only for
+shard_288, zero-based row20: 1dfc74bb0f0848e5 becomes the committed pool ID
+1dfc74bb8f0848e5. The separate accepted copy changes exactly byte1116 and no
+abstention judgment or other byte. Its SHA256 is
+065724354b1f20ac3327f4569de414d55399a4a05e86c2d2d2af71bbf5bea34b.
+The raw original and fresh-replacement responses remain unchanged, both SHA256
+51b550e639e5be2de028d36bb2a04239428c91242d175e32a6680cf1ed95d2fd.
+The approved exception and source-pool hash are recorded in
+analysis-committed/astra_grading_exception_approval_20261107.json.
+
+All105 judgment values, all other IDs, the blind pool, rubric, calibration
+floors, spot-check rule and behavioral gates remain unchanged. No other ID or
+label repair is authorized. The final exact-ID positional validator remains
+in force. The exception is not evidence that the model improved. The result
+must disclose this grading deviation and must not be described as completely
+unchanged preregistration compliance. The preserved byte evidence establishes
+unchanged judgments, but cannot independently prove the grader's intended
+row attribution. No semantic result was known when this exception was approved.

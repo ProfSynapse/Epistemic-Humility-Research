@@ -185,3 +185,21 @@ identical frozen bare inputs and rubric, separate create-only private outputs,
 no manual ID or label repair. A malformed replacement stops for lead review.
 The351valid originals are retained. This remedy is determined before unblinding
 and changes no scientific gate, input family, rubric or signed instrument.
+
+
+## 2026-11-07: five replacements verified; PI-approved single-ID exception
+
+The lead independently verified the five valid whole-shard replacements
+(208,238,257,312,340), including their exact native Opus4.8 text, zero tool
+uses, artifact hashes, row counts, two-key booleans and frozen positional IDs.
+The remaining replacement repeated the same one-character ID error. Two equal
+captures do not establish universal determinism. A separate candidate copy
+corrects only byte1116 of that output and preserves every judgment value.
+
+Independent review objected to accepting the correction under the previous
+record. The PI then explicitly approved the narrow, disclosed grading exception
+before acceptance hash commitments or unblinding. AMENDMENT section8 records
+the exception and supersedes the earlier operator ID-repair restriction only
+for this one case. Original files and native archives remain untouched; no
+other label/ID repair or rescoring is permitted. The acceptance record must
+carry the deviation and its attribution caveat with the result.

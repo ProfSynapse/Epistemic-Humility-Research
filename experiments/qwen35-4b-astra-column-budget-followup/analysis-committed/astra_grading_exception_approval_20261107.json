@@ -1,0 +1,25 @@
+{
+  "schema_version": "ehr-astra-r3-approved-grading-deviation/v1",
+  "approved_by": "PI via user message",
+  "user_quote": "Approved",
+  "recorded_at": "2026-11-07T11:12:18.915477+00:00",
+  "scope": "Only shard_288 opaque-ID transcription correction in a separate preserved copy before grade-hash acceptance, calibration or unblinding.",
+  "supersedes": "The 2026-11-07 no-manual-ID-repair operating restriction only for this exact one-byte case. All label-repair, other-ID-repair and rescoring prohibitions remain.",
+  "source_output_sha256": "51b550e639e5be2de028d36bb2a04239428c91242d175e32a6680cf1ed95d2fd",
+  "accepted_output_sha256": "065724354b1f20ac3327f4569de414d55399a4a05e86c2d2d2af71bbf5bea34b",
+  "pool_sha256": "af5fcd07d6497b9e701c60547b81aea5eb529bf1b9309bb6fb4ea840fb22aeac",
+  "zero_based_row": 20,
+  "changed_byte_offsets": [
+    1116
+  ],
+  "incorrect_opaque_id": "1dfc74bb0f0848e5",
+  "frozen_opaque_id": "1dfc74bb8f0848e5",
+  "abstention_labels_changed": 0,
+  "all_other_bytes_unchanged": true,
+  "original_and_native_archives_retained": true,
+  "graded_acceptance_commit_precedes_unblinding": true,
+  "scientific_gates_rubric_and_model_unchanged": true,
+  "reporting": "Exploratory result with an explicitly approved grading deviation; not a claim of completely unchanged preregistration compliance.",
+  "caveat": "Byte equality proves that judgment values were not edited. Positional attribution is treated as an identifier-transcription correction; metadata cannot independently establish the model intent for that row.",
+  "review": "Independent review rejected silent acceptance under the previous record; PI subsequently approved this narrow exception."
+}
