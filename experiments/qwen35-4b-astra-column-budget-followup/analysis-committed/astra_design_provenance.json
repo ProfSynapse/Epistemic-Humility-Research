@@ -1,0 +1,30 @@
+{
+  "archive_readback_verified": true,
+  "archive_root": "E:/SynapticResearch/designs/qwen35-4b-astra-column-budget-followup/20261104-01a1a73f",
+  "completed_transcript": true,
+  "files": {
+    "config-diff.json": {
+      "bytes": 4001,
+      "lines": 107,
+      "sha256": "689a5114d72811d7f3a8a7d613163b560718f2ee90d05181388363bc5094235f"
+    },
+    "native-transcript.jsonl": {
+      "bytes": 1596592,
+      "lines": 196,
+      "sha256": "a74ea46f524f38323816fde4be52546a932f8b12da9ab8c7c4c003d8e57a7f19"
+    },
+    "plan.md": {
+      "bytes": 24627,
+      "lines": 417,
+      "sha256": "e489211e71c6494e76566b623c178194cf767b28ea7b1a520b29e9b40c08755c"
+    }
+  },
+  "hidden_reasoning_capture_claimed": false,
+  "model": "gpt-6-astra",
+  "model_evidence": "Native JSONL turn_context metadata; exact singleton gpt-6-astra/max verified by parent",
+  "proposal_id": "hs20-wide1024-fixed2sigma-ideal046-r3",
+  "reasoning_effort": "max",
+  "schema_version": "ehr-native-editor-design-provenance/v1",
+  "session_id": "01a1a73f-aa49-7971-8f78-820f94cc9c4b",
+  "target_computation_performed_during_design": false
+}

@@ -1,0 +1,127 @@
+{
+  "dryrun_all_inputs_present": true,
+  "dryrun_all_output_selections_absent": true,
+  "evidence_sha256": {
+    "host-check.txt": "b36d689328fb3c548fb6d42153cb4832b1a8c48197e2f30164abb24398a74747",
+    "materialization-summary.json": "acbaa0b130b31f72ef754822292493426f597eb99b12b033254970611692e692",
+    "preparation-dryrun.json": "0f9a39262298245c426afb25b6d80b72891e49ae3251161c5a6d0c3768ee7456",
+    "tokenizer-summary.json": "43c2dc6b44ac606ab632f670475eada176140e408c0f3f22651343f2adb963cc"
+  },
+  "installed_host_binding_sha256": "286a2578593ae53566a1eba0962a4dca5094fe3c62c220f38f2889e45de55d2f",
+  "installed_host_binding_verified": true,
+  "launch_authority": false,
+  "materialization": {
+    "counts": {
+      "ambigqa": 1832,
+      "selfaware": 3369
+    },
+    "files": {
+      "ambigqa.jsonl": "f0402da6763722a35751c2baee0b341479109b0d056acba465cd595f064f531e",
+      "capture_rows.jsonl": "013b4b8a4742899be2dacea33ba9f8e0d7b1e53be1c1060e86d6c39f1ce49baa",
+      "roster.json": "4d75ad63765d0c8613ff686e62f263d51f03c1ff789eec82c527a44c2e4ef585",
+      "selfaware.jsonl": "d8b08f786a3d7b7c262ef36c930895ed4599c4adb3ab5b0717375c44355d83e5"
+    },
+    "proposal_sha256": "000bbb677275690266d29d426ed2dd4252a011d0c98ff880048e45d507adcf1f",
+    "roster_sha256": "9bc7873492fe07d50e2127920c7ad411381373a05251411f6cc651a6805dc9c0"
+  },
+  "passed": true,
+  "preparation_config_sha256": "54b734826625d7497e7e0f97fe289fa3adab6200de3203e30008772c7518da6a",
+  "private_evidence_root": "E:/SynapticResearch/qualification/astra-r3-readiness-20261104-v1",
+  "reference_authentication": {
+    "identity_sha256": "366e968df32a0a2fdcabf1bcdaf7a1070e2fc6c16680561ded0ec97335c3d050",
+    "origin_sha256": "72c0dc4184959b4ec40108a882975c5f17cfe96b5c1247347a18f756cc076086",
+    "report_sha256": "9a2d54cfbb77f8e4f516a84a1c6a1ec0bc670c659745b9dd6b663ab87b8f9c5c"
+  },
+  "reference_scope": "Authenticates existing R2 report only; new R3 treatment equality has not yet been computed.",
+  "schema_version": "ehr-astra-r3-pre-sign-readiness/v1",
+  "target_computation_performed": false,
+  "target_inference_performed": false,
+  "tokenizer_preflight": {
+    "context_limit": 2048,
+    "passed": true,
+    "proposal_sha256": "000bbb677275690266d29d426ed2dd4252a011d0c98ff880048e45d507adcf1f",
+    "surfaces": [
+      {
+        "fits": true,
+        "max_prompt_tokens": 198,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "60a92127e54c402dde12136734e420e608f8e6b5ed75bf8eb4e5a2ad7ce03f3a",
+        "retry": false,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "0dcac2fe487c965182c06d344ddf394e8d79833cf21ad27f44b124bfdd44713a"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 279,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "c6e761a2f585b25f21c4b8a690d686fe4f1851a8262f2a739a3b373ea629a629",
+        "retry": true,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "3b6619309979d84e1b4eae17a948388bedea32b3992dd130354f3e7bb5aa9e63"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 229,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "e2dd399d3da19df136f6988faf1a4ecc02189508bc94864e36b011636d54d209",
+        "retry": false,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "27ee24221968d0e21db48db512a02f5a036ac9c5368deccb3434e9ef957e876e"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 310,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "3be4a1192ace5510635e66ee28f2d4a40ce6d4126f41fb780961be6bc64d86e6",
+        "retry": true,
+        "rows": 3369,
+        "surface": "selfaware",
+        "tokenization_roster_sha256": "7a6ea97423d38e43ed105c8fd0d8d668d3bf5d00c7dd4d3e94e3e76214a97cb7"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 124,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "4e8063e6b6846b00719806dbfa3bb6eac14dc23c2d18153b04c909dd9c94b919",
+        "retry": false,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "a88c2bb47acfec89fb4702439649e768ddae4f3c686415546d7ef2747ae38406"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 205,
+        "prompt": "P-struct",
+        "prompt_roster_sha256": "3da97ca02ebff522ab5fbcd87365fc511259bf266138f017cea07a0a5e16a317",
+        "retry": true,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "6327c4e9a410bab0bdfa75c5e1ff677e394a0247302b57bb714b792f32f24055"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 155,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "26d88b3d4debdcde82a97c636e9ae36a18a536ce1ed97ea0b1178531d7f5b947",
+        "retry": false,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "131b77521590efdb5bf96a5192ee62ae8cb68beb5ff292dbc4b028348d1f2d86"
+      },
+      {
+        "fits": true,
+        "max_prompt_tokens": 236,
+        "prompt": "P-rc",
+        "prompt_roster_sha256": "438fc0730450edd539ca9f45114e27c55954bc9847792fe231368f685480bf5a",
+        "retry": true,
+        "rows": 1832,
+        "surface": "ambigqa",
+        "tokenization_roster_sha256": "aff99348a906a5b611de0455d7e555dd980011c193869bd0ff9d7a026db53f4d"
+      }
+    ],
+    "tokenizer_revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "analysis_only": true,
+  "artifact_sha256": {
+    "adjudication_graded_manifest.json": "23851397e3ae989a10bc8dfef31491b7910b68f37bf95a512974bc5610d2cc5c",
+    "adjudication_spot_manifest.json": "6f30f833b7fda0547d17abb1716f0bc4a36fdc4631b0efa025a8c9dd1e525e02",
+    "rollup.json": "7e83ec55f1f8be6356013bbe34c3742c19a573faef499798cc7d6e3025a94987",
+    "semantic_aggregates.json": "f71b4c448e905f7eaba08e8a03dfe4dc61e7c4adcf901213323dd19e68f09285"
+  },
+  "blind_spot_agreement": "30/30",
+  "container_id": "354de5229acbfa9edaced6b842b12bca36ca3750abf9baba49aa16a69352e071",
+  "cpu_limit": 2000000000,
+  "grade_commit": "4007c016c0031b1d229eac5433f29717b6fb0b2c",
+  "grades": 357,
+  "grading_deviation": "PI-approved one-byte opaque-ID correction; zero judgment changes",
+  "image_id": "sha256:408fecc6e644cfb62f028ff064a226eab1fe2b24dbc5853a82ed0d20b039d224",
+  "log_sha256": {
+    "grade-commit-phase.log": "ca487d75fbd17434639599cff18bf0f7b73163991fbe1f14c8de7ff7e19ead16",
+    "rollup-phase.log": "7e83ec55f1f8be6356013bbe34c3742c19a573faef499798cc7d6e3025a94987"
+  },
+  "memory_limit_bytes": 4294967296,
+  "network": "none",
+  "new_model_inference": false,
+  "positive_decoys_correct": 8925,
+  "positive_decoys_total": 8925,
+  "recorded_at": "2026-11-07T11:31:11.149005+00:00",
+  "schema_version": "ehr-astra-r3-analysis-execution/v1",
+  "source_commit": "d5c05d730ad6bdb09b479463e626c083c4c423c9",
+  "spot_commit": "0f153e25d502857d3be88f91ac690f7f9f2abc86",
+  "started_at": "2026-11-07T11:22:21.804225967Z",
+  "stopped_at": "2026-11-07T11:31:11.037057839Z",
+  "stopped_confirmed": true,
+  "tmpfs": {
+    "/project": "rw,size=1073741824,mode=0700"
+  }
+}

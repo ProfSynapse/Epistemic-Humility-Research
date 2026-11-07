@@ -1,0 +1,107 @@
+{
+  "applied": false,
+  "destination_experiment": "experiments/qwen35-4b-astra-column-budget-followup",
+  "document_kind": "prospective-design-diff-only",
+  "files": [
+    {
+      "destination": "astra_r3.yaml",
+      "operations_on_parsed_yaml": [
+        {
+          "op": "test",
+          "path": "/proposal_id",
+          "value": "hs20-wide1024-fixed2sigma-r2"
+        },
+        {
+          "op": "replace",
+          "path": "/proposal_id",
+          "value": "hs20-wide1024-fixed2sigma-ideal046-r3"
+        },
+        {
+          "op": "test",
+          "path": "/editor/session_id",
+          "value": "01a1a6a0-bd2a-7b12-adf1-50fc6a64bf1d"
+        },
+        {
+          "op": "replace",
+          "path": "/editor/session_id",
+          "value": "01a1a73f-aa49-7971-8f78-820f94cc9c4b"
+        },
+        {
+          "op": "test",
+          "path": "/patch/ideal_guards/maximum_column_relative_l2",
+          "value": 0.45
+        },
+        {
+          "op": "replace",
+          "path": "/patch/ideal_guards/maximum_column_relative_l2",
+          "value": 0.46
+        }
+      ],
+      "provenance_requirement": "Same experiment-relative editor.design_provenance path refers to a fresh R3 record and completed R3 transcript archive, never the old record.",
+      "source": "astra_r2.yaml",
+      "source_sha256": "98f4908c31a1baee384aea625bd41961ec7bfdb426e450cc3307e82c11c0c929",
+      "unchanged_subtrees": [
+        "model",
+        "development",
+        "evaluation",
+        "prompts",
+        "prompt_sources",
+        "validation",
+        "grading",
+        "qualification",
+        "patch.realized_guards"
+      ]
+    },
+    {
+      "destination": "gates.yaml",
+      "operations_on_parsed_yaml": [
+        {
+          "op": "test",
+          "path": "/proposal_id",
+          "value": "hs20-wide1024-fixed2sigma-r2"
+        },
+        {
+          "op": "replace",
+          "path": "/proposal_id",
+          "value": "hs20-wide1024-fixed2sigma-ideal046-r3"
+        }
+      ],
+      "source": "gates.yaml",
+      "source_sha256": "1527d4f4cfdf1a5fa5926c27ee21c3689a9dab830b256b84ebda7714287ec214"
+    },
+    {
+      "destination": "astra_runtime.yaml",
+      "operations_on_parsed_yaml": [
+        {
+          "op": "test",
+          "path": "/qualification/namespace",
+          "value": "astra-r2-hf-5.17.0-xgrammar-0.2.2-b1"
+        },
+        {
+          "op": "replace",
+          "path": "/qualification/namespace",
+          "value": "astra-r3-hf-5.17.0-xgrammar-0.2.2-b1"
+        },
+        {
+          "op": "test",
+          "path": "/qualification/edited_checkpoint",
+          "value": "Fresh unscored qualification required after immutable patch freeze; see astra_r2.yaml"
+        },
+        {
+          "op": "replace",
+          "path": "/qualification/edited_checkpoint",
+          "value": "Fresh unscored qualification required after immutable patch freeze; see astra_r3.yaml"
+        }
+      ],
+      "source": "astra_runtime.yaml",
+      "source_sha256": "46babf5ede647333b5372dbdd08a3d7111c34f3c4198674e6308b0480fdd1446"
+    }
+  ],
+  "implementation_note": "Design diff only. YAML alone is insufficient: the new experiment-owned constructor port must update its closed IDEAL and proposal expected ideal_guards entries, and new host identity checks/namespaces must bind R3. Do not change the closed R2 files or relax validation. Do not globally replace 0.45; K RMS remains 0.45.",
+  "launch_authority": false,
+  "proposal_id": "hs20-wide1024-fixed2sigma-ideal046-r3",
+  "qualification_note": "Old status stays pending/qualified:false; require fresh exact exported-model receipt and manifest before any benchmark.",
+  "sole_scientific_change": "Ideal maximum column relative L2 ceiling 0.45 -> 0.46; proposed numerical edit and all realized/behavioral thresholds unchanged.",
+  "source_experiment": "experiments/qwen35-4b-astra-broader-weight-edit",
+  "source_root": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit"
+}

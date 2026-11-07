@@ -1,0 +1,9 @@
+{
+  "files": {
+    "r2_amendment.md": "ba7d5eded066bf0beff2ca9881c5397d64d1571a42a795a9c3e6ac2614927824",
+    "r2_construction_outcome.json": "1f5f863b15ff1a5a4ce56b7510badecaa0708cd841130ceaa665fa748d56656d",
+    "r2_contract.yaml": "98f4908c31a1baee384aea625bd41961ec7bfdb426e450cc3307e82c11c0c929"
+  },
+  "source_commit": "fa47ea5dc7c1b29dfa8228065c3aeed9a4a5fdca",
+  "source_experiment": "/home/profsynapse/Code/.worktrees/Epistemic-Humility-Research/astra-broader-weight-edit/experiments/qwen35-4b-astra-broader-weight-edit"
+}
