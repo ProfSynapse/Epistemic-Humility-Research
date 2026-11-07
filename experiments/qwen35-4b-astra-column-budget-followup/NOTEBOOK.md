@@ -203,3 +203,26 @@ the exception and supersedes the earlier operator ID-repair restriction only
 for this one case. Original files and native archives remain untouched; no
 other label/ID repair or rescoring is permitted. The acceptance record must
 carry the deviation and its attribution caveat with the result.
+
+
+## 2026-11-07: accepted grade hashes frozen before blind spot check
+
+The registered commit-hash CLI accepted all357selected files:351valid original
+outputs, five verified whole-shard replacements, and the PI-approved one-byte
+ID copy for shard_288. No judgment value changed. Exact retained grade files
+and the append-only hash ledger were copied back to T7 and hash-verified. The
+public graded manifest SHA256 is
+23851397e3ae989a10bc8dfef31491b7910b68f37bf95a512974bc5610d2cc5c.
+It is committed before the blind30-item spot check and any unblinding.
+
+Docker's stale E:bind was avoided using standard Docker stdin copy operations
+with a bounded private tmpfs in the exact pinned408fecc6CPU container. The
+signed source, installed host and engine/image checks passed unchanged. Source
+archive SHA256 is620ff34fb73156827c44b94fac0f36c26a1cc4a294b0b064d8cd3bab3a04a2cc;
+grade-phase copyback archive SHA256 is
+23d50fcc2ef509305edaf681f7f073a8787937bf77a540822c056996487d6d67.
+The first transport-only container was removed before any grade commitment
+after Docker cp did not expose files inside its tmpfs. No model was loaded,
+no generation repeated, and no rubric, threshold or pinned instrument changed.
+The existing hash check reads ID-map bytes only for their sealed hashes; no
+ID mapping was parsed before the grade commitment.
