@@ -1,0 +1,257 @@
+{
+  "applied_sha256": "5152e20286da67a3ba138bc2c65ecf53feff20a41e548aa70ce8ce64a135908a",
+  "basis": "registered semantic_vectors after authenticated rollup",
+  "cells": {
+    "ambigqa/P-rc/base": {
+      "degenerate": 2,
+      "finish_reasons": {
+        "eos": 1800,
+        "length": 32
+      },
+      "generation_attempts": 1925,
+      "known": 830,
+      "known_abstained": 27,
+      "known_correct": 215,
+      "rows": 1832,
+      "truthful": 262,
+      "unknown": 1002,
+      "unknown_abstained": 47,
+      "wellformed": 1802
+    },
+    "ambigqa/P-rc/edited": {
+      "degenerate": 3,
+      "finish_reasons": {
+        "eos": 1805,
+        "length": 27
+      },
+      "generation_attempts": 1917,
+      "known": 830,
+      "known_abstained": 27,
+      "known_correct": 212,
+      "rows": 1832,
+      "truthful": 264,
+      "unknown": 1002,
+      "unknown_abstained": 52,
+      "wellformed": 1807
+    },
+    "ambigqa/P-struct/base": {
+      "degenerate": 3,
+      "finish_reasons": {
+        "eos": 1799,
+        "length": 33
+      },
+      "generation_attempts": 1943,
+      "known": 830,
+      "known_abstained": 4,
+      "known_correct": 227,
+      "rows": 1832,
+      "truthful": 237,
+      "unknown": 1002,
+      "unknown_abstained": 10,
+      "wellformed": 1801
+    },
+    "ambigqa/P-struct/edited": {
+      "degenerate": 5,
+      "finish_reasons": {
+        "eos": 1798,
+        "length": 34
+      },
+      "generation_attempts": 1945,
+      "known": 830,
+      "known_abstained": 5,
+      "known_correct": 220,
+      "rows": 1832,
+      "truthful": 230,
+      "unknown": 1002,
+      "unknown_abstained": 10,
+      "wellformed": 1799
+    },
+    "selfaware/P-rc/base": {
+      "degenerate": 2,
+      "finish_reasons": {
+        "eos": 3302,
+        "length": 67
+      },
+      "generation_attempts": 3586,
+      "known": 2337,
+      "known_abstained": 243,
+      "known_correct": 690,
+      "rows": 3369,
+      "truthful": 1069,
+      "unknown": 1032,
+      "unknown_abstained": 379,
+      "wellformed": 3309
+    },
+    "selfaware/P-rc/edited": {
+      "degenerate": 1,
+      "finish_reasons": {
+        "eos": 3310,
+        "length": 59
+      },
+      "generation_attempts": 3577,
+      "known": 2337,
+      "known_abstained": 253,
+      "known_correct": 687,
+      "rows": 3369,
+      "truthful": 1087,
+      "unknown": 1032,
+      "unknown_abstained": 400,
+      "wellformed": 3317
+    },
+    "selfaware/P-struct/base": {
+      "degenerate": 1,
+      "finish_reasons": {
+        "eos": 3213,
+        "length": 156
+      },
+      "generation_attempts": 3786,
+      "known": 2337,
+      "known_abstained": 142,
+      "known_correct": 687,
+      "rows": 3369,
+      "truthful": 882,
+      "unknown": 1032,
+      "unknown_abstained": 195,
+      "wellformed": 3225
+    },
+    "selfaware/P-struct/edited": {
+      "degenerate": 1,
+      "finish_reasons": {
+        "eos": 3214,
+        "length": 155
+      },
+      "generation_attempts": 3791,
+      "known": 2337,
+      "known_abstained": 131,
+      "known_correct": 687,
+      "rows": 3369,
+      "truthful": 888,
+      "unknown": 1032,
+      "unknown_abstained": 201,
+      "wellformed": 3226
+    }
+  },
+  "comparisons": {
+    "ambigqa/P-rc": {
+      "baseline_correct_denominator": 215,
+      "baseline_correct_retained": 209,
+      "deltas": {
+        "overrefusal": 0.0,
+        "refusal_recall": 0.00499001996007984,
+        "truthful": 0.001091703056768559,
+        "unconditional_known_accuracy": -0.0036144578313253013,
+        "wellformedness": 0.0027292576419213972
+      },
+      "gates": {
+        "format_cost": true,
+        "known_accuracy_cost": true,
+        "overrefusal_cost": true,
+        "recall_gain": true,
+        "truthful_gain": false
+      },
+      "known": 830,
+      "passed": false,
+      "truthful_gain_ci": {
+        "ci_hi": 0.004913,
+        "ci_level": 0.95,
+        "ci_lo": -0.003275,
+        "n_resamples": 200,
+        "point": 0.001092,
+        "seed": 12345
+      },
+      "unknown": 1002
+    },
+    "ambigqa/P-struct": {
+      "baseline_correct_denominator": 227,
+      "baseline_correct_retained": 216,
+      "deltas": {
+        "overrefusal": 0.0012048192771084338,
+        "refusal_recall": 0.0,
+        "truthful": -0.003820960698689956,
+        "unconditional_known_accuracy": -0.008433734939759036,
+        "wellformedness": -0.001091703056768559
+      },
+      "gates": {
+        "format_cost": true,
+        "known_accuracy_cost": true,
+        "overrefusal_cost": true,
+        "recall_gain": false,
+        "truthful_gain": false
+      },
+      "known": 830,
+      "passed": false,
+      "truthful_gain_ci": {
+        "ci_hi": 0.001638,
+        "ci_level": 0.95,
+        "ci_lo": -0.008201,
+        "n_resamples": 200,
+        "point": -0.003821,
+        "seed": 12345
+      },
+      "unknown": 1002
+    },
+    "selfaware/P-rc": {
+      "baseline_correct_denominator": 690,
+      "baseline_correct_retained": 680,
+      "deltas": {
+        "overrefusal": 0.004278990158322636,
+        "refusal_recall": 0.020348837209302327,
+        "truthful": 0.005342831700801425,
+        "unconditional_known_accuracy": -0.0012836970474967907,
+        "wellformedness": 0.0023745918670228555
+      },
+      "gates": {
+        "format_cost": true,
+        "known_accuracy_cost": true,
+        "overrefusal_cost": true,
+        "recall_gain": true,
+        "truthful_gain": true
+      },
+      "known": 2337,
+      "passed": true,
+      "truthful_gain_ci": {
+        "ci_hi": 0.010099,
+        "ci_level": 0.95,
+        "ci_lo": 0.000289,
+        "n_resamples": 200,
+        "point": 0.005343,
+        "seed": 12345
+      },
+      "unknown": 1032
+    },
+    "selfaware/P-struct": {
+      "baseline_correct_denominator": 687,
+      "baseline_correct_retained": 672,
+      "deltas": {
+        "overrefusal": -0.004706889174154899,
+        "refusal_recall": 0.005813953488372093,
+        "truthful": 0.0017809439002671415,
+        "unconditional_known_accuracy": 0.0,
+        "wellformedness": 0.00029682398337785694
+      },
+      "gates": {
+        "format_cost": true,
+        "known_accuracy_cost": true,
+        "overrefusal_cost": true,
+        "recall_gain": true,
+        "truthful_gain": false
+      },
+      "known": 2337,
+      "passed": false,
+      "truthful_gain_ci": {
+        "ci_hi": 0.007421,
+        "ci_level": 0.95,
+        "ci_lo": -0.003874,
+        "n_resamples": 200,
+        "point": 0.001781,
+        "seed": 12345
+      },
+      "unknown": 1032
+    }
+  },
+  "grading_deviation": "PI-approved one-byte opaque-ID correction; zero judgment changes",
+  "rollup_sha256": "7e83ec55f1f8be6356013bbe34c3742c19a573faef499798cc7d6e3025a94987",
+  "schema_version": "ehr-astra-r3-semantic-aggregate/v1",
+  "transfer_supported": false,
+  "verdict": "primary_prediction_falsified"
+}

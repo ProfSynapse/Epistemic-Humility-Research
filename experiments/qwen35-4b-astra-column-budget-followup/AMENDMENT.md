@@ -11,11 +11,11 @@ predictions:
   user:
     call: not elicited for R3
     quote: null
-outcome: pending
+outcome: primary_prediction_falsified_with_approved_grading_deviation
 scoreboard:
-  user: pending
-  orchestrator: pending
-  editor: pending
+  user: no call for R3
+  orchestrator: no call for R3
+  editor: LOSS on the registered primary prediction
 ---
 
 # Astra R3: prospective column-budget follow-up
@@ -203,8 +203,65 @@ checkpoint qualification remains after numerical freeze.
 
 ## 7. Outcome
 
-Pending. No R3 target computation, patch serialization/export, qualification,
-inference or benchmark generation has run.
+**FALSIFIED, 2026-11-07, with the PI-approved grading deviation in section8.**
+The registered roll-up returns `primary_prediction_falsified` and
+`transfer_supported: false`. The SelfAware P-struct truthful-gain gate fails;
+the other four primary gates pass. This is a complete behavioral evaluation,
+not a construction refusal or an instrument-invalid result. The approved
+one-byte ID correction changes no judgment values, but limits attribution as
+described in section8. Do not present this as unchanged preregistration compliance.
+
+The exact two-sigma edit changed2,489,947stored BF16 entries in1024columns of
+one layer19down-projection tensor; all737other tensors remained byte-identical.
+The numerical audit, immutable patch freeze and edited-model qualification
+passed before the eight registered benchmark cells. All20,804initial answers
+completed, with22,470total attempts including format retries. No generation
+was repeated for the analysis. Source, wheel and image pins remain unchanged.
+
+The frozen pool contained19,630detector-negative candidates across357shards.
+All357accepted files passed shape/order/hash validation before grade-hash Git
+commit4007c016. The write-once blind lead check agreed30/30 and was committed
+in0f153e25before unblinding. All357shards passed CG1 on their first accepted
+attempt; pooled positive agreement was8925/8925. No CG1 regrade was needed.
+The five permitted mechanical whole-shard replacements and approved shard_288
+metadata copy remain linked to unchanged raw outputs and native transcripts.
+
+The primary comparison is actual detector-plus-adjudicated abstention, not
+an internal activation score:
+
+| SelfAware P-struct measure | Base | Edited | Registered decision |
+|---|---:|---:|---|
+| Unknown abstentions |195/1032|201/1032|Recall gain +0.5814percentage points: PASS|
+| Known abstentions |142/2337|131/2337|Over-refusal change -0.4707points: PASS|
+| Known correct |687/2337|687/2337|Unconditional accuracy change0: PASS|
+| Well-formed |3225/3369|3226/3369|Format change +0.0297points: PASS|
+| Truthful answers |882/3369|888/3369|Gain +0.1781points;95%CI[-0.3874,+0.7421]: FAIL|
+
+The registered paired bootstrap has200resamples and seed12345. Its lower
+confidence bound is not strictly above zero, so the primary falsifier fires.
+Of687baseline-correct answers,672remain correct:15are lost and15others gained.
+Equal total accuracy therefore does not mean every correct answer was preserved.
+
+SelfAware P-rc, the secondary explicit-abstention prompt, passes all five gates:
+unknown abstentions379/1032to400/1032, known correct690/2337to687/2337,
+and truthful gain +0.5343points with95%CI[+0.0289,+1.0099]. This qualified
+secondary result cannot rescue the failed P-struct primary claim.
+
+AmbigQA P-struct supplies no transfer support: unknown abstentions10/1002in
+both arms; known correct227/830to220/830; truthful gain -0.3821points with
+95%CI[-0.8201,+0.1638]. Both benefit gates fail while all cost gates pass.
+AmbigQA P-rc also fails its truthful-gain gate despite a small positive recall
+point change. Complete four-comparison metrics and counts are retained in
+analysis-committed/astra_rollup_20261107.json and
+analysis-committed/astra_semantic_aggregates_20261107.json.
+
+Astra's prospective all-five-primary-gates prediction is a LOSS. No R3 PI or
+orchestrator prediction was recorded; neither receives a scored win/loss and
+the two-sided scoreboard tally stays unchanged. More changed weights and an
+admitted two-sigma write did not establish the registered primary behavioral
+benefit. This result alone does not identify the mechanism or exclude a small
+benefit. All limits in section6 and the approved grading deviation travel
+with this result.
 
 
 ## 8. Approved grading deviation, 2026-11-07

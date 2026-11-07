@@ -1,7 +1,7 @@
 slug: qwen35-4b-astra-column-budget-followup
 title: Astra fixed broad edit with revised ideal column budget
 type: steer-cell
-status: running
+status: falsified
 registered: true
 created_at: '2026-11-04T16:01:40Z'
 question: Does the fixed broader Astra edit improve actual abstention after a prospective
@@ -234,6 +234,8 @@ inputs:
   availability: local
   source: Original R2 mathematical proposal, immutable T7 shared/astra-r2-proposal-v1/report.json
   sha256: 9a2d54cfbb77f8e4f516a84a1c6a1ec0bc670c659745b9dd6b663ab87b8f9c5c
-verdict: ''
+verdict: 'Primary prediction falsified with PI-approved one-byte grading deviation:
+  actual unknown abstentions 195/1032 to 201/1032; known correct 687/2337 unchanged;
+  truthful-gain CI crosses zero; all cost gates pass; no AmbigQA P-struct transfer.'
 kg: []
 pr: 606

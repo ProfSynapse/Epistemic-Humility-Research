@@ -7061,11 +7061,11 @@
       "question": "Does the fixed broader Astra edit improve actual abstention after a prospective ideal-column budget revision?",
       "registered": true,
       "slug": "qwen35-4b-astra-column-budget-followup",
-      "status": "running",
+      "status": "falsified",
       "text_capture": "enabled",
       "title": "Astra fixed broad edit with revised ideal column budget",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Primary prediction falsified with PI-approved one-byte grading deviation: actual unknown abstentions 195/1032 to 201/1032; known correct 687/2337 unchanged; truthful-gain CI crosses zero; all cost gates pass; no AmbigQA P-struct transfer."
     },
     {
       "checkpoint": {

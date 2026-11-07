@@ -240,3 +240,27 @@ Private decisions, packs and the score record are retained on T7. This
 manifest is committed before applying grades or calculating arm outcomes.
 The PI-approved ID-metadata deviation remains disclosed; no judgment value
 or behavioral gate changed.
+
+
+## 2026-11-07: grading accepted; registered outcome and cleanup
+
+All357accepted shards passed calibration, with8925/8925pooled positive decoys
+and no CG1 regrade. The existing rollup CLI authenticated retained grade
+judgments, the spot commitment, original benchmark outputs and fixed paired
+rosters. It returned primary_prediction_falsified, transfer_supported=false.
+The independent aggregate check reconciles all four comparison deltas to
+semantic count differences. Primary unknown abstentions195to201; known correct
+687to687; truthful882to888, paired95%CI[-0.003874,0.007421]. All three cost
+gates pass. Secondary SelfAware P-rc passes; AmbigQA P-struct does not transfer.
+
+Registered rollup SHA256:
+7e83ec55f1f8be6356013bbe34c3742c19a573faef499798cc7d6e3025a94987.
+Semantic aggregate SHA256:
+f71b4c448e905f7eaba08e8a03dfe4dc61e7c4adcf901213323dd19e68f09285.
+All private grade files, maps, native transcripts, source outputs and logs
+remain on T7. Result/log copyback hashes were verified before the owned CPU
+container was stopped and removed. The analysis-execution receipt records
+its exact image, resource/network limits and confirmed termination. No
+model or GPU inference ran during this analysis. No scientific gate or
+scorer changed. The PI-approved single-ID grading deviation is disclosed
+in section8and in the aggregate evidence. No merge is authorized by this closeout.
