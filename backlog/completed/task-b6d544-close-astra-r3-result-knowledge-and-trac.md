@@ -1,7 +1,7 @@
 ---
 id: task-b6d544
 title: Close Astra R3 result knowledge and tracking
-status: in-progress
+status: done
 assignee:
 - '@codex'
 tier: P
@@ -26,11 +26,13 @@ Record the already adjudicated Astra R3 result in living trackers and typed know
 
 
 ## Acceptance Criteria
-- [ ] Verified counts and gate interpretation retained without rescoring.
-- [ ] Scoreboard tally unchanged for the unilateral editor call.
-- [ ] Three typed nodes, bounded successor context, retrieval and conflict checks pass.
-- [ ] Source links point to the pushed evidence commit; no PR merge.
+- [x] Verified counts and gate interpretation retained without rescoring.
+- [x] Scoreboard tally unchanged for the unilateral editor call.
+- [x] Three typed nodes, bounded successor context, retrieval and conflict checks pass.
+- [x] Source links point to the pushed evidence commit; no PR merge.
 
 ## Work Log
 
 - 2026-11-07: Read-only librarian independently reconciled all four comparisons, retention and numerical counts. Parent integrates only public aggregate evidence. Isolated clean main snapshot avoids an unrelated untracked Paper1 task without changing it.
+
+- 2026-11-07: Three-node integration validated with zero errors, 228 existing warnings and zero conflicts. Rebuilt local index and verified three natural-language retrieval queries. No supersession; R1 keeps its distinct outcome. Tracker tally unchanged. Governed evidence remains on PR606.
