@@ -7055,7 +7055,11 @@
           "runtime/r3_host_binding.json": "286a2578593ae53566a1eba0962a4dca5094fe3c62c220f38f2889e45de55d2f"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:qwen35-4b-astra-column-budget-followup",
+        "artifact:qwen35-4b-astra-column-budget-followup-committed-evidence",
+        "claim:qwen35-4b-astra-column-budget-followup-primary-truthful-gate-failed"
+      ],
       "pr": 606,
       "prediction": "Given a qualified checkpoint and valid complete evaluation, the one fixed R3 edit passes all five unchanged primary SelfAware P-struct gates.",
       "question": "Does the fixed broader Astra edit improve actual abstention after a prospective ideal-column budget revision?",

@@ -237,5 +237,8 @@ inputs:
 verdict: 'Primary prediction falsified with PI-approved one-byte grading deviation:
   actual unknown abstentions 195/1032 to 201/1032; known correct 687/2337 unchanged;
   truthful-gain CI crosses zero; all cost gates pass; no AmbigQA P-struct transfer.'
-kg: []
+kg:
+- experiment:qwen35-4b-astra-column-budget-followup
+- artifact:qwen35-4b-astra-column-budget-followup-committed-evidence
+- claim:qwen35-4b-astra-column-budget-followup-primary-truthful-gate-failed
 pr: 606
